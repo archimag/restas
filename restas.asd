@@ -5,7 +5,7 @@
 
 (in-package :restas-system)
 
-(defsystem :restas-new
+(defsystem :restas
     :depends-on (#:hunchentoot #:routes #:cl-who #:cl-libxslt #:colorize)
     :components
     ((:module :src
@@ -20,4 +20,6 @@
                ;;(:file "test" :depends-on ("hunchentoot" "overlay"))
                ))))
 
-;;(defmethod perform ((o load-op) (c (eql (find-system 'cl-libxml2))))
+(defsystem :restas-new
+  :depends-on (#:restas))
+
