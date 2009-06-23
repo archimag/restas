@@ -141,10 +141,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defclass simple-route (routes:route)
+(defclass simple-route (base-route)
   ((symbol :initarg :symbol)))
 
-(defmethod restas::process-route ((route simple-route) bindings)
+(defmethod process-route/impl ((route simple-route) bindings)
   (funcall (get (slot-value route 'symbol)
                 :handler)
            bindings))
