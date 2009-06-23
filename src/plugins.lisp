@@ -61,6 +61,8 @@
 
 ;;; define-plugin
 
+(defparameter *route-macros* '(define-simple-route define-filesystem-route define-fs-xsl-route))
+
 (defmacro define-plugin (name &rest options)
   (let ((package-name (symbol-name name))
         (use (cdr (assoc :use options)))
@@ -71,7 +73,7 @@
                   ;;(setf (symbol-value (intern name package)) value)
                   (eval `(defparameter ,(intern name package) ,value))
                   ))
-           (iter (for s in '(defun/update defparameter/update *request-pool*))
+           (iter (for s in (list* 'defun/update 'defparameter/update '*request-pool* *route-macros*))
                  (import s package))
            (set-package-var "*ROUTES*" (defpackage ,impl-package-name))
            (set-package-var "*XPATH-FUNCTIONS*")

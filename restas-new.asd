@@ -16,7 +16,7 @@
                (:file "hunchentoot" :depends-on ("route"))
                (:file "expand-text" :depends-on ("core"))
                (:file "overlay" :depends-on ("expand-text"))
-               (:file "plugins" :depends-on ("core"))
+               (:file "plugins" :depends-on ("route"))
                ;;(:file "test" :depends-on ("hunchentoot" "overlay"))
                ))))
 
