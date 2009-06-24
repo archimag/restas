@@ -75,7 +75,7 @@
             (let ((*bindings* (cdr match-result)))
               (process-route (car match-result)
                              (cdr match-result)))))
-          (setf (hunchentoot:return-code*)
+        (setf (hunchentoot:return-code*)
                 hunchentoot:+HTTP-NOT-FOUND+))))
 
 

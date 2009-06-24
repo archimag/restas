@@ -61,9 +61,11 @@
 
 (defmethod restas::process-route ((route base-route) bindings)
   (let* ((master (route-master route))
-         (res (if master
-                  (restas::apply-overlay master (process-route/impl route bindings) bindings)
-                  (process-route/impl route bindings))))
+         (res0 (process-route/impl route bindings))
+         (res (if (and master
+                       (not (integerp res0)))
+                  (restas::apply-overlay master res0  bindings)
+                  res0)))
     (unless (pathnamep res)
       (setf (hunchentoot:content-type*)
             (or (route-content-type route)
@@ -71,6 +73,8 @@
     (typecase res
       (xtree::libxml2-cffi-object-wrapper (let ((tmp (xtree:serialize res :to-string :pretty-print t :encoding :utf-8))) tmp))
       (pathname (hunchentoot:handle-static-file res))
+      (integer (setf (hunchentoot:return-code*)
+                     res))
       (otherwise res))))
                                           
 
@@ -147,7 +151,7 @@
                                               template
                                               (eval template))))
          (variables (iter (for var in (routes.unify:template-variables parsed-template))
-                          (collect (list (intern (symbol-name var) (routes/package))
+                          (collect (list (intern (symbol-name var))
                                          (list 'cdr (list 'assoc var '*bindings*))))))
          (handler-body (if variables
                            `((let (,@variables) ,@body))
