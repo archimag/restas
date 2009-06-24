@@ -3,6 +3,7 @@
 (defpackage :restas
   (:use :cl :iter :split-sequence)
   (:export #:*request-pool*
+           #:*bindings*
            #:define-filesystem-route
            #:define-fs-xsl-route
            #:define-simple-route

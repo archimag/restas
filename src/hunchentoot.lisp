@@ -51,7 +51,9 @@
                                          (concatenate 'string
                                                       (puri:uri-host url)
                                                       (puri:uri-path url))
-                                         (acons :method :get (restas-request-bindings hunchentoot:*request*)))))
+                                         (acons :method :get (if (boundp '*bindings*)
+                                                                 *bindings*
+                                                                 (restas-request-bindings hunchentoot:*request*))))))
         (if match-result
             (gp:with-garbage-pool (*request-pool*)
               (let ((result (process-route (car match-result)
@@ -70,8 +72,9 @@
     (if match-result
         (xtree:with-custom-resolvers ('chrome-resolver)
           (gp:with-garbage-pool (*request-pool*)
-            (process-route (car match-result)
-                           (cdr match-result))))
+            (let ((*bindings* (cdr match-result)))
+              (process-route (car match-result)
+                             (cdr match-result)))))
           (setf (hunchentoot:return-code*)
                 hunchentoot:+HTTP-NOT-FOUND+))))
 
