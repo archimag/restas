@@ -147,7 +147,7 @@
                                               template
                                               (eval template))))
          (variables (iter (for var in (routes.unify:template-variables parsed-template))
-                          (collect (list (intern (symbol-name var) (routes/package))
+                          (collect (list (intern (symbol-name var))
                                          (list 'cdr (list 'assoc var '*bindings*))))))
          (handler-body (if variables
                            `((let (,@variables) ,@body))
