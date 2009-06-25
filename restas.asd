@@ -6,7 +6,7 @@
 (in-package :restas-system)
 
 (defsystem :restas
-    :depends-on (#:hunchentoot #:routes #:cl-who #:cl-libxslt #:colorize)
+    :depends-on (#:hunchentoot #:routes #:cl-libxslt )
     :components
     ((:module :src
               :components
