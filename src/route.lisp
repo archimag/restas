@@ -95,7 +95,7 @@
                                        :path (namestring (merge-pathnames ,path ,(symbol-value (find-symbol "*BASEPATH*" *package*))))
                                        :overlay-master ,overlay-master
                                        :content-type ,content-type
-                                       :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME")
+                                       :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                        :required-login-status ',login-status
                                        :required-method ,method)))
      (intern (symbol-name ',name) (routes/package))
@@ -128,7 +128,7 @@
                                        :xslt-elements (find-symbol "*XSLT-ELEMENTS*" ,*package*)
                                        :overlay-master ,overlay-master
                                        :content-type ,content-type
-                                       :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME")
+                                       :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                        :required-login-status ,login-status
                                        :required-method ,method)))
      (intern (symbol-name ',name) (routes/package))
@@ -166,7 +166,7 @@
                                          :symbol ',name
                                          :overlay-master ,overlay-master
                                          :content-type ,content-type
-                                         :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME")
+                                         :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                          :required-login-status ,login-status
                                          :required-method ,method)))
        (setf (get ',name :protocol)
