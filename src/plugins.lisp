@@ -61,6 +61,7 @@
            (set-package-var "*XSLT-ELEMENTS*")
            (set-package-var "*BASEPATH*" ,(cadr (assoc :basepath options)))
            (set-package-var "*BASEURL*")
+           (set-package-var "*DEFAULT-CONTENT-TYPE*" ,(cadr (assoc :default-content-type options)))
            (eval `(if (functionp ',(intern "COMPUTE-USER-LOGIN-NAME" package))
                       (defun ,(intern "COMPUTE-USER-LOGIN-NAME" package) () nil)))
            (setf (gethash ,name *plugins*)
