@@ -72,8 +72,10 @@
                 ;;;"application/xhtml+xml")))
     (typecase res
       (integer (setf (hunchentoot:return-code*) res))
-      ;;(xtree::libxml2-cffi-object-wrapper (let ((tmp (xtree:serialize res :to-string :pretty-print t :encoding :utf-8))) tmp))
-      (xtree::libxml2-cffi-object-wrapper (let ((tmp (html:serialize-html res :to-string ))) tmp))
+      (xtree::libxml2-cffi-object-wrapper (let ((tmp (if (string= (hunchentoot:content-type*) "text/html")
+                                                         (html:serialize-html res :to-string)
+                                                         (xtree:serialize res :to-string :pretty-print t))))
+                                            tmp))
       (pathname (hunchentoot:handle-static-file res))
       (integer (setf (hunchentoot:return-code*)
                      res))
@@ -96,7 +98,7 @@
                                        :template (parse-template/package ,template)
                                        :path (namestring (merge-pathnames ,path ,(symbol-value (find-symbol "*BASEPATH*" *package*))))
                                        :overlay-master ,overlay-master
-                                       :content-type ,content-type
+                                       :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
                                        :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                        :required-login-status ',login-status
                                        :required-method ,method)))
@@ -129,7 +131,7 @@
                                        :xpath-functions (find-symbol "*XPATH-FUNCTIONS*" ,*package*)
                                        :xslt-elements (find-symbol "*XSLT-ELEMENTS*" ,*package*)
                                        :overlay-master ,overlay-master
-                                       :content-type ,content-type
+                                       :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
                                        :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                        :required-login-status ,login-status
                                        :required-method ,method)))
@@ -167,7 +169,7 @@
                                          :template (parse-template/package ,template)
                                          :symbol ',name
                                          :overlay-master ,overlay-master
-                                         :content-type ,content-type
+                                         :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
                                          :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
                                          :required-login-status ,login-status
                                          :required-method ,method)))

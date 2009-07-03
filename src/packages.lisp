@@ -11,6 +11,7 @@
            #:plugin-update
            #:start-web-server
            #:reconnect-all-plugins
+           #:expand-text
            ))
 
 
