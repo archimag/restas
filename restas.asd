@@ -19,7 +19,3 @@
                (:file "plugins" :depends-on ("route"))
                ;;(:file "test" :depends-on ("hunchentoot" "overlay"))
                ))))
-
-(defsystem :restas-new
-  :depends-on (#:restas))
-
