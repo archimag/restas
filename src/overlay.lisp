@@ -44,13 +44,19 @@
       (xtree:append-document-property origin :xml-doc-html))
   origin)
 
-(defmethod apply-overlay ((origin pathname) overlay bindings)
-  (apply-overlay (gp:object-register (xtree:parse origin)
-                                     *request-pool*)
-                 overlay
-                 bindings))
+;; (defmethod apply-overlay ((origin pathname) overlay bindings)
+;;   (apply-overlay (gp:object-register (xtree:parse origin)
+;;                                      *request-pool*)
+;;                  overlay
+;;                  bindings))
 
-(defmethod apply-overlay ((origin puri:uri) overlay bindings)
+;; (defmethod apply-overlay ((origin puri:uri) overlay bindings)
+;;   (apply-overlay (gp:object-register (xtree:parse origin)
+;;                                      *request-pool*)
+;;                  overlay
+;;                  bindings))
+
+(defmethod apply-overlay (origin overlay bindings)
   (apply-overlay (gp:object-register (xtree:parse origin)
                                      *request-pool*)
                  overlay
