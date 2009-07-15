@@ -91,6 +91,8 @@
 
 (defmacro define-filesystem-route (name template path &key overlay-master content-type login-status (method :get))
   `(progn
+     (setf (get ',name :template)
+           '(parse-template/package ,template))
      (setf (get ',name :initialize)
            #'(lambda () (make-instance 'filesystem-route
                                        :template (parse-template/package ,template)
@@ -121,6 +123,8 @@
   
 (defmacro define-fs-xsl-route (name template path xsl  &key overlay-master content-type login-status (method :get))
   `(progn
+     (setf (get ',name :template)
+           '(parse-template/package ,template))
      (setf (get ',name :initialize)
            #'(lambda () (make-instance 'fs-xsl-route
                                        :template (parse-template/package ,template)
@@ -162,6 +166,8 @@
        (setf (get ',name :handler)
              #'(lambda ()
                  ,@handler-body))
+       (setf (get ',name :template)
+             '(parse-template/package ,template))
        (setf (get ',name :initialize)
              #'(lambda () (make-instance 'simple-route
                                          :template (parse-template/package ,template)
@@ -176,3 +182,16 @@
        (intern (symbol-name ',name) (routes/package))
        (eval-when (:execute)
          (route-changed ',name)))))
+
+;;; generate-route-url
+
+(defun genurl (route-symbol &rest args)
+  (format nil
+          "/~{~A~^/~}"  
+          (routes::apply-bindings (eval (get route-symbol :template))
+                                  (iter (for pair in (alexandria:plist-alist args))
+                                        (collect (cons (car pair)
+                                                       (if (stringp (cdr pair))
+                                                           (cdr pair)
+                                                           (write-to-string (cdr pair)))))))))
+

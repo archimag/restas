@@ -59,7 +59,7 @@
                        (loop for x from 1 to 10
                           do (html :li
                                    (html :a
-                                         (ehref "chapter-~A.html" x)
+                                         (ehref (genurl 'chapter-?.html :id x))
                                          (xfactory:text "Chapter ~A" x))))))))))
 
 (define-simple-route root ("" :overlay-master *frame*)
@@ -81,10 +81,10 @@
                        (loop for x from 1 to 10
                           do (html :li
                                    (html :a
-                                         (ehref "chapter-~A-~A.html" id x)
+                                         (ehref (genurl 'chapter-?-?.html :id1 id :id2 x))
                                          (xfactory:text "Chapter ~A-~A" id x)))))
                  (html :a
-                       (ehref "index.html")
+                       (ehref (genurl 'root))
                        "Back to Index"))))))
 
 (define-simple-route chapter-?-?.html ("chapter-:(id1)-:(id2).html" :overlay-master *frame*)
@@ -99,7 +99,7 @@
                  (html :p
                        (xfactory:text "This is a chapter ~A-~A" id1 id2))
                  (html :a
-                       (ehref "chapter-~A.html" id1)
+                       (ehref (genurl 'chapter-?.html :id id1))
                        (xfactory:text "Back to Chapter ~A" id1)))))))
   
           
