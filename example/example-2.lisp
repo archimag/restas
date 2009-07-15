@@ -88,18 +88,19 @@
                        "Back to Index"))))))
 
 (define-simple-route chapter-?-?.html ("chapter-:(id1)-:(id2).html" :overlay-master *frame*)
-  (xfactory:with-document-factory ((html))
-    (html :overlay
-          (etitle "Example 2: Chapter ~A-~A" id1 id2)
-          (html :div
-                (eid "content")
-                (html :h1
-                      (xfactory:text "Chapter ~A-~A" id1 id2))
-                (html :p
-                      (xfactory:text "This is a chapter ~A-~A" id1 id2))
-                (html :a
-                      (ehref "chapter-~A.html" id1)
-                      (xfactory:text "Back to Chapter ~A" id1))))))
+  (in-pool
+   (xfactory:with-document-factory ((html))
+     (html :overlay
+           (etitle "Example 2: Chapter ~A-~A" id1 id2)
+           (html :div
+                 (eid "content")
+                 (html :h1
+                       (xfactory:text "Chapter ~A-~A" id1 id2))
+                 (html :p
+                       (xfactory:text "This is a chapter ~A-~A" id1 id2))
+                 (html :a
+                       (ehref "chapter-~A.html" id1)
+                       (xfactory:text "Back to Chapter ~A" id1)))))))
   
           
 
