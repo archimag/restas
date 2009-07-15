@@ -54,7 +54,7 @@
                   ;;(setf (symbol-value (intern name package)) value)
                   (eval `(defparameter ,(intern name package) ,value))
                   ))
-           (iter (for s in (list* 'defun/update 'defparameter/update '*request-pool* '*bindings* *route-macros*))
+           (iter (for s in (list* 'defun/update 'defparameter/update '*request-pool* '*bindings* 'genurl *route-macros*))
                  (import s package))
            (set-package-var "*ROUTES*" (defpackage ,impl-package-name))
            (set-package-var "*XPATH-FUNCTIONS*")
