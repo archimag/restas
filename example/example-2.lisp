@@ -69,22 +69,23 @@
   (index-page))
 
 (define-simple-route chapter-?.html ("chapter-:(id).html")
-  (xfactory:with-document-factory ((html))
-    (html :overlay
-          (etitle "Example 2: Chapter ~A" id)
-          (html :div
-                (eid "content")
-                (html :h1
-                      (xfactory:text "Chapter ~A" id))
-                (html :ul
-                      (loop for x from 1 to 10
-                           do (html :li
+  (in-pool
+   (xfactory:with-document-factory ((html))
+     (html :overlay
+           (etitle "Example 2: Chapter ~A" id)
+           (html :div
+                 (eid "content")
+                 (html :h1
+                       (xfactory:text "Chapter ~A" id))
+                 (html :ul
+                       (loop for x from 1 to 10
+                          do (html :li
                                    (html :a
                                          (ehref "chapter-~A-~A.html" id x)
                                          (xfactory:text "Chapter ~A-~A" id x)))))
-                (html :a
-                      (ehref "index.html")
-                      "Back to Index")))))
+                 (html :a
+                       (ehref "index.html")
+                       "Back to Index"))))))
 
 (define-simple-route chapter-?-?.html ("chapter-:(id1)-:(id2).html" :overlay-master *frame*)
   (xfactory:with-document-factory ((html))
