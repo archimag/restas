@@ -31,6 +31,7 @@
 (defmethod apply-overlay ((origin xtree:document) (overlay xtree:document) bindings)
   (prepare-master origin bindings)
   (xtree:process-xinclude origin (xtree:parse-options :xml-parse-noxincnode :xml-parse-nobasefix))
+  (xtree:process-xinclude overlay (xtree:parse-options :xml-parse-noxincnode :xml-parse-nobasefix))
   (iter (for child in-child-nodes (xtree:root overlay) with (:type :xml-element-node))
         (apply-overlay/impl (or (if (string= "head" (xtree:local-name child))
                                     (xtree:find-node (xtree:first-child (xtree:root origin))
