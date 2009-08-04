@@ -45,18 +45,6 @@
       (xtree:append-document-property origin :xml-doc-html))
   origin)
 
-;; (defmethod apply-overlay ((origin pathname) overlay bindings)
-;;   (apply-overlay (gp:object-register (xtree:parse origin)
-;;                                      *request-pool*)
-;;                  overlay
-;;                  bindings))
-
-;; (defmethod apply-overlay ((origin puri:uri) overlay bindings)
-;;   (apply-overlay (gp:object-register (xtree:parse origin)
-;;                                      *request-pool*)
-;;                  overlay
-;;                  bindings))
-
 (defmethod apply-overlay (origin overlay bindings)
   (apply-overlay (gp:object-register (xtree:parse origin)
                                      *request-pool*)
@@ -70,19 +58,8 @@
                    bindings)))
 
 
+(defmethod apply-overlay ((origin function) overlay bindings)
+  (apply-overlay (funcall origin)
+                 overlay
+                 bindings))
 
-;; (defun apply-overlay (master-path overlay bindings)
-;;   (let ((master (gp:object-register (prepare-master (xtree:parse master-path)
-;;                                                     bindings)
-;;                                     *request-pool*)))
-
-;;     (iter (for child in-child-nodes (xtree:root overlay) with (:type :xml-element-node))
-;;           (apply-overlay/impl (or (if (string= "head" (xtree:local-name child))
-;;                                       (xtree:find-node (xtree:first-child (xtree:root master))
-;;                                                        (xtree:node-filter :local-name "head")))
-;;                                   (let ((id (xtree:attribute-value child "id")))
-;;                                     (if id
-;;                                         (xpath:find-single-node master
-;;                                                                 (format nil "//*[@id='~A']" id)))))
-;;                               child))
-;;     master))
