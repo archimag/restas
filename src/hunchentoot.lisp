@@ -56,14 +56,15 @@
                                                                  (restas-request-bindings hunchentoot:*request*))))))
         (if match-result
             (gp:with-garbage-pool (*request-pool*)
-              (let ((result (process-route (car match-result)
+              (let ((*bindings* (concatenate 'list (cdr match-result) *bindings*)))
+                (let ((result (process-route (car match-result)
                                            (cdr match-result))))
                 (typecase result
                   (string (xtree:resolve-string result ctxt))
                   (pathname (xtree:resolve-file/url (namestring result) ctxt ))
                   (xtree::libxml2-cffi-object-wrapper (xtree:resolve-string (xtree:serialize result
                                                                                              :to-string)
-                                                                            ctxt)))))))))
+                                                                            ctxt))))))))))
 
 (defun restas-dispatcher (req)
   (let ((match-result (routes:match *mapper*
