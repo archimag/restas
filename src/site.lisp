@@ -2,40 +2,74 @@
 
 (in-package :restas)
 
-;;(defclass site () ())
+;;; plugin-instance
 
-(defun default-adopt-plugin-result (res)
-  (typecase res
-    (integer (setf (hunchentoot:return-code*) res))
-    (pathname (hunchentoot:handle-static-file res))
-    (otherwise res)))
+(defgeneric calculate-user-login (instance request))
+
+(defgeneric adopt-route-result (instance obj))
 
 (defclass plugin-instance ()
-  ((plugin :initarg plugin :initform nil)
-   (adopt-result-fun :initarg :adopt-result-fun :initform #'default-adopt-plugin-result)
-   (context :initarg :context :initform nil)))
+  ((plugin :initarg :plugin :initform nil)   
+   (context :initarg :context :initform (make-preserve-context))))
+
+(defmethod calculate-user-login ((instance plugin-instance) request)
+  nil)
+
+(defmethod adopt-route-result ((instance plugin-instance) (code integer))
+  (setf (hunchentoot:return-code*)
+        code))
+
+(defmethod adopt-route-result ((instance plugin-instance) (path pathname))
+  (hunchentoot:handle-static-file path))
+
+(defmethod adopt-route-result ((instance plugin-instance) obj)
+  obj)
+
+;;;; site
 
 (defclass site ()
-  ((plugins :initform nil :accessor site-plugins)
-   (compute-user-name :initarg compute-user-name :initform nil)))
+  ((plugins :initform nil :accessor site-plugins)))
 
 
-(defun site-add-plugin (site plugin &key plugin-vars (adopt-plugin-result #'default-atopt-plugin-result))
-  (let ((context (make-preserve-context)))
+(defun site-add-plugin (site plugin-instance &key plugin-vars)
+  (let ((context (slot-value plugin-instance 'context)))
     (iter (for (var . val) in plugin-vars)
           (context-add-variable context var)
           (when val
             (setf (context-symbol-value context var)
                   val)))
-    (push (make-instance 'plugin-instance
-                         :plugin plugin
-                         :context context
-                         :adopt-result-fun adopt-plugin-result)
+    (push plugin-instance
           (site-plugins site))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter *sites* (make-hash-table :test 'equal)))
+
+(defun connect-plugin-instance (instance)
+  (with-slots (plugin context) instance
+    (let ((plugin-routes (symbol-value (find-symbol "*ROUTES*" plugin))))
+      (do-symbols (route-symbol plugin-routes)
+        (let* ((s (find-symbol (symbol-name route-symbol)
+                               plugin))
+               (route (with-context context
+                        (funcall (get s :initialize)))))
+          (setf (slot-value route 'plugin-instance)
+                instance)
+          (routes:connect (if (eql (get s :protocol) :chrome)
+                              *chrome-mapper*
+                              *mapper*)
+                          route))))))
 
 (defun connect-site (site)
   (iter (for instance in (site-plugins site))
-        (with-slots (plugin context) instance
-          (with-context context
-            (connect-plugin plugin)))))
+        (connect-plugin-instance instance)))
         
+(defun connect-all-sites ()
+  (iter (for (name site) in-hashtable *sites*)
+        (print name)
+        (connect-site site)))
+
+(defun reconnect-all-sites ()
+  (print "reconnect-all-sites")
+  (routes:reset-mapper *mapper*)
+  (routes:reset-mapper *chrome-mapper*)
+  (connect-all-sites))

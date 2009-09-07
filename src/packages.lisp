@@ -13,6 +13,17 @@
            #:reconnect-all-plugins
            #:expand-text
            #:genurl
+
+           #:*chrome-mapper*
+           #:restas-request-bindings
+           #:process-route
+
+           #:*sites*
+           #:site
+           #:site-add-plugin
+           #:plugin-instance
+           #:adopt-route-result
+           #:calculate-user-login
            ))
 
 
