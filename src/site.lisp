@@ -2,7 +2,9 @@
 
 (in-package :restas)
 
-;;; plugin-instance
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; plugin-instance
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defgeneric calculate-user-login (instance request))
 
@@ -25,24 +27,15 @@
 (defmethod adopt-route-result ((instance plugin-instance) obj)
   obj)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; site
-
-(defclass site ()
-  ((plugins :initform nil :accessor site-plugins)))
-
-
-(defun site-add-plugin (site plugin-instance &key plugin-vars)
-  (let ((context (slot-value plugin-instance 'context)))
-    (iter (for (var . val) in plugin-vars)
-          (context-add-variable context var)
-          (when val
-            (setf (context-symbol-value context var)
-                  val)))
-    (push plugin-instance
-          (site-plugins site))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *sites* (make-hash-table :test 'equal)))
+
+
+                
 
 (defun connect-plugin-instance (instance)
   (with-slots (plugin context) instance
@@ -60,7 +53,7 @@
                           route))))))
 
 (defun connect-site (site)
-  (iter (for instance in (site-plugins site))
+  (iter (for (name instance) in-hashtable (symbol-value (find-symbol "*SITE-PLUGINS*" site)))
         (connect-plugin-instance instance)))
         
 (defun connect-all-sites ()
@@ -73,3 +66,18 @@
   (routes:reset-mapper *mapper*)
   (routes:reset-mapper *chrome-mapper*)
   (connect-all-sites))
+
+
+(defmacro define-site-plugin (name (plugin &optional (plugin-instance-class 'plugin-instance)) &body bindings)
+  (let ((site-plugins (find-symbol "*SITE-PLUGINS*")))
+    `(progn
+       (setf (gethash ',name ,site-plugins)
+           (let ((context (make-preserve-context)))
+             (iter (for (symbol value) in ,bindings)
+                   (setf (context-symbol-value context symbol)
+                         value))
+             (make-instance ,plugin-instance-class
+                            :plugin ,plugin)))
+       (eval-when (:execute)
+         (reconnect-all-sites))
+       )))
