@@ -60,3 +60,4 @@
            (setf (gethash ,name *plugins*)
                  (find-package package))
            ))))) 
+
