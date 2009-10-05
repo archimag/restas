@@ -24,6 +24,7 @@
            #:plugin-instance
            #:adopt-route-result
            #:calculate-user-login
+           #:site-url
            ))
 
 
