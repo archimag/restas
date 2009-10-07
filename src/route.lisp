@@ -176,6 +176,7 @@
        (setf (get ',name :protocol)
              ,protocol)
        (intern (symbol-name ',name) (routes/package))
+       (export ',name)
        (eval-when (:execute)
          (route-changed ',name)))))
 

@@ -12,6 +12,7 @@
            #:start-web-server
            #:reconnect-all-plugins
            #:expand-text
+           #:expand-file
            #:genurl
 
            #:*chrome-mapper*
