@@ -1,14 +1,17 @@
 ;;; restas.asd
 
-(defpackage :restas-system
-  (:use :cl :asdf))
+(defpackage #:restas-system
+  (:use #:cl #:asdf))
 
-(in-package :restas-system)
+(in-package #:restas-system)
 
-(defsystem :restas
+(when (find-system 'asdf-system-connections)
+  (operate 'load-op 'asdf-system-connections))
+
+(defsystem restas
     :depends-on (#:hunchentoot #:routes #:garbage-pools)
     :components
-    ((:module :src
+    ((:module "src"
               :components
               ((:file "packages")
                (:file "core" :depends-on ("packages"))
@@ -17,5 +20,14 @@
                (:file "site" :depends-on ("route"))
                (:file "hunchentoot" :depends-on ("route"))
                (:file "expand-text" :depends-on ("core"))
-               (:file "plugins" :depends-on ("route"))
-               ))))
+               (:file "plugins" :depends-on ("route"))))
+     (:module "optional"
+              :components ((:file "optional"))
+              :depends-on ("src"))))
+
+
+#+asdf-system-connections
+(defsystem-connection restas-xfactory
+  :requires (restas xfactory)
+  :components ((:module "optional"
+                        :components ((:file "restas-xfactory")))))
