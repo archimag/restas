@@ -192,3 +192,16 @@
                                                            (cdr pair)
                                                            (write-to-string (cdr pair)))))))))
 
+(defun genurl-with-host (route &rest args)
+  (format nil
+          "http://~A~A"
+          (hunchentoot:host)
+          (apply #'restas:genurl route args)))
+
+
+(defun apply-format-aux (format args)
+  (if (symbolp format)
+      (apply #'restas:genurl format args)
+      (if args
+          (apply #'format nil (cons format args))
+          format)))

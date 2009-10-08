@@ -13,7 +13,11 @@
            #:reconnect-all-plugins
            #:expand-text
            #:expand-file
+
            #:genurl
+           #:genurl-with-host
+           #:apply-format-aux
+           #:redirect
 
            #:*chrome-mapper*
            #:restas-request-bindings
