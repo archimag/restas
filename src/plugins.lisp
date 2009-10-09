@@ -42,11 +42,10 @@
 
 ;;; define-plugin
 
-(defparameter *route-macros* '(define-simple-route define-filesystem-route define-fs-xsl-route))
+(defparameter *route-macros* '(define-route))
 
 (defmacro define-plugin (name &rest options)
-  (let (;;(package-name (symbol-name name))
-        (use (cdr (assoc :use options)))
+  (let ((use (cdr (assoc :use options)))
         (export (cdr (assoc :export options)))
         (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -59,5 +58,6 @@
            (set-package-var "*BASEURL*")
            (set-package-var "*DEFAULT-CONTENT-TYPE*" ,(cadr (assoc :default-content-type options)))
            (setf (gethash ',name *plugins*)
-                 (find-package package)))))))
+                 (find-package package))
+           package)))))
 

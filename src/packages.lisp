@@ -6,10 +6,14 @@
            #:*bindings*
            #:define-filesystem-route
            #:define-fs-xsl-route
-           #:define-simple-route
+           #:define-route
            #:define-plugin
            #:plugin-update
-           #:start-web-server
+
+           #:parse-host
+
+           #:start-site
+           
            #:reconnect-all-plugins
            #:expand-text
            #:expand-file
@@ -25,6 +29,7 @@
 
            #:*sites*
            #:site
+           #:defsite
            #:site-add-plugin
            #:plugin-instance
            #:adopt-route-result

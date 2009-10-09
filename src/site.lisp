@@ -31,22 +31,17 @@
 ;;;; site
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;(eval-when (:compile-toplevel :load-toplevel :execute)
-;;  (defparameter *sites* (make-hash-table :test 'equal)))
 (defparameter *sites* nil)
 
-(defmacro defsite (&optional package)
-  (let ((site-plugins-symbol (if package
-                                (intern "*SITE-PLUGINS*" package)
-                                (intern "*SITE-PLUGINS*"))))
-  `(progn
-     (defparameter ,site-plugins-symbol (make-hash-table))
-     (push (or ,package *package*)
-           *sites*))))
+(defmacro defsite (name &rest args)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (let ((package (define-plugin ,name ,@args)))
+       (eval `(defparameter ,(intern "*SITE-PLUGINS*" package) (make-hash-table)))
+       (eval `(defparameter ,(intern "*MAPPER*" package) (make-instance 'routes:mapper)))       
+       package)))
   
-
-
-(defun connect-plugin-instance (instance)
+(defun connect-plugin-instance (instance &optional (mapper *mapper*))
+;;  (error "~A" mapper)
   (with-slots (plugin context) instance
     (let ((plugin-routes (symbol-value (find-symbol "*ROUTES*" plugin))))
       (do-symbols (route-symbol plugin-routes)
@@ -58,21 +53,18 @@
                 instance)
           (routes:connect (if (eql (get s :protocol) :chrome)
                               *chrome-mapper*
-                              *mapper*)
+                              mapper)
                           route))))))
 
 
 (defun reconnect-all-sites ()
-  (routes:reset-mapper *mapper*)
   (routes:reset-mapper *chrome-mapper*)
   (iter (for site in *sites*)
-        (iter (for (name instance) in-hashtable (symbol-value (find-symbol "*SITE-PLUGINS*" site)))
-              (connect-plugin-instance instance))))
-
-(defun connect-site (site)
-  (unless (find site *sites*)
-    (push site *sites*))
-  (reconnect-all-sites))
+        (let ((mapper (symbol-value (find-symbol "*MAPPER*" site))))
+          (routes:reset-mapper mapper)
+          (iter (for (name instance) in-hashtable (symbol-value (find-symbol "*SITE-PLUGINS*" site)))
+                (connect-plugin-instance instance
+                                         mapper)))))
 
 
 (defmacro define-site-plugin (name (plugin &optional (plugin-instance-class 'plugin-instance)) &body bindings)

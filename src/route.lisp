@@ -147,7 +147,7 @@
   (funcall (get (slot-value route 'symbol)
                 :handler)))
 
-(defmacro define-simple-route (name (template &key (protocol :http) content-type login-status (method :get)) &body body)
+(defmacro define-route (name (template &key (protocol :http) content-type login-status (method :get)) &body body)
   (let* ((package (symbol-package name))
          (parsed-template (parse-template/package (if (stringp template)
                                                       template

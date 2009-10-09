@@ -31,7 +31,7 @@
   ((substitutions :initarg substitutions :initform routes:+no-bindings+ :accessor restas-request-bindings)))
 
 (defclass restas-acceptor (debuggable-acceptor)
-  ())
+  ((mappers :initform (make-hash-table :test 'equal))))
 
 (defmethod initialize-instance :after ((acceptor restas-acceptor) &key)
   (setf (hunchentoot:acceptor-request-dispatcher acceptor)
@@ -44,17 +44,44 @@
 ;; dispatcher
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defparameter *acceptors* nil)
+
+(defparameter *hosts-mappers* (make-hash-table :test 'equal))
+
+(defparameter *default-host-redirect* nil)
+
+(defun parse-host (host)
+  (if host
+      (let ((hostname/port (split-sequence:split-sequence #\: host)))
+        (list (if (string= (first hostname/port) "")
+                  nil
+                  (first hostname/port))
+              (parse-integer (or (second hostname/port) "80"))))
+      (list nil 80)))
+
+(defun find-mapper (host)
+  (let ((hostname/port (parse-host host)))
+    (or (gethash hostname/port *hosts-mappers*)
+        (gethash (list nil (second hostname/port))
+                 *hosts-mappers*))))
+
 (defun restas-dispatcher (req)
-  (let ((match-result (routes:match *mapper*
-                                    (hunchentoot:request-uri req)
-                                    (acons :method (hunchentoot:request-method hunchentoot:*request*) nil))))
-    (if match-result
-        (gp:with-garbage-pool (*request-pool*)
-          (let ((*bindings* (cdr match-result)))
-            (process-route (car match-result)
-                           (cdr match-result))))
-        (setf (hunchentoot:return-code*)
-              hunchentoot:+HTTP-NOT-FOUND+))))
+  (let ((mapper (find-mapper (hunchentoot:host req))))
+    (when (and (not mapper)
+               *default-host-redirect*)
+      (hunchentoot:redirect (hunchentoot:request-uri req)
+                            :host *default-host-redirect*))
+    (let ((match-result (if mapper
+                            (routes:match mapper
+                                          (hunchentoot:request-uri req)
+                                          (acons :method (hunchentoot:request-method hunchentoot:*request*) nil)))))
+      (if match-result
+          (gp:with-garbage-pool (*request-pool*)
+            (let ((*bindings* (cdr match-result)))
+              (process-route (car match-result)
+                             (cdr match-result))))
+          (setf (hunchentoot:return-code*)
+                hunchentoot:+HTTP-NOT-FOUND+)))))
 
 
 ;;;; redirect
@@ -68,7 +95,7 @@
                                                   (hunchentoot:url-encode s)
                                                   s))
                                           args)))
-           (route (car (routes:match restas::*mapper*
+           (route (car (routes:match (find-mapper (hunchentoot:host))
                                      url
                                      (acons :method :get nil))))
            (required-login-status (restas::route-required-login-status route)))
@@ -82,21 +109,20 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; start-hunchentoot
+;; start-site
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *acceptor* nil)
 
-(defun start-web-server (&optional (port 8080))
-  (if *acceptor*
-      (error "web server has already been started")
-      (setf *acceptor*
-            (hunchentoot:start (make-instance 'restas-acceptor :port port)))))
-
-(defun stop-web-server ()
-  (if *acceptor*
-      (progn
-        (hunchentoot:stop *acceptor*)
-        (setf *acceptor* nil))
-      (warn "web server has not yet been started")))
-      
+(defun start-site (site &key hostname (port 80))
+  (unless (find port *acceptors* :key #'hunchentoot:acceptor-port )
+    (push (hunchentoot:start (make-instance 'restas-acceptor
+                                            :port port))
+          *acceptors*))
+  (unless (find site *sites*)
+    (setf (gethash (list hostname port)
+                   *hosts-mappers*)
+          (symbol-value (find-symbol "*MAPPER*" site)))
+    (push (find-package site) *sites*)
+    (reconnect-all-sites)))
+    
+    
