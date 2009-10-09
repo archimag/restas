@@ -10,6 +10,10 @@
            #:define-plugin
            #:plugin-update
 
+           #:plugin-instance
+           #:adopt-route-result
+           #:calculate-user-login
+
            #:parse-host
 
            #:start-site
@@ -30,10 +34,9 @@
            #:*sites*
            #:site
            #:defsite
-           #:site-add-plugin
-           #:plugin-instance
-           #:adopt-route-result
-           #:calculate-user-login
+           #:define-site-plugin
+           #:*default-host-redirect*
+
            #:site-url
            ))
 

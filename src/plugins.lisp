@@ -49,7 +49,7 @@
         (export (cdr (assoc :export options)))
         (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (let ((package (defpackage ,name (:use ,@use) (:export ,@export))))
+       (let ((package (defpackage ,name (:use ,@use) (:export #:*baseurl* ,@export))))
          (flet ((set-package-var (vname &optional value)
                   (eval `(defparameter ,(intern vname package) ,value))))
            (iter (for s in (list* 'defun/update 'defparameter/update '*request-pool* '*bindings* 'genurl *route-macros*))
