@@ -4,14 +4,6 @@
 
 (defgeneric process-route (route bindings))
 
-(defun parse-template (tmpl)
-  (iter (for path in (routes::split-template (ppcre:regex-replace-all "//+"
-                                                                      (string-left-trim "/" tmpl)
-                                                                      "/")))
-        (collect (let ((spec (routes::parse-path path)))
-                   (if (cdr spec)
-                       (unify:make-unify-template 'unify::concat spec)
-                       (car spec))))))
 
 (defun plugin-update ()
   ;;(reconnect-all-plugins))
@@ -29,7 +21,7 @@
 (defun parse-template/package (tmpl package)
   (concatenate 'list
                (symbol-value (find-symbol "*BASEURL*" package))
-               (parse-template tmpl)))
+               (routes:parse-template tmpl)))
   
 (defun routes/package ()
   (symbol-value (find-symbol "*ROUTES*" *package*)))
