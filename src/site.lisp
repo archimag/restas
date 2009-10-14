@@ -36,8 +36,8 @@
 (defmacro defsite (name &rest args)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (let ((package (define-plugin ,name ,@args)))
-       (eval `(defparameter ,(intern "*SITE-PLUGINS*" package) (make-hash-table)))
-       (eval `(defparameter ,(intern "*MAPPER*" package) (make-instance 'routes:mapper)))       
+       (eval `(defvar ,(intern "*SITE-PLUGINS*" package) (make-hash-table)))
+       (eval `(defvar ,(intern "*MAPPER*" package) (make-instance 'routes:mapper)))       
        package)))
   
 (defun connect-plugin-instance (instance &optional (mapper *mapper*))
@@ -76,7 +76,7 @@
                    (context-add-variable context symbol)
                    (setf (context-symbol-value context symbol)
                          value))
-             (make-instance ,plugin-instance-class
+             (make-instance ',plugin-instance-class
                             :plugin ,plugin
                             :context context)))
        (eval-when (:execute)
