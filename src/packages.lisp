@@ -4,8 +4,6 @@
   (:use :cl :iter :split-sequence)
   (:export #:*request-pool*
            #:*bindings*
-           #:define-filesystem-route
-           #:define-fs-xsl-route
            #:define-route
            #:define-plugin
            #:plugin-update
@@ -15,7 +13,6 @@
            #:calculate-user-login
 
            #:parse-host
-
            #:start-site
            
            #:reconnect-all-plugins
