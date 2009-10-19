@@ -180,7 +180,8 @@
           (routes::apply-bindings (eval (get route-symbol :template))
                                   (iter (for pair in (alexandria:plist-alist args))
                                         (collect (cons (car pair)
-                                                       (if (stringp (cdr pair))
+                                                       (if (or (stringp (cdr pair))
+                                                               (consp (cdr pair)))
                                                            (cdr pair)
                                                            (write-to-string (cdr pair)))))))))
 
