@@ -33,3 +33,8 @@
 (defun expand-text (template bindings)
   (with-output-to-string (out)
     (expand-text/impl template bindings out)))
+
+(defun expand-file (path bindings)
+  "Loads a template file and substitutes the value of the bindings"
+  (restas::expand-text (alexandria:read-file-into-string path)
+                       bindings))
