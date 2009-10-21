@@ -31,7 +31,8 @@
    (protocol :initarg :protocol :initform :http :reader route-protocol)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-login-status :initarg :required-login-status :initform nil :reader route-required-login-status)
-   (required-method :initarg :required-method :initform nil :reader route-required-method)))
+   (required-method :initarg :required-method :initform nil :reader route-required-method)
+   (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)))
 
 (defgeneric process-route/impl (route bindings))
 
@@ -43,7 +44,7 @@
         bindings)))
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
-  (with-slots (required-method required-login-status) route
+  (with-slots (required-method required-login-status arbitrary-requirement) route
     (and (if required-method
              (eql (cdr (assoc :method bindings)) required-method)
              t)
@@ -51,7 +52,11 @@
            (:logged-on (assoc :user-login-name bindings))
            (:not-logged-on (not (assoc :user-login-name bindings)))
            ((nil) t)
-           (otherwise (error "unknow required login status: ~A" required-login-status))))))
+           (otherwise (error "unknow required login status: ~A" required-login-status)))
+         (if arbitrary-requirement
+             (let ((*bindings* bindings))
+               (funcall arbitrary-requirement))
+             t))))
 
 (defmethod restas::process-route ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'plugin-instance)
@@ -139,7 +144,7 @@
   (funcall (get (slot-value route 'symbol)
                 :handler)))
 
-(defmacro define-route (name (template &key (protocol :http) content-type login-status (method :get)) &body body)
+(defmacro define-route (name (template &key (protocol :http) content-type login-status (method :get) requirement) &body body)
   (let* ((package (symbol-package name))
          (parsed-template (parse-template/package (if (stringp template)
                                                       template
@@ -164,7 +169,8 @@
                                          :protocol ,protocol
                                          :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
                                          :required-login-status ,login-status
-                                         :required-method ,method)))
+                                         :required-method ,method
+                                         :arbitrary-requirement ,requirement)))
        (setf (get ',name :protocol)
              ,protocol)
        (intern (symbol-name ',name) (routes/package))

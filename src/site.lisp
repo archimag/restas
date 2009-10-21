@@ -77,7 +77,7 @@
                    (setf (context-symbol-value context symbol)
                          value))
              (make-instance ',plugin-instance-class
-                            :plugin ,plugin
+                            :plugin ',plugin
                             :context context)))
        (eval-when (:execute)
          (reconnect-all-sites))
