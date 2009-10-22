@@ -54,7 +54,7 @@
                   (eval `(defparameter ,(intern vname package) ,value))))
            (iter (for s in (list* 'defun/update 'defparameter/update '*request-pool* '*bindings* 'genurl *route-macros*))
                  (import s package))
-           (set-package-var "*ROUTES*" (defpackage ,impl-package-name))
+           (set-package-var "*ROUTES*" (defpackage ,impl-package-name (:use)))
            (set-package-var "*BASEURL*")
            (set-package-var "*DEFAULT-CONTENT-TYPE*" ,(cadr (assoc :default-content-type options)))
            (setf (gethash ',name *plugins*)
