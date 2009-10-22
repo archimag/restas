@@ -114,15 +114,15 @@
 
 
 (defun start-site (site &key hostname (port 80))
-  (unless (find port *acceptors* :key #'hunchentoot:acceptor-port )
-    (push (hunchentoot:start (make-instance 'restas-acceptor
-                                            :port port))
-          *acceptors*))
   (unless (find site *sites*)
     (setf (gethash (list hostname port)
                    *hosts-mappers*)
           (symbol-value (find-symbol "*MAPPER*" site)))
     (push (find-package site) *sites*)
-    (reconnect-all-sites)))
+    (reconnect-all-sites))
+  (unless (find port *acceptors* :key #'hunchentoot:acceptor-port )
+    (push (hunchentoot:start (make-instance 'restas-acceptor
+                                            :port port))
+          *acceptors*)))
     
     
