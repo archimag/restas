@@ -7,6 +7,7 @@
            #:define-route
            #:define-plugin
            #:plugin-update
+           #:*route*
 
            #:plugin-instance
            #:adopt-route-result

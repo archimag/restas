@@ -15,6 +15,8 @@
   (plugin-update))
 
 
+(defvar *route* nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; routes
 
@@ -58,7 +60,7 @@
                (funcall arbitrary-requirement))
              t))))
 
-(defmethod restas::process-route ((route base-route) bindings)
+(defmethod process-route ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'plugin-instance)
                             'context)
     (let ((res (process-route/impl route bindings)))
@@ -140,9 +142,14 @@
 (defclass simple-route (base-route)
   ((symbol :initarg :symbol)))
 
+(defmethod process-route ((route simple-route) bindings)
+  (let ((*route* (slot-value route 'symbol)))
+    (call-next-method)))
+
 (defmethod process-route/impl ((route simple-route) bindings)
   (funcall (get (slot-value route 'symbol)
                 :handler)))
+
 
 (defmacro define-route (name (template &key (protocol :http) content-type login-status (method :get) requirement) &body body)
   (let* ((package (symbol-package name))
