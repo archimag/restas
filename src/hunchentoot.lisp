@@ -30,6 +30,10 @@
 (defclass restas-request (hunchentoot:request)
   ((substitutions :initarg substitutions :initform routes:+no-bindings+ :accessor restas-request-bindings)))
 
+(defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
+  (or (hunchentoot:header-in :x-forwarded-host request)
+      (call-next-method)))
+
 (defclass restas-acceptor (debuggable-acceptor)
   ((mappers :initform (make-hash-table :test 'equal))))
 
@@ -65,8 +69,12 @@
         (gethash (list nil (second hostname/port))
                  *hosts-mappers*))))
 
+
+(defun header-host (request)
+  (cdr (assoc :host (hunchentoot:headers-in request))))
+
 (defun restas-dispatcher (req)
-  (let ((mapper (find-mapper (hunchentoot:host req))))
+  (let ((mapper (find-mapper (header-host req))))
     (when (and (not mapper)
                *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri req)
@@ -81,7 +89,7 @@
               (process-route (car match-result)
                              (cdr match-result))))
           (setf (hunchentoot:return-code*)
-                hunchentoot:+HTTP-NOT-FOUND+)))))
+                hunchentoot:+HTTP-NOT-FOUND+)))))nnn
 
 
 ;;;; redirect
@@ -95,7 +103,7 @@
                                                   (hunchentoot:url-encode s)
                                                   s))
                                           args)))
-           (route (car (routes:match (find-mapper (hunchentoot:host))
+           (route (car (routes:match (find-mapper (header-host hunchentoot:*request*))
                                      url
                                      (acons :method :get nil))))
            (required-login-status (restas::route-required-login-status route)))

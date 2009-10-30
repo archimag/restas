@@ -41,7 +41,6 @@
        package)))
   
 (defun connect-plugin-instance (instance &optional (mapper *mapper*))
-;;  (error "~A" mapper)
   (with-slots (plugin context) instance
     (let ((plugin-routes (symbol-value (find-symbol "*ROUTES*" plugin))))
       (do-symbols (route-symbol plugin-routes)
@@ -70,18 +69,22 @@
 (defmacro define-site-plugin (name (plugin &optional (plugin-instance-class 'plugin-instance)) &body bindings)
   (let ((site-plugins (find-symbol "*SITE-PLUGINS*")))
     `(progn
-       (setf (gethash ',name ,site-plugins)
-           (let ((context (make-preserve-context)))
-             (iter (for (symbol value) in ',bindings)
-                   (context-add-variable context symbol)
-                   (setf (context-symbol-value context symbol)
-                         value))
-             (make-instance ',plugin-instance-class
-                            :plugin ',plugin
-                            :context context)))
+       (let ((context (make-preserve-context)))
+         (iter (for (symbol value) in ',bindings)
+               (context-add-variable context symbol)
+               (setf (context-symbol-value context symbol)
+                     value))
+         (setf (gethash ',name ,site-plugins)
+               (make-instance ',plugin-instance-class
+                              :plugin ',plugin
+                              :context context))
+         (let ((init-func (find-symbol "%PLUGIN-INITIALIZE-FUNCTION%" ',plugin)))
+           (when (and init-func
+                      (symbol-function init-func))
+             (with-context context
+               (funcall init-func)))))
        (eval-when (:execute)
-         (reconnect-all-sites))
-       )))
+         (reconnect-all-sites)))))
 
 
 (defmacro site-url (plugin-instance route-symbol &rest args)

@@ -61,3 +61,9 @@
                  (find-package package))
            package)))))
 
+
+;;;; define-initialization
+
+(defmacro define-initialization (&body body)
+  (let ((init-func-name (intern "%PLUGIN-INITIALIZE-FUNCTION%")))
+    `(defun ,init-func-name () ,@body)))
