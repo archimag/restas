@@ -99,7 +99,6 @@
                              such-that (fad:file-exists-p index-path))))
             (if *autoindex*
                 (funcall *autoindex-template*
-                         (directory-info path
-                                         relative-path))
+                         (directory-autoindex-info path relative-path))
                 hunchentoot:+http-not-found+))
         path)))
