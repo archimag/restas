@@ -73,7 +73,7 @@
          (iter (for (symbol value) in ',bindings)
                (context-add-variable context symbol)
                (setf (context-symbol-value context symbol)
-                     value))
+                     (eval value)))
          (setf (gethash ',name ,site-plugins)
                (make-instance ',plugin-instance-class
                               :plugin ',plugin
