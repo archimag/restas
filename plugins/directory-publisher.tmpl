@@ -1,5 +1,5 @@
-// directory-publisher.tmpl
 // -*- mode: html -*-
+// directory-publisher.tmpl
 
 {namespace restas.directory-publisher.view}
 
@@ -27,7 +27,7 @@
                         <a href="{$path.name}{if $path.type == 'Directory'}/{/if}">{$path.name}</a>{if $path.type == 'Directory'}/{/if}
                     </td>
                     <td class="m">{$path.lastModified}</td>
-                    <td class="s">{$path.size}</td>
+                    <td class="s">{$path.size ? $path.size : '- &nbsp;'}</td>
                     <td class="t">{$path.type}</td>
                 </tr>
             {/foreach}
