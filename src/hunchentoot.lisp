@@ -28,7 +28,6 @@
           (handler-bind ((error #'invoke-debugger))
             (funcall dispatcher request))))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-acceptor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,6 +45,23 @@
 (defmethod initialize-instance :after ((acceptor restas-acceptor) &key)
   (setf (hunchentoot:acceptor-request-dispatcher acceptor)
         'restas-dispatcher))
+
+(defmethod hunchentoot:accept-connections ((acceptor restas-acceptor))
+  (usocket:with-server-socket (listener (hunchentoot::acceptor-listen-socket acceptor))
+    (loop
+       (when (hunchentoot::acceptor-shutdown-p acceptor)
+         (return))
+       (ignore-errors
+         (when (usocket:wait-for-input listener :timeout hunchentoot::+new-connection-wait-time+)
+           (handler-case
+               (hunchentoot::when-let (client-connection (usocket:socket-accept listener))
+                 (hunchentoot::set-timeouts client-connection
+                                            (hunchentoot:acceptor-read-timeout acceptor)
+                                            (hunchentoot:acceptor-write-timeout acceptor))
+                 (hunchentoot:handle-incoming-connection (hunchentoot::acceptor-taskmaster acceptor)
+                                                         client-connection))
+             ;; ignore condition
+             (usocket:connection-aborted-error ())))))))
 
 (defmethod hunchentoot:acceptor-request-class ((acceptor restas-acceptor))
   'restas-request)
