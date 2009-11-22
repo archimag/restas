@@ -1,4 +1,10 @@
-;;;; example 2
+;;;; example-2.lisp
+;;;;
+;;;; This file is part of the RESTAS library, released under Lisp-LGPL.
+;;;; See file COPYING for details.
+;;;;
+;;;; Author: Moskvitin Andrey <archimag@gmail.com>
+
 
 (asdf:operate 'asdf:load-op :cl-who)
 (asdf:operate 'asdf:load-op :restas)
