@@ -13,7 +13,16 @@
            #:define-route
            #:define-plugin
            #:plugin-update
+
+           #:make-preserve-context
+           #:context-add-variable
+           #:context-remove-variable
+           #:context-symbol-value
+           #:with-context
+
            #:define-initialization
+           #:define-finalization
+           
            #:*route*
 
            #:plugin-instance
