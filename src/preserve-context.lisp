@@ -11,9 +11,10 @@
 (defun make-preserve-context ()
   (make-hash-table))
 
-(defun context-add-variable (context symbol)
+(defun context-add-variable (context symbol &optional value)
   (setf (gethash symbol context)
-        (symbol-value symbol)))
+        (or value
+            (symbol-value symbol))))
 
 (defun context-remove-variable (context symbol)
   (remhash symbol context))
