@@ -75,6 +75,10 @@
 (defmacro define-site-plugin (name (plugin &optional (plugin-instance-class 'plugin-instance)) &body bindings)
   (let ((site-plugins (find-symbol "*SITE-PLUGINS*")))
     `(progn
+       (let ((instance (gethash ',name ,site-plugins))
+             (finish-func (find-symbol "%PLUGIN-FINALIZE-FUNCTION%" ',plugin)))
+         (when (and instance finish-func (symbol-function finish-func))
+           (funcall finish-func (slot-value instance 'context))))
        (let ((context (make-preserve-context)))
          (iter (for (symbol value) in ',bindings)
                (context-add-variable context symbol)
@@ -87,8 +91,7 @@
          (let ((init-func (find-symbol "%PLUGIN-INITIALIZE-FUNCTION%" ',plugin)))
            (when (and init-func
                       (symbol-function init-func))
-             (with-context context
-               (funcall init-func)))))
+             (funcall init-func context))))
        (eval-when (:execute)
          (reconnect-all-sites)))))
 
