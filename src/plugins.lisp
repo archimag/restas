@@ -70,6 +70,10 @@
 
 ;;;; define-initialization
 
-(defmacro define-initialization (&body body)
+(defmacro define-initialization ((context) &body body)
   (let ((init-func-name (intern "%PLUGIN-INITIALIZE-FUNCTION%")))
-    `(defun ,init-func-name () ,@body)))
+    `(defun ,init-func-name (,context) ,@body)))
+
+(defmacro define-finalization ((context) &body body)
+  (let ((finish-func-name (intern "%PLUGIN-FINALIZE-FUNCTION%")))
+    `(defun ,finish-func-name (,context) ,@body)))
