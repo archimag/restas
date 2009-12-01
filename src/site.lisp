@@ -95,8 +95,7 @@
        (eval-when (:execute)
          (reconnect-all-sites)))))
 
-
-(defmacro site-url (plugin-instance route-symbol &rest args)
-  `(with-context (slot-value ,plugin-instance 'context)
-     (genurl ,route-symbol ,@args)))
+(defun site-url (plugin-instance route-symbol &rest args)
+  (with-context (slot-value plugin-instance 'context)
+     (apply 'genurl route-symbol args)))
 
