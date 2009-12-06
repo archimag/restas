@@ -52,19 +52,21 @@
         bindings)))
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
-  (with-slots (required-method required-login-status arbitrary-requirement) route
-    (and (if required-method
-             (eql (cdr (assoc :method bindings)) required-method)
-             t)
-         (case required-login-status
-           (:logged-on (assoc :user-login-name bindings))
-           (:not-logged-on (not (assoc :user-login-name bindings)))
-           ((nil) t)
-           (otherwise (error "unknow required login status: ~A" required-login-status)))
-         (if arbitrary-requirement
-             (let ((*bindings* bindings))
-               (funcall arbitrary-requirement))
-             t))))
+  (with-context (slot-value (slot-value route 'plugin-instance)
+                            'context)
+    (with-slots (required-method required-login-status arbitrary-requirement) route
+      (and (if required-method
+               (eql (cdr (assoc :method bindings)) required-method)
+               t)
+           (case required-login-status
+             (:logged-on (assoc :user-login-name bindings))
+             (:not-logged-on (not (assoc :user-login-name bindings)))
+             ((nil) t)
+             (otherwise (error "unknow required login status: ~A" required-login-status)))
+           (if arbitrary-requirement
+               (let ((*bindings* bindings))
+                 (funcall arbitrary-requirement))
+               t)))))
 
 (defmethod process-route ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'plugin-instance)
