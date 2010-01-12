@@ -20,7 +20,10 @@
   (remhash symbol context))
 
 (defun context-symbol-value (context symbol)
-  (gethash symbol context))
+  (multiple-value-bind (value present-p) (gethash symbol context)
+    (if present-p
+        value
+        (symbol-value symbol))))
 
 (defun (setf context-symbol-value) (newval context symbol)
   (setf (gethash symbol context)

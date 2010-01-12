@@ -33,6 +33,10 @@
 (defmethod adopt-route-result ((instance plugin-instance) obj)
   obj)
 
+(defmacro with-plugin-context (plugin-instance &body body)
+  `(with-context (slot-value ,plugin-instance 'context)
+     ,@body))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; site
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,7 +47,7 @@
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (let ((package (define-plugin ,name ,@args)))
        (eval `(defvar ,(intern "*SITE-PLUGINS*" package) (make-hash-table)))
-       (eval `(defvar ,(intern "*MAPPER*" package) (make-instance 'routes:mapper)))       
+       (eval `(defvar ,(intern "*MAPPER*" package) (make-instance 'routes:mapper)))
        package)))
   
 (defun connect-plugin-instance (instance &optional (mapper *mapper*))
@@ -67,6 +71,10 @@
   (iter (for site in *sites*)
         (let ((mapper (symbol-value (find-symbol "*MAPPER*" site))))
           (routes:reset-mapper mapper)
+          (connect-plugin-instance (make-instance 'plugin-instance
+                                                  :plugin site
+                                                  :context (make-preserve-context))
+                                   mapper)
           (iter (for (name instance) in-hashtable (symbol-value (find-symbol "*SITE-PLUGINS*" site)))
                 (connect-plugin-instance instance
                                          mapper)))))
@@ -96,6 +104,8 @@
          (reconnect-all-sites)))))
 
 (defun site-url (plugin-instance route-symbol &rest args)
-  (with-context (slot-value plugin-instance 'context)
-     (apply 'genurl route-symbol args)))
+  (if plugin-instance
+      (with-context (slot-value plugin-instance 'context)
+        (apply 'genurl route-symbol args))
+      (apply 'genurl route-symbol args)))
 

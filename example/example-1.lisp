@@ -13,9 +13,6 @@
 
 (in-package :restas.example-1)
 
-(restas:define-site-plugin  default (:restas.example-1))
-
-
 (define-route main ("" :method :get)
   (who:with-html-output-to-string (out)
     (:html
