@@ -26,8 +26,6 @@
            #:*route*
 
            #:plugin-instance
-           #:adopt-route-result
-           #:calculate-user-login
            #:with-plugin-context
 
            #:parse-host

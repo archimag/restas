@@ -12,7 +12,6 @@
 
 
 (defun plugin-update ()
-  ;;(reconnect-all-plugins))
   (reconnect-all-sites))
 
 
@@ -45,11 +44,7 @@
 (defgeneric process-route/impl (route bindings))
 
 (defmethod routes:route-extend-bindings ((route base-route) bindings)
-  (let ((login (calculate-user-login (slot-value route 'plugin-instance)
-                                     hunchentoot:*request*)))
-    (if login
-        (acons :user-login-name login bindings)
-        bindings)))
+  bindings)
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'plugin-instance)
@@ -72,79 +67,15 @@
   (with-context (slot-value (slot-value route 'plugin-instance)
                             'context)
     (let ((res (process-route/impl route bindings)))
-      (unless (pathnamep res)
-        (setf (hunchentoot:content-type*)
-              (or (route-content-type route)
-                  "text/html")))
-      (if (eql (route-protocol route) :http)
-          (adopt-route-result (slot-value route 'plugin-instance)
-                              res)
-          res))))
+      (cond
+        ((pathnamep res) (hunchentoot:handle-static-file res))
+        ((integerp res) (setf (hunchentoot:return-code*)
+                              res))
+        (t (setf (hunchentoot:content-type*)
+                 (or (route-content-type route)
+                     "text/html"))
+           res)))))
                                           
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (defclass filesystem-route (base-route)
-;;   ((path :initarg :path)))
-
-;; (defmethod process-route/impl ((route filesystem-route) bindings)
-;;   (pathname (restas::expand-text (slot-value route 'path)
-;;                                  bindings)))
-
-;; (defmacro define-filesystem-route (name template path &key overlay-master content-type login-status (method :get))
-;;   `(progn
-;;      (setf (get ',name :template)
-;;            '(parse-template/package ,template))
-;;      (setf (get ',name :initialize)
-;;            #'(lambda () (make-instance 'filesystem-route
-;;                                        :template (parse-template/package ,template)
-;;                                        :path (namestring (merge-pathnames ,path ,(symbol-value (find-symbol "*BASEPATH*" *package*))))
-;;                                        :overlay-master ,overlay-master
-;;                                        :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
-;;                                        :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
-;;                                        :required-login-status ',login-status
-;;                                        :required-method ,method)))
-;;      (intern (symbol-name ',name) (routes/package))
-;;      (eval-when (:execute)
-;;        (route-changed ',name))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; (defclass fs-xsl-route (filesystem-route)
-;;   ((xsl :initarg :xsl)
-;;    (xpath-functions :initarg :xpath-functions :initform nil)
-;;    (xslt-elements :initarg :xslt-elements :initform nil)))
-
-;; (defmethod process-route/impl ((route fs-xsl-route) bindings)
-;;   (let ((xpath:*lisp-xpath-functions* (symbol-value (slot-value route 'xpath-functions)))
-;;         (xslt:*lisp-xslt-elements* (symbol-value (slot-value route 'xslt-elements))))
-;;     (gp:object-register (xslt:transform (slot-value route 'xsl)
-;;                                         (call-next-method))
-;;                         *request-pool*)))
-  
-;; (defmacro define-fs-xsl-route (name template path xsl  &key overlay-master content-type login-status (method :get))
-;;   `(progn
-;;      (setf (get ',name :template)
-;;            '(parse-template/package ,template))
-;;      (setf (get ',name :initialize)
-;;            #'(lambda () (make-instance 'fs-xsl-route
-;;                                        :template (parse-template/package ,template)
-;;                                        :path (namestring (merge-pathnames ,path ,(symbol-value (find-symbol "*BASEPATH*" *package*))))
-;;                                        :xsl ,xsl
-;;                                        :xpath-functions (find-symbol "*XPATH-FUNCTIONS*" ,*package*)
-;;                                        :xslt-elements (find-symbol "*XSLT-ELEMENTS*" ,*package*)
-;;                                        :overlay-master ,overlay-master
-;;                                        :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
-;;                                        :user-login (find-symbol "COMPUTE-USER-LOGIN-NAME" ,*package*)
-;;                                        :required-login-status ,login-status
-;;                                        :required-method ,method)))
-;;      (intern (symbol-name ',name) (routes/package))
-;;      (eval-when (:execute)
-;;        (route-changed ',name))))
-
-  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defclass simple-route (base-route)

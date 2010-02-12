@@ -12,26 +12,26 @@
 ;;;; plugin-instance
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defgeneric calculate-user-login (instance request))
+;; (defgeneric calculate-user-login (instance request))
 
-(defgeneric adopt-route-result (instance obj))
+;; (defgeneric adopt-route-result (instance obj))
 
 (defclass plugin-instance ()
   ((plugin :initarg :plugin :initform nil)   
    (context :initarg :context :initform (make-preserve-context))))
 
-(defmethod calculate-user-login ((instance plugin-instance) request)
-  nil)
+;; (defmethod calculate-user-login ((instance plugin-instance) request)
+;;   nil)
 
-(defmethod adopt-route-result ((instance plugin-instance) (code integer))
-  (setf (hunchentoot:return-code*)
-        code))
+;; (defmethod adopt-route-result ((instance plugin-instance) (code integer))
+;;   (setf (hunchentoot:return-code*)
+;;         code))
 
-(defmethod adopt-route-result ((instance plugin-instance) (path pathname))
-  (hunchentoot:handle-static-file path))
+;; (defmethod adopt-route-result ((instance plugin-instance) (path pathname))
+;;   (hunchentoot:handle-static-file path))
 
-(defmethod adopt-route-result ((instance plugin-instance) obj)
-  obj)
+;; (defmethod adopt-route-result ((instance plugin-instance) obj)
+;;   obj)
 
 (defmacro with-plugin-context (plugin-instance &body body)
   `(with-context (slot-value ,plugin-instance 'context)

@@ -23,7 +23,7 @@
        (let ((package (defpackage ,name (:use ,@use) (:export #:*baseurl* ,@export))))
          (flet ((set-package-var (vname &optional value)
                   (eval `(defparameter ,(intern vname package) ,value))))
-           (iter (for s in '(*request-pool* *bindings* genurl defin-route))
+           (iter (for s in (list '*request-pool* '*bindings* 'genurl 'define-route))
                  (import s package))
            (set-package-var "*ROUTES*" (defpackage ,impl-package-name (:use)))
            (set-package-var "*BASEURL*")
