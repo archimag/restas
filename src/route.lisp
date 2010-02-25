@@ -43,9 +43,6 @@
 
 (defgeneric process-route/impl (route bindings))
 
-(defmethod routes:route-extend-bindings ((route base-route) bindings)
-  bindings)
-
 (defmethod routes:route-check-conditions ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'plugin-instance)
                             'context)
