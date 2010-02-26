@@ -100,25 +100,14 @@
 ;;;; redirect
 
 (defun redirect (route-symbol &rest args)
-  (flet ((username ()
-           (cdr (assoc :user-login-name restas:*bindings*))))
-    (let* ((url (apply-format-aux route-symbol
-                                  (mapcar #'(lambda (s)
-                                              (if (stringp s)
-                                                  (hunchentoot:url-encode s)
-                                                  s))
-                                          args)))
-           (route (car (routes:match (find-mapper (header-host hunchentoot:*request*))
-                                     url
-                                     (acons :method :get nil))))
-           (required-login-status (restas::route-required-login-status route)))
-      (hunchentoot:redirect (if (or (null required-login-status)
-                                    (and (eql required-login-status :logged-on)
-                                         (username))
-                                    (and (eql required-login-status :not-logged-on)
-                                         (null (username))))
-                                (hunchentoot:url-decode url)
-                                "/")))))
+  (hunchentoot:redirect 
+   (hunchentoot:url-decode
+    (apply-format-aux route-symbol
+                      (mapcar #'(lambda (s)
+                                  (if (stringp s)
+                                      (hunchentoot:url-encode s)
+                                      s))
+                              args)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
