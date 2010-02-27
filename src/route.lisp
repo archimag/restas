@@ -34,7 +34,7 @@
   (symbol-value (find-symbol "*ROUTES*" *package*)))
 
 (defclass base-route (routes:route)
-  ((plugin-instance :initarg :plugin-instance :initform nil)
+  ((submodule :initarg :submodule :initform nil)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)))
@@ -42,7 +42,7 @@
 (defgeneric process-route/impl (route bindings))
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
-  (with-context (slot-value (slot-value route 'plugin-instance)
+  (with-context (slot-value (slot-value route 'submodule)
                             'context)
     (with-slots (required-method arbitrary-requirement) route
       (and (if required-method
@@ -54,7 +54,7 @@
                t)))))
 
 (defmethod process-route ((route base-route) bindings)
-  (with-context (slot-value (slot-value route 'plugin-instance)
+  (with-context (slot-value (slot-value route 'submodule)
                             'context)
     (let ((res (process-route/impl route bindings)))
       (cond

@@ -23,10 +23,9 @@
                (:file "core" :depends-on ("packages"))
                (:file "preserve-context" :depends-on ("core"))               
                (:file "route" :depends-on ("preserve-context"))
-               (:file "site" :depends-on ("route"))
-               (:file "hunchentoot" :depends-on ("site"))
-               (:file "expand-text" :depends-on ("core"))
-               (:file "plugins" :depends-on ("route"))))
+               (:file "module" :depends-on ("route"))
+               (:file "vhost" :depends-on ("module"))
+               (:file "hunchentoot" :depends-on ("vhost"))))
      (:module "optional"
               :components ((:file "optional"))
               :depends-on ("src"))))

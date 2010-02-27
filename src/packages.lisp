@@ -11,7 +11,7 @@
   (:export #:*request-pool*
            #:*bindings*
            #:define-route
-           #:define-plugin
+           #:define-module
            #:plugin-update
 
            #:make-preserve-context
@@ -25,8 +25,9 @@
            
            #:*route*
 
-           #:plugin-instance
-           #:with-plugin-context
+           #:submodule
+           #:connect-submodule
+           #:with-submodule-context
 
            #:parse-host
            #:start-site
@@ -40,14 +41,11 @@
            #:apply-format-aux
            #:redirect
 
-           #:*chrome-mapper*
            #:restas-request-bindings
            #:process-route
 
-           #:*sites*
-           #:site
-           #:defsite
-           #:define-site-plugin
+           #:defhost
+           #:define-submodule
            #:*default-host-redirect*
 
            #:site-url
