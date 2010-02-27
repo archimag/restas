@@ -25,17 +25,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; routes
 
-(defun parse-template/package (tmpl package)
+(defun parse-template/package (tmpl package &optional parse-vars)
   (concatenate 'list
                (symbol-value (find-symbol "*BASEURL*" package))
-               (routes:parse-template tmpl)))
+               (routes:parse-template tmpl parse-vars)))
   
 (defun routes/package ()
   (symbol-value (find-symbol "*ROUTES*" *package*)))
 
 (defclass base-route (routes:route)
   ((plugin-instance :initarg :plugin-instance :initform nil)
-   (protocol :initarg :protocol :initform :http :reader route-protocol)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)))
@@ -47,7 +46,7 @@
                             'context)
     (with-slots (required-method arbitrary-requirement) route
       (and (if required-method
-               (eql (cdr (assoc :method bindings)) required-method)
+               (eql (hunchentoot:request-method*) required-method)
                t)
            (if arbitrary-requirement
                (let ((*bindings* bindings))
@@ -81,7 +80,7 @@
                 :handler)))
 
 
-(defmacro define-route (name (template &key (protocol :http) content-type (method :get) requirement) &body body)
+(defmacro define-route (name (template &key content-type (method :get) requirement parse-vars) &body body)
   (let* ((package (symbol-package name))
          (parsed-template (parse-template/package (if (stringp template)
                                                       template
@@ -101,14 +100,11 @@
              '(parse-template/package ,template ,package))
        (setf (get ',name :initialize)
              #'(lambda () (make-instance 'simple-route
-                                         :template (parse-template/package ,template ,package)
+                                         :template (parse-template/package ,template ,package ,parse-vars)
                                          :symbol ',name
-                                         :protocol ,protocol
                                          :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
                                          :required-method ,method
                                          :arbitrary-requirement ,requirement)))
-       (setf (get ',name :protocol)
-             ,protocol)
        (intern (symbol-name ',name) (routes/package))
        (export ',name)
        (eval-when (:execute)

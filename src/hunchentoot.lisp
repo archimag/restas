@@ -79,15 +79,15 @@
   (cdr (assoc :host (hunchentoot:headers-in request))))
 
 (defun restas-dispatcher (req)
-  (let ((mapper (find-mapper (header-host req))))
+  (let ((mapper (find-mapper (header-host req)))
+        (hunchentoot:*request* req))
     (when (and (not mapper)
                *default-host-redirect*)
-      (hunchentoot:redirect (hunchentoot:request-uri req)
+      (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
     (let ((match-result (if mapper
                             (routes:match mapper
-                                          (hunchentoot:request-uri req)
-                                          (acons :method (hunchentoot:request-method hunchentoot:*request*) nil)))))
+                                          (hunchentoot:request-uri*)))))
       (if match-result
           (gp:with-garbage-pool (*request-pool*)
             (let ((*bindings* (cdr match-result)))
