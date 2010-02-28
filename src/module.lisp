@@ -31,7 +31,7 @@
 
 (defclass submodule ()
   ((module :initarg :module :initform nil)
-   (context :initarg :context :initform (make-preserve-context))
+   (context :initarg :context :initform (make-context))
    (parent :initarg :parent :initform nil)))
 
 (defmacro with-submodule-context (submodule &body body)
@@ -106,7 +106,7 @@
          (when submodule
            (finalize-module-instance ',module
                                      (slot-value submodule 'context))))
-       (let ((context (make-preserve-context ,@bindings)))
+       (let ((context (make-context ,@bindings)))
          (setf (gethash ',name ,submodules)
                (make-instance 'submodule
                               :module ',module

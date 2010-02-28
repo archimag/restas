@@ -1,4 +1,4 @@
-;;;; preserve-context.lisp
+;;;; context.lisp
 ;;;;
 ;;;; This file is part of the RESTAS library, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
@@ -26,7 +26,7 @@
   (setf (gethash symbol context)
         newval))
 
-(defmacro make-preserve-context (&body bindings)
+(defmacro make-context (&body bindings)
   `(let ((context (make-hash-table)))
      (iter (for (symbol value) in ',bindings)
            (context-add-variable context symbol)
@@ -45,10 +45,11 @@
                  (push v values))
            (progv symbols values
              (unwind-protect
-                  (progn ,@body)
-               (iter (for s in symbols)
-                     (setf (gethash s cntx)
-                           (symbol-value s))))))
+                  (progn ,@body))))
          (progn ,@body))))
+
+;; (iter (for s in symbols)
+;;       (setf (gethash s cntx)
+;;             (symbol-value s)))
 
 

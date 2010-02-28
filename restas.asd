@@ -20,8 +20,8 @@
     ((:module "src"
               :components
               ((:file "packages")
-               (:file "preserve-context" :depends-on ("packages"))
-               (:file "module" :depends-on ("preserve-context"))
+               (:file "context" :depends-on ("packages"))
+               (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module"))
                (:file "hunchentoot" :depends-on ("module"))))
      (:module "optional"

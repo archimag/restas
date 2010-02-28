@@ -14,7 +14,7 @@
            #:define-module
            #:plugin-update
 
-           #:make-preserve-context
+           #:make-context
            #:context-add-variable
            #:context-remove-variable
            #:context-symbol-value
