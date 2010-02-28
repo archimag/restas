@@ -27,11 +27,11 @@
 
 (defun parse-template/package (tmpl package &optional parse-vars)
   (concatenate 'list
-               (symbol-value (find-symbol "*BASEURL*" package))
+               (symbol-value (find-symbol +baseurl-symbol+ package))
                (routes:parse-template tmpl parse-vars)))
   
 (defun routes/package ()
-  (symbol-value (find-symbol "*ROUTES*" *package*)))
+  (symbol-value (find-symbol +routes-symbol+ *package*)))
 
 (defclass base-route (routes:route)
   ((submodule :initarg :submodule :initform nil)
@@ -102,7 +102,7 @@
              #'(lambda () (make-instance 'simple-route
                                          :template (parse-template/package ,template ,package ,parse-vars)
                                          :symbol ',name
-                                         :content-type (or ,content-type (symbol-value (find-symbol "*DEFAULT-CONTENT-TYPE*" ,*package*)))
+                                         :content-type (or ,content-type "text/html")
                                          :required-method ,method
                                          :arbitrary-requirement ,requirement)))
        (intern (symbol-name ',name) (routes/package))

@@ -39,8 +39,13 @@
   (or (hunchentoot:header-in :x-forwarded-host request)
       (call-next-method)))
 
-(defclass restas-acceptor (debuggable-acceptor)
-  ((mappers :initform (make-hash-table :test 'equal))))
+(defclass vhost ()
+  ((host :initarg :host :reader vhost-host)
+   (mapper :initform (make-instance 'routes:mapper))
+   (modules :initform nil)))
+
+(defclass restas-acceptor (debuggable-acceptor) 
+  ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
 
 (defmethod initialize-instance :after ((acceptor restas-acceptor) &key)
   (setf (hunchentoot:acceptor-request-dispatcher acceptor)
@@ -55,46 +60,34 @@
 
 (defparameter *acceptors* nil)
 
-(defparameter *hosts-mappers* (make-hash-table :test 'equal))
-
 (defparameter *default-host-redirect* nil)
-
-(defun parse-host (host)
-  (if host
-      (let ((hostname/port (split-sequence:split-sequence #\: host)))
-        (list (if (string= (first hostname/port) "")
-                  nil
-                  (first hostname/port))
-              (parse-integer (or (second hostname/port) "80"))))
-      (list nil 80)))
-
-(defun find-mapper (host)
-  (let ((hostname/port (parse-host host)))
-    (or (gethash hostname/port *hosts-mappers*)
-        (gethash (list nil (second hostname/port))
-                 *hosts-mappers*))))
-
 
 (defun header-host (request)
   (cdr (assoc :host (hunchentoot:headers-in request))))
 
-(defun restas-dispatcher (req)
-  (let ((mapper (find-mapper (header-host req)))
+(defun restas-dispatcher (req &aux (host (header-host req)))
+  (let ((vhost (or (find host
+                         (restas-acceptor-vhosts hunchentoot:*acceptor*)
+                         :key #'vhost-host
+                         :test #'string=)
+                   (find-if #'null
+                            (restas-acceptor-vhosts hunchentoot:*acceptor*)
+                            :key #'vhost-host)))
         (hunchentoot:*request* req))
-    (when (and (not mapper)
+    (when (and (not vhost)
                *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
-    (let ((match-result (if mapper
-                            (routes:match mapper
-                                          (hunchentoot:request-uri*)))))
-      (if match-result
-          (gp:with-garbage-pool (*request-pool*)
-            (let ((*bindings* (cdr match-result)))
-              (process-route (car match-result)
-                             (cdr match-result))))
-          (setf (hunchentoot:return-code*)
-                hunchentoot:+HTTP-NOT-FOUND+)))))
+    (when vhost
+      (let ((match-result (routes:match (slot-value vhost 'mapper)
+                                        (hunchentoot:request-uri*))))
+        (if match-result
+            (gp:with-garbage-pool (*request-pool*)
+              (let ((*bindings* (cdr match-result)))
+                (process-route (car match-result)
+                               (cdr match-result))))
+            (setf (hunchentoot:return-code*)
+                  hunchentoot:+HTTP-NOT-FOUND+))))))
 
 
 ;;;; redirect
@@ -109,4 +102,46 @@
                                       s))
                               args)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; start-site
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun start-site (site &key hostname (port 80) 
+                   &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
+  (let* ((acceptor (or (find port
+                            *acceptors*
+                            :key #'hunchentoot:acceptor-port)
+                      (car (push (hunchentoot:start (make-instance 'restas-acceptor
+                                                                   :port port))
+                                 *acceptors*))))
+         (vhost (or (if hostname/port
+                        (find hostname/port
+                              (restas-acceptor-vhosts acceptor)
+                              :key #'vhost-host
+                              :test #'string=)
+                        (find-if #'null
+                                 (restas-acceptor-vhosts acceptor)
+                                 :key #'vhost-host))
+                    (car (push (make-instance 'vhost
+                                              :host hostname/port)
+                               (restas-acceptor-vhosts acceptor))))))
+    (push (make-instance 'submodule
+                         :module site)
+          (slot-value vhost 'modules))
+    (reconnect-all-sites)))
+    
+(defun reconnect-all-sites ()
+  (iter (for acceptor in *acceptors*)
+        (iter (for vhost in (restas-acceptor-vhosts acceptor))
+              (let ((mapper (slot-value vhost 'mapper)))
+                (routes:reset-mapper mapper)
+                (iter (for module in (slot-value vhost 'modules))
+                      (connect-submodule module mapper))))))
+
+(defun site-url (submodule route-symbol &rest args)
+  (if submodule
+      (with-context (slot-value submodule 'context)
+        (apply 'genurl route-symbol args))
+      (apply 'genurl route-symbol args)))
+    
+    

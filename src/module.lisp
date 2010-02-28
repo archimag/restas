@@ -14,7 +14,7 @@
     (declare (ignore module context)))
   (:method ((module symbol) context)
     (unless (keywordp module)
-      (initialize-module-instance (intern (package-name (find-package module)) :keyword)
+      (initialize-module-instance (find-package module)
                                   context))))
 
 (defgeneric finalize-module-instance (module context)
@@ -23,7 +23,7 @@
     (declare (ignore module context)))
   (:method ((module symbol) context)
     (unless (keywordp module)
-      (finalize-module-instance (intern (package-name (find-package module)) :keyword)
+      (finalize-module-instance (find-package module)
                                 context))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,7 +46,7 @@
 
 (defun submodule-routes (submodule)
   (with-submodule-context submodule
-    (iter (for route in (module-routes (print (slot-value submodule 'module))))
+    (iter (for route in (module-routes (slot-value submodule 'module)))
           (unless (slot-value route 'submodule)
             (setf (slot-value route 'submodule)
                   submodule))
@@ -83,11 +83,11 @@
            *package*)))))
 
 (defmacro define-initialization ((context) &body body)
-  `(defmethod initialize-module-instance ((module (eql ,(intern (package-name *package*) :keyword))) ,context)
+  `(defmethod initialize-module-instance ((module (eql ,*package*)) ,context)
      ,@body))
 
 (defmacro define-finalization ((context) &body body)
-  `(defmethod finalize-module-instance ((module (eql ,(intern (package-name *package*) :keyword))) ,context)
+  `(defmethod finalize-module-instance ((module (eql ,*package*)) ,context)
      ,@body))
 
 (defmethod module-routes ((module package))

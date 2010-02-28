@@ -21,11 +21,10 @@
               :components
               ((:file "packages")
                (:file "core" :depends-on ("packages"))
-               (:file "preserve-context" :depends-on ("core"))               
-               (:file "route" :depends-on ("preserve-context"))
-               (:file "module" :depends-on ("route"))
-               (:file "vhost" :depends-on ("module"))
-               (:file "hunchentoot" :depends-on ("vhost"))))
+               (:file "preserve-context" :depends-on ("core"))
+               (:file "module" :depends-on ("preserve-context"))
+               (:file "route" :depends-on ("module"))
+               (:file "hunchentoot" :depends-on ("module"))))
      (:module "optional"
               :components ((:file "optional"))
               :depends-on ("src"))))
