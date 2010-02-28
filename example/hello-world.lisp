@@ -7,7 +7,7 @@
 
 (asdf:operate 'asdf:load-op '#:restas)
 
-(restas:defsite #:restas.hello-world
+(restas:define-module #:restas.hello-world
   (:use :cl))
 
 (in-package #:restas.hello-world)

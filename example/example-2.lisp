@@ -9,7 +9,7 @@
 (asdf:operate 'asdf:load-op :cl-who)
 (asdf:operate 'asdf:load-op :restas)
 
-(restas:defsite :restas.example-2
+(restas:define-module :restas.example-2
   (:use :cl :iter))
 
 (in-package :restas.example-2)

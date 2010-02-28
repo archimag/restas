@@ -8,7 +8,7 @@
 (asdf:operate 'asdf:load-op :cl-who)
 (asdf:operate 'asdf:load-op :restas)
 
-(restas:defsite :restas.example-3
+(restas:define-module :restas.example-3
   (:use :cl))
 
 (in-package :restas.example-3)
