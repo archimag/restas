@@ -25,6 +25,10 @@
       (finalize-module-instance (find-package module)
                                 context))))
 
+(defparameter +routes-symbol+ "*ROUTES*")
+(defparameter +baseurl-symbol+ "*BASEURL*")
+(defparameter +submodules-symbol+ "*SUBMODULES*")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; submodule
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,33 +41,46 @@
 (defmacro with-submodule-context (submodule &body body)
   `(with-context (slot-value ,submodule 'context)
      ,@body))
+
+(defun submodule-baseurl (submodule)
+  (with-submodule-context submodule
+    (symbol-value (find-symbol +baseurl-symbol+
+                               (slot-value submodule 'module)))))
+
+(defun submodule-full-baseurl (submodule)
+  (let ((prefix (submodule-baseurl submodule))
+        (parent (slot-value submodule 'parent)))
+    (if parent
+        (concatenate 'list
+                     (submodule-full-baseurl parent)
+                     prefix)
+        prefix)))
+
+(defun submodule-toplevel (submodule)
+  (let ((parent (slot-value submodule 'parent)))
+    (if parent
+        (submodule-toplevel parent)
+        submodule)))
     
-(defgeneric module-routes (module)
+(defgeneric module-routes (module submodule)
   (:documentation "List routes of the module")
-  (:method ((module symbol))
-    (module-routes (find-package module))))
+  (:method ((module symbol) submodule)
+    (module-routes (find-package module)
+                   submodule)))
 
 (defun submodule-routes (submodule)
   (with-submodule-context submodule
-    (iter (for route in (module-routes (slot-value submodule 'module)))
-          (unless (slot-value route 'submodule)
-            (setf (slot-value route 'submodule)
-                  submodule))
+    (iter (for route in (module-routes (slot-value submodule 'module)
+                                       submodule))
           (collect route))))
-
 
 (defun connect-submodule (submodule mapper)
   (iter (for route in (submodule-routes submodule))
           (routes:connect mapper route)))
-  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; package as module
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defparameter +routes-symbol+ "*ROUTES*")
-(defparameter +baseurl-symbol+ "*BASEURL*")
-(defparameter +submodules-symbol+ "*SUBMODULES*")
 
 (defmacro define-module (name &rest options)
   (let* ((use (cdr (assoc :use options)))
@@ -89,15 +106,17 @@
   `(defmethod finalize-module-instance ((module (eql ,*package*)) ,context)
      ,@body))
 
-(defmethod module-routes ((module package))
+(defmethod module-routes ((module package) submodule)
   (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
                                    (collect (funcall (get (find-symbol (symbol-name route-symbol)
                                                                        module)
-                                                          :initialize))))
-                             (let ((submodules (symbol-value (find-symbol +submodules-symbol+ module))))
-                               (if submodules
-                                   (iter (for (key submodule) in-hashtable submodules)
-                                         (collect (submodule-routes submodule))))))))
+                                                          :initialize)
+                                                     submodule)))
+                             (iter (for (key sub) in-hashtable (symbol-value (find-symbol +submodules-symbol+ module)))
+                                   (collect (submodule-routes (make-instance 'submodule
+                                                                             :module (slot-value sub 'module)
+                                                                             :context (slot-value sub 'context)
+                                                                             :parent submodule)))))))
 
 (defmacro define-submodule (name (module) &body bindings)
   (let ((submodules (find-symbol +submodules-symbol+)))

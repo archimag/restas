@@ -11,6 +11,27 @@
 (setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; redirect
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun apply-format-aux (format args)
+  (if (symbolp format)
+      (apply #'restas:genurl format args)
+      (if args
+          (apply #'format nil (cons format args))
+          format)))
+
+(defun redirect (route-symbol &rest args)
+  (hunchentoot:redirect 
+   (hunchentoot:url-decode
+    (apply-format-aux route-symbol
+                      (mapcar #'(lambda (s)
+                                  (if (stringp s)
+                                      (hunchentoot:url-encode s)
+                                      s))
+                              args)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; debuggable-acceptor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -58,9 +79,9 @@
 ;; dispatcher
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *acceptors* nil)
-
 (defparameter *default-host-redirect* nil)
+
+(defvar *request-pool*)
 
 (defun header-host (request)
   (cdr (assoc :host (hunchentoot:headers-in request))))
@@ -89,18 +110,11 @@
             (setf (hunchentoot:return-code*)
                   hunchentoot:+HTTP-NOT-FOUND+))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; start
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; redirect
-
-(defun redirect (route-symbol &rest args)
-  (hunchentoot:redirect 
-   (hunchentoot:url-decode
-    (apply-format-aux route-symbol
-                      (mapcar #'(lambda (s)
-                                  (if (stringp s)
-                                      (hunchentoot:url-encode s)
-                                      s))
-                              args)))))
+(defparameter *acceptors* nil)
 
 (defun reconnect-all-routes ()
   (iter (for acceptor in *acceptors*)
@@ -135,12 +149,5 @@
                          :context context)
           (slot-value vhost 'modules))
     (reconnect-all-routes)))
-    
-
-(defun site-url (submodule route-symbol &rest args)
-  (if submodule
-      (with-context (slot-value submodule 'context)
-        (apply 'genurl route-symbol args))
-      (apply 'genurl route-symbol args)))
     
     

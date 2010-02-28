@@ -12,7 +12,6 @@
            #:*bindings*
            #:define-route
            #:define-module
-           #:plugin-update
 
            #:make-context
            #:context-add-variable
@@ -32,11 +31,10 @@
            #:parse-host
            #:start
            
-           #:reconnect-all-plugins
-           #:expand-text
-           #:expand-file
+           #:reconnect-all-routes
 
            #:genurl
+           #:genurl-toplevel
            #:genurl-with-host
            #:apply-format-aux
            #:redirect
@@ -44,14 +42,5 @@
            #:restas-request-bindings
            #:process-route
 
-           #:defhost
            #:define-submodule
-           #:*default-host-redirect*
-
-           #:site-url))
-
-
-(in-package :restas)
-
-(defvar *request-pool*)
-(defvar *bindings*)
+           #:*default-host-redirect*))
