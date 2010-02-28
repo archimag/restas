@@ -8,9 +8,6 @@
 
 (in-package :restas)
 
-(defun make-preserve-context ()
-  (make-hash-table))
-
 (defun context-add-variable (context symbol &optional value)
   (setf (gethash symbol context)
         (or value
@@ -28,6 +25,15 @@
 (defun (setf context-symbol-value) (newval context symbol)
   (setf (gethash symbol context)
         newval))
+
+(defmacro make-preserve-context (&body bindings)
+  `(let ((context (make-hash-table)))
+     (iter (for (symbol value) in ',bindings)
+           (context-add-variable context symbol)
+           (setf (context-symbol-value context symbol)
+                 (eval value)))
+     context))
+
 
 (defmacro with-context (context &body body)
   `(let ((cntx ,context))

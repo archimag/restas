@@ -5,7 +5,6 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-
 (in-package #:restas)
 
 (defgeneric initialize-module-instance (module context)
@@ -107,11 +106,7 @@
          (when submodule
            (finalize-module-instance ',module
                                      (slot-value submodule 'context))))
-       (let ((context (make-preserve-context)))
-         (iter (for (symbol value) in ',bindings)
-               (context-add-variable context symbol)
-               (setf (context-symbol-value context symbol)
-                     (eval value)))
+       (let ((context (make-preserve-context ,@bindings)))
          (setf (gethash ',name ,submodules)
                (make-instance 'submodule
                               :module ',module

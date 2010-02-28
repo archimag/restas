@@ -10,16 +10,6 @@
 
 (defgeneric process-route (route bindings))
 
-
-(defun plugin-update ()
-  (reconnect-all-sites))
-
-
-(defun route-changed (route)
-  (declare (ignore route))
-  (plugin-update))
-
-
 (defvar *route* nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,7 +98,7 @@
        (intern (symbol-name ',name) (routes/package))
        (export ',name)
        (eval-when (:execute)
-         (route-changed ',name)))))
+         (reconnect-all-sites)))))
 
 ;;; generate-route-url
 

@@ -48,14 +48,10 @@
            #:define-submodule
            #:*default-host-redirect*
 
-           #:site-url
-           ))
+           #:site-url))
 
-
-(defpackage :restas.plugin
-  (:use :cl))
 
 (in-package :restas)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *request-pool*))
+(defvar *request-pool*)
+(defvar *bindings*)
