@@ -44,4 +44,4 @@
             ((:a :href (restas:genurl 'main)) "Try again"))))
         (restas:redirect 'main))))
 
-(restas:start-site :restas.example-3 :port 8080)
+(restas:start :restas.example-3 :port 8080)

@@ -113,4 +113,4 @@
                               :context context))
          (initialize-module-instance ',module context))
        (eval-when (:execute)
-         (reconnect-all-sites)))))
+         (reconnect-all-routes)))))

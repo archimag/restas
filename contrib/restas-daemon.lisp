@@ -340,10 +340,10 @@
 (loop
    for site in *sites*
    do (if (consp site)
-          (restas:start-site (first site)
-                             :hostname (second site)
-                             :port (third site))
-          (restas:start-site site)))
+          (restas:start (first site)
+                        :hostname (second site)
+                        :port (third site))
+          (restas:start site)))
 
 (when *as-daemon*
   (sb-sys:enable-interrupt sb-posix:sigusr1

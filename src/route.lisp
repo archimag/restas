@@ -98,7 +98,7 @@
        (intern (symbol-name ',name) (routes/package))
        (export ',name)
        (eval-when (:execute)
-         (reconnect-all-sites)))))
+         (reconnect-all-routes)))))
 
 ;;; generate-route-url
 

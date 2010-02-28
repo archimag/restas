@@ -30,4 +30,4 @@
                     (hunchentoot:post-parameter "message"))))
       ((:a :href (restas:genurl 'main)) "Try again")))))
 
-(restas:start-site :restas.example-1 :port 8080)
+(restas:start :restas.example-1 :port 8080)

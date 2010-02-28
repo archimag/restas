@@ -102,12 +102,17 @@
                                       s))
                               args)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; start-site
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun reconnect-all-routes ()
+  (iter (for acceptor in *acceptors*)
+        (iter (for vhost in (restas-acceptor-vhosts acceptor))
+              (let ((mapper (slot-value vhost 'mapper)))
+                (routes:reset-mapper mapper)
+                (iter (for module in (slot-value vhost 'modules))
+                      (connect-submodule module mapper))))))
 
-(defun start-site (site &key hostname (port 80) 
-                   &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
+
+(defun start (module &key hostname (port 80) (context (make-context))
+              &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
   (let* ((acceptor (or (find port
                             *acceptors*
                             :key #'hunchentoot:acceptor-port)
@@ -126,17 +131,11 @@
                                               :host hostname/port)
                                (restas-acceptor-vhosts acceptor))))))
     (push (make-instance 'submodule
-                         :module site)
+                         :module module
+                         :context context)
           (slot-value vhost 'modules))
-    (reconnect-all-sites)))
+    (reconnect-all-routes)))
     
-(defun reconnect-all-sites ()
-  (iter (for acceptor in *acceptors*)
-        (iter (for vhost in (restas-acceptor-vhosts acceptor))
-              (let ((mapper (slot-value vhost 'mapper)))
-                (routes:reset-mapper mapper)
-                (iter (for module in (slot-value vhost 'modules))
-                      (connect-submodule module mapper))))))
 
 (defun site-url (submodule route-symbol &rest args)
   (if submodule

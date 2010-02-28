@@ -15,4 +15,4 @@
 (define-route main ("")
   "<h1>Hello world!</h1>")
 
-(restas:start-site '#:restas.hello-world :port 8080)
+(restas:start '#:restas.hello-world :port 8080)
