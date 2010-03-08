@@ -55,8 +55,9 @@
     (call-next-method)))
 
 (defmethod process-route/impl ((route simple-route) bindings)
-  (funcall (get (slot-value route 'symbol)
-                :handler)))
+  (let ((*bindings* bindings))
+    (funcall (get (slot-value route 'symbol)
+                  :handler))))
 
 
 (defmacro define-route (name (template &key content-type (method :get) requirement parse-vars) &body body)
