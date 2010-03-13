@@ -108,10 +108,9 @@
 
 (defmethod module-routes ((module package) submodule)
   (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
-                                   (collect (funcall (get (find-symbol (symbol-name route-symbol)
-                                                                       module)
-                                                          :initialize)
-                                                     submodule)))
+                                   (collect (create-route-from-symbol (find-symbol (symbol-name route-symbol)
+                                                                                   module)
+                                                                      submodule )))
                              (iter (for (key sub) in-hashtable (symbol-value (find-symbol +submodules-symbol+ module)))
                                    (collect (submodule-routes (make-instance 'submodule
                                                                              :module (slot-value sub 'module)

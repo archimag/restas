@@ -56,11 +56,11 @@
 
 (defmethod process-route/impl ((route simple-route) bindings)
   (let ((*bindings* bindings))
-    (funcall (get (slot-value route 'symbol)
-                  :handler))))
+    (funcall (slot-value route 'symbol))))
 
-
-(defmacro define-route (name (template &key content-type (method :get) requirement parse-vars) &body body)
+(defmacro define-route (name 
+                        (template &key (content-type "text/html") (method :get) requirement parse-vars)
+                        &body body)
   (let* ((variables (iter (for var in (routes.unify:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
                                          (list 'cdr (list 'assoc var '*bindings*))))))
@@ -68,31 +68,38 @@
                            `((let (,@variables) ,@body))
                            `(,@body))))
     `(progn
-       (setf (get ',name :handler)
-             #'(lambda ()
-                 ,@handler-body))
-       (setf (get ',name :template)
-             (routes:parse-template ,template))
-       (setf (get ',name :initialize)
-             #'(lambda (submodule)
-                 (make-instance 'simple-route
-                                :template (concatenate 'list
-                                                       (submodule-full-baseurl submodule)
-                                                       (routes:parse-template ,template ,parse-vars))
-                                :symbol ',name
-                                :content-type (or ,content-type "text/html")
-                                :required-method ,method
-                                :arbitrary-requirement ,requirement
-                                :submodule submodule)))
+       (defun ,name ()
+         ,@handler-body)
+       (setf (symbol-plist ',name)
+             (list :template ,template
+                   :method ,method
+                   :content-type ,content-type
+                   :parse-vars ,parse-vars
+                   :requirement ,requirement))
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
        (eval-when (:execute)
          (reconnect-all-routes)))))
 
+(defun create-route-from-symbol (symbol submodule)
+  (make-instance 'simple-route
+                 :template (concatenate 'list
+                                        (submodule-full-baseurl submodule)
+                                        (routes:parse-template (get symbol :template)
+                                                               (get symbol :parse-vars)))
+                 :symbol symbol
+                 :content-type (get symbol :content-type)
+                 :required-method (get symbol :method)
+                 :arbitrary-requirement (get symbol :requirement)
+                 :submodule submodule))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; generate url by route
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun route-symbol-template (route-symbol)
+  (routes:parse-template (get route-symbol :template)))
 
 (defun genurl/impl (tmpl args)
   (format nil
@@ -109,7 +116,7 @@
 (defun genurl (route-symbol &rest args)
   (genurl/impl (concatenate 'list
                             (submodule-full-baseurl (slot-value *route* 'submodule))
-                            (get route-symbol :template))
+                            (route-symbol-template route-symbol))
                args))
 
 (defun genurl-toplevel (submodule route-symbol &rest args)
@@ -117,7 +124,7 @@
                             (submodule-full-baseurl (submodule-toplevel (slot-value *route* 'submodule)))
                             (if submodule
                                 (submodule-baseurl submodule))
-                            (get route-symbol :template))
+                            (route-symbol-template route-symbol))
                args))
   
 
