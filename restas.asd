@@ -24,6 +24,10 @@
                (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module"))
                (:file "hunchentoot" :depends-on ("module"))))
+     #+swank-archimag 
+     (:module "slime" 
+              :components ((:file "restas-swank"))
+              :depends-on ("src"))
      (:module "optional"
               :components ((:file "optional"))
               :depends-on ("src"))))
@@ -46,3 +50,4 @@
   :requires (restas zip)
   :components ((:module "optional"
                         :components ((:file "restas-zip")))))
+
