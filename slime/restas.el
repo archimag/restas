@@ -16,4 +16,9 @@
     (error "No module given"))
   (slime-eval-async `(restas.swank:inspect-module ,module) 'slime-open-inspector))
 
+(defun restas-inspect-vhost-list ()
+  "Inspect vhost list."
+  (interactive)
+  (slime-eval-async `(restas.swank:inspect-vhosts) 'slime-open-inspector))
+
 (provide 'restas)
