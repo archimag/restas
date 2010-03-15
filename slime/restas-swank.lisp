@@ -24,7 +24,7 @@
 
 
 (defmethod swank:object-source-location ((route %restas-route))
-  (call-next-method (symbol-function (%restas-route-symbol route))))
+  (swank:object-source-location (symbol-function (%restas-route-symbol route))))
 
 
 (defstruct %restas-module
