@@ -102,37 +102,43 @@
   (routes:parse-template (get route-symbol :template)))
 
 (defun genurl/impl (tmpl args)
-  (format nil
-          "/~{~A~^/~}"
-          (routes::apply-bindings tmpl 
-                                  (iter (for pair in (alexandria:plist-alist args))
-                                        (collect (cons (car pair)
-                                                       (if (or (stringp (cdr pair))
-                                                               (consp (cdr pair)))
-                                                           (cdr pair)
-                                                           (write-to-string (cdr pair)))))))))
+  (let ((uri (make-instance 'puri:uri)))
+    (setf (puri:uri-parsed-path uri)
+          (cons :absolute
+                (routes::apply-bindings tmpl 
+                                        (iter (for pair in (alexandria:plist-alist args))
+                                              (collect (cons (car pair)
+                                                             (if (or (stringp (cdr pair))
+                                                                     (consp (cdr pair)))
+                                                                 (cdr pair)
+                                                                 (write-to-string (cdr pair)))))))))
+    uri))
 
 
 (defun genurl (route-symbol &rest args)
-  (genurl/impl (concatenate 'list
-                            (submodule-full-baseurl (slot-value *route* 'submodule))
-                            (route-symbol-template route-symbol))
-               args))
+  (puri:render-uri (genurl/impl (concatenate 'list
+                                             (submodule-full-baseurl (slot-value *route* 'submodule))
+                                             (route-symbol-template route-symbol))
+                                args)
+                   nil))
 
 (defun genurl-toplevel (submodule route-symbol &rest args)
-  (genurl/impl (concatenate 'list
-                            (submodule-full-baseurl (submodule-toplevel (slot-value *route* 'submodule)))
-                            (if submodule
-                                (submodule-baseurl submodule))
-                            (route-symbol-template route-symbol))
-               args))
+  (puri:render-uri (genurl/impl (concatenate 'list
+                                             (submodule-full-baseurl (submodule-toplevel (slot-value *route* 'submodule)))
+                                             (if submodule
+                                                 (submodule-baseurl submodule))
+                                             (route-symbol-template route-symbol))
+                                args)
+                   nil))
   
 
 
 (defun genurl-with-host (route &rest args)
-  (format nil
-          "http://~A~A"
-          (hunchentoot:host)
-          (apply #'restas:genurl route args)))
+  (let ((uri (apply #'restas:genurl route args)))
+    (setf (puri:uri-scheme uri)
+          :http)
+    (setf (puri:uri-host uri)
+          (hunchentoot:host))
+    (puri:render-uri uri nil)))
 
 
