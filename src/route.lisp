@@ -134,7 +134,10 @@
 
 
 (defun genurl-with-host (route &rest args)
-  (let ((uri (apply #'restas:genurl route args)))
+  (let ((uri (genurl/impl (concatenate 'list
+                                       (submodule-full-baseurl (slot-value *route* 'submodule))
+                                       (route-symbol-template route))
+                          args)))
     (setf (puri:uri-scheme uri)
           :http)
     (setf (puri:uri-host uri)
