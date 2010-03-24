@@ -45,7 +45,10 @@
         (t (setf (hunchentoot:content-type*)
                  (or (route-content-type route)
                      "text/html"))
-           res)))))
+           (funcall (or (route-render-method route)
+                        (string-symbol-value +render-method-symbol+)
+                        #'identity)
+                    res))))))
 
 (defclass simple-route (base-route)
   ((symbol :initarg :symbol)))
@@ -56,8 +59,7 @@
 
 (defmethod process-route/impl ((route simple-route) bindings)
   (let ((*bindings* bindings))
-    (funcall (route-render-method route)
-             (funcall (slot-value route 'symbol)))))
+    (funcall (slot-value route 'symbol))))
 
 (defmacro define-route (name (template &key
                                        (content-type "text/html") 
@@ -96,9 +98,7 @@
                                    (string-symbol-value +content-type-symbol+))
                  :required-method (get symbol :method)
                  :arbitrary-requirement (get symbol :requirement)
-                 :render-method (or (get symbol :render-method)
-                                    (string-symbol-value +render-method-symbol+)
-                                    #'identity)
+                 :render-method (get symbol :render-method)
                  :submodule submodule))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
