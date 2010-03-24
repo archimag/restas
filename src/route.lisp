@@ -20,7 +20,15 @@
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
-   (render-method :initarg :render-method :initform #'identity :reader route-render-method)))
+   (render-method :initarg :render-method :initform #'identity)))
+
+(defun route-render-method (route)
+  (or (slot-value route 'render-method)
+      (string-symbol-value +render-method-symbol+
+                           (slot-value (slot-value route
+                                                   'submodule)
+                                       'module))
+      #'identity))
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'submodule)
@@ -45,9 +53,7 @@
         (t (setf (hunchentoot:content-type*)
                  (or (route-content-type route)
                      "text/html"))
-           (funcall (or (route-render-method route)
-                        (string-symbol-value +render-method-symbol+)
-                        #'identity)
+           (funcall (route-render-method route)
                     res))))))
 
 (defclass simple-route (base-route)
