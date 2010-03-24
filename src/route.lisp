@@ -63,13 +63,10 @@
                         &body body)
   (let* ((variables (iter (for var in (routes.unify:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
-                                         (list 'cdr (list 'assoc var '*bindings*))))))
-         (handler-body (if variables
-                           `((let (,@variables) ,@body))
-                           `(,@body))))
+                                         (list 'cdr (list 'assoc var '*bindings*)))))))
     `(progn
-       (defun ,name ()
-         ,@handler-body)
+       (defun ,name (,@(if variables (cons '&key variables)))
+         ,@body)
        (setf (symbol-plist ',name)
              (list :template ,template
                    :method ,method
