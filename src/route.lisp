@@ -12,7 +12,6 @@
 
 (defvar *bindings*)
 
-
 (defgeneric process-route (route bindings))
 (defgeneric process-route/impl (route bindings))
 
@@ -20,7 +19,8 @@
   ((submodule :initarg :submodule :initform nil)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
-   (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)))
+   (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
+   (render-method :initarg :render-method :initform #'identity :reader route-render-method)))
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'submodule)
@@ -56,10 +56,15 @@
 
 (defmethod process-route/impl ((route simple-route) bindings)
   (let ((*bindings* bindings))
-    (funcall (slot-value route 'symbol))))
+    (funcall (route-render-method route)
+             (funcall (slot-value route 'symbol)))))
 
-(defmacro define-route (name 
-                        (template &key (content-type "text/html") (method :get) requirement parse-vars)
+(defmacro define-route (name (template &key
+                                       (content-type "text/html") 
+                                       (method :get)
+                                       render-method
+                                       requirement
+                                       parse-vars)
                         &body body)
   (let* ((variables (iter (for var in (routes.unify:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
@@ -72,7 +77,8 @@
                    :method ,method
                    :content-type ,content-type
                    :parse-vars ,parse-vars
-                   :requirement ,requirement))
+                   :requirement ,requirement
+                   :render-method ,render-method))
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
@@ -86,9 +92,13 @@
                                         (routes:parse-template (get symbol :template)
                                                                (get symbol :parse-vars)))
                  :symbol symbol
-                 :content-type (get symbol :content-type)
+                 :content-type (or (get symbol :content-type)
+                                   (string-symbol-value +content-type-symbol+))
                  :required-method (get symbol :method)
                  :arbitrary-requirement (get symbol :requirement)
+                 :render-method (or (get symbol :render-method)
+                                    (string-symbol-value +render-method-symbol+)
+                                    #'identity)
                  :submodule submodule))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
