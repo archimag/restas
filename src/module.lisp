@@ -28,6 +28,11 @@
 (defparameter +routes-symbol+ "*ROUTES*")
 (defparameter +baseurl-symbol+ "*BASEURL*")
 (defparameter +submodules-symbol+ "*SUBMODULES*")
+(defparameter +render-method-symbol+ "*DEFAULT-RENDER-METHOD*")
+(defparameter +content-type-symbol+ "*DEFAULT-CONTENT-TYPE*")
+
+(defun string-symbol-value (string &optional (package *package*))
+  (symbol-value (find-symbol string package)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; submodule
@@ -96,6 +101,8 @@
            (defparam +routes-symbol+ (defpackage ,impl-package-name (:use)))
            (defparam +baseurl-symbol+)
            (defparam +submodules-symbol+ (make-hash-table))
+           (defparam +render-method-symbol+ ,(second (assoc :default-render-method options)))
+           (defparam +content-type-symbol+ ,(second (assoc :default-content-type options )))
            *package*)))))
 
 (defmacro define-initialization ((context) &body body)
