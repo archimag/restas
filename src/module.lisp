@@ -94,7 +94,7 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((*package* (defpackage ,name
                           (:use ,@use)
-                          (:export #:*baseurl* ,@export)
+                          (:export #:*baseurl* #:*default-render-method* ,@export)
                           (:import-from #:restas #:*request-pool* #:*bindings* #:genurl #:define-route))))
          (flet ((defparam (name &optional value)
                   (eval `(defparameter ,(intern name) ,value))))
