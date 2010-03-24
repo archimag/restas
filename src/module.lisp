@@ -88,12 +88,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro define-module (name &rest options)
-  (let* ((use (cdr (assoc :use options)))
-         (export (cdr (assoc :export options)))
-         (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name)))
+  (let* ((export (cdr (assoc :export options)))
+         (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name))
+         (defpackage-options (remove-if #'(lambda (opt)
+                                            (member (car opt)
+                                                    (list :export 
+                                                          :default-render-method 
+                                                          :default-content-type)))
+                                        options)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((*package* (defpackage ,name
-                          (:use ,@use)
+                          ,@defpackage-options
                           (:export #:*baseurl* #:*default-render-method* ,@export)
                           (:import-from #:restas #:*request-pool* #:*bindings* #:genurl #:define-route))))
          (flet ((defparam (name &optional value)
