@@ -107,9 +107,11 @@
          (:newline)
          "--------------------------------------------------"
          (:newline)
-         ,@(or (let ((max (iter (for (symbol . value) in (restas::context-data (slot-value submodule 'restas::context)))
-                                (maximize (length (write-to-string symbol))))))
-                 (iter (for (symbol . value) in (restas::context-data (slot-value submodule 'restas::context)))
+         ,@(or (let* ((context (slot-value submodule 'restas::context))
+                      (max (iter (for symbol in (restas::context-vars context))
+                                 (maximize (length (write-to-string symbol))))))
+                 (iter (for symbol in (restas::context-vars context))
+                       (for value in (restas::context-values context))
                        (collect (list :value symbol))
                        (collect (make-string (- max
                                                 (length (write-to-string symbol)))
