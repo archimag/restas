@@ -21,4 +21,9 @@
   (interactive)
   (slime-eval-async `(restas.swank:inspect-vhosts) 'slime-open-inspector))
 
+(defun restas-restore-global-context ()
+  "Restore default context"
+  (interactive)
+  (slime-eval '(restas.swank:restore-global-context)))
+
 (provide 'restas)

@@ -93,6 +93,16 @@
                      (collect '(:newline)))
                '("None")))))
 
+
+(defvar *saved-global-context* nil)
+
+(swank:defslimefun restore-global-context ()
+  (iter (for (symbol . value) in *saved-global-context*)
+        (setf (symbol-value symbol)
+              value))
+  (setf restas::*submodule* nil)
+  (setf *saved-global-context* nil))
+
 (defmethod swank:emacs-inspect ((submodule restas:submodule))
   (flet ((module-link (module)
            (if module
@@ -110,6 +120,7 @@
          ,@(or (let* ((context (slot-value submodule 'restas::context))
                       (max (iter (for symbol in (restas::context-vars context))
                                  (maximize (length (write-to-string symbol))))))
+                 (setf restas::*submodule* submodule)
                  (iter (for symbol in (restas::context-vars context))
                        (for value in (restas::context-values context))
                        (collect (list :value symbol))
@@ -120,7 +131,24 @@
                        (collect " = ")
                        (collect (list :value value))
                        (collect '(:newline))))
-               '("None")))))
+               '("None"))
+         (:newline)
+         (:action "Use this context as a global"
+                  ,#'(lambda ()
+                           (restore-global-context)
+                           (setf *saved-global-context*
+                                 (let ((context (slot-value submodule 'restas::context)))
+                                   (iter (for symbol in (restas::context-vars context))
+                                         (for value in (restas::context-values context))
+                                         (collect (cons symbol
+                                                        (symbol-value symbol)))
+                                         (setf (symbol-value symbol)
+                                               value))))))
+         (:newline)
+         ,@(if *saved-global-context*
+               (list (list :action
+                           "Restore global context"
+                           'restore-global-context))))))
 
 (defstruct %restas-vhost
   vhost

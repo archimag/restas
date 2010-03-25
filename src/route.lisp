@@ -10,6 +10,8 @@
 
 (defvar *route* nil)
 
+(defvar *submodule* nil)
+
 (defvar *bindings*)
 
 (defgeneric process-route (route bindings))
@@ -60,7 +62,8 @@
   ((symbol :initarg :symbol)))
 
 (defmethod process-route ((route simple-route) bindings)
-  (let ((*route* route))
+  (let ((*route* route)
+        (*submodule* (slot-value route 'submodule)))
     (call-next-method)))
 
 (defmethod process-route/impl ((route simple-route) bindings)
@@ -130,14 +133,14 @@
 
 (defun genurl (route-symbol &rest args)
   (puri:render-uri (genurl/impl (concatenate 'list
-                                             (submodule-full-baseurl (slot-value *route* 'submodule))
+                                             (submodule-full-baseurl *submodule*)
                                              (route-symbol-template route-symbol))
                                 args)
                    nil))
 
 (defun genurl-toplevel (submodule route-symbol &rest args)
   (puri:render-uri (genurl/impl (concatenate 'list
-                                             (submodule-full-baseurl (submodule-toplevel (slot-value *route* 'submodule)))
+                                             (submodule-full-baseurl (submodule-toplevel *submodule*))
                                              (if submodule
                                                  (submodule-baseurl submodule))
                                              (route-symbol-template route-symbol))
@@ -148,13 +151,15 @@
 
 (defun genurl-with-host (route &rest args)
   (let ((uri (genurl/impl (concatenate 'list
-                                       (submodule-full-baseurl (slot-value *route* 'submodule))
+                                       (submodule-full-baseurl *submodule*)
                                        (route-symbol-template route))
                           args)))
     (setf (puri:uri-scheme uri)
           :http)
     (setf (puri:uri-host uri)
-          (hunchentoot:host))
+          (if (boundp 'hunchentoot:*request*)
+                      (hunchentoot:host)
+                      "localhost"))
     (puri:render-uri uri nil)))
 
 
