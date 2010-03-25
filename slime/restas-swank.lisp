@@ -107,9 +107,9 @@
          (:newline)
          "--------------------------------------------------"
          (:newline)
-         ,@(or (let ((max (iter (for (symbol value) in-hashtable (slot-value submodule 'restas::context))
+         ,@(or (let ((max (iter (for (symbol . value) in (restas::context-data (slot-value submodule 'restas::context)))
                                 (maximize (length (write-to-string symbol))))))
-                 (iter (for (symbol value) in-hashtable (slot-value submodule 'restas::context))
+                 (iter (for (symbol . value) in (restas::context-data (slot-value submodule 'restas::context)))
                        (collect (list :value symbol))
                        (collect (make-string (- max
                                                 (length (write-to-string symbol)))

@@ -8,48 +8,70 @@
 
 (in-package :restas)
 
+(defclass restas-context ()
+  ((vars :initarg :vars :initform nil :accessor context-data)))
+
+
 (defun context-add-variable (context symbol &optional value)
-  (setf (gethash symbol context)
-        (or value
-            (symbol-value symbol))))
+  (push (cons symbol
+              (or value
+                  (symbol-value symbol)))
+        (context-data context)))
+  ;; (setf (gethash symbol context)
+  ;;       (or value
+  ;;           (symbol-value symbol))))
 
 (defun context-remove-variable (context symbol)
-  (remhash symbol context))
+  (setf (context-data context)
+        (remove symbol
+                (context-data context)
+                :key #'car)))
+                
+  ;;(remhash symbol context))
 
 (defun context-symbol-value (context symbol)
-  (multiple-value-bind (value present-p) (gethash symbol context)
-    (if present-p
-        value
+  (let ((pair (assoc symbol (context-data context))))
+    (if pair
+        (cdr pair)
         (symbol-value symbol))))
+  ;; (multiple-value-bind (value present-p) (gethash symbol context)
+  ;;   (if present-p
+  ;;       value
+  ;;       (symbol-value symbol))))
 
 (defun (setf context-symbol-value) (newval context symbol)
-  (setf (gethash symbol context)
-        newval))
+  (let ((pair (assoc symbol (context-data context))))
+    (if pair
+        (setf (cdr pair)
+              newval)
+        (context-add-variable context symbol newval))))
+;;  (setf (gethash symbol context)
+;;        newval))
 
 (defmacro make-context (&body bindings)
-  `(let ((context (make-hash-table)))
-     (iter (for (symbol value) in ',bindings)
-           (context-add-variable context symbol)
-           (setf (context-symbol-value context symbol)
-                 (eval value)))
-     context))
+  `(make-instance 'restas-context
+                  :vars (iter (for (symbol value) in ',bindings)
+                              (collect (cons symbol
+                                             (eval value))))))
+
+  ;; `(let ((context (make-hash-table)))
+  ;;    (iter (for (symbol value) in ',bindings)
+  ;;          (context-add-variable context symbol)
+  ;;          (setf (context-symbol-value context symbol)
+  ;;                (eval value)))
+  ;;    context))
 
 
 (defmacro with-context (context &body body)
-  `(let ((cntx ,context))
-     (if cntx
-         (let ((symbols)
-               (values))
-           (iter (for (s v) in-hashtable cntx)
-                 (push s symbols)
-                 (push v values))
-           (progv symbols values
-             (unwind-protect
-                  (progn ,@body))))
-         (progn ,@body))))
-
-;; (iter (for s in symbols)
-;;       (setf (gethash s cntx)
-;;             (symbol-value s)))
-
+  (let ((cntx (gensym)))
+    `(let ((,cntx ,context))
+       (if ,cntx
+           (let ((symbols)
+                 (values))
+             (iter (for (s . v) in (context-data ,cntx))
+                   (push s symbols)
+                   (push v values))
+             (progv symbols values
+               (progn ,@body)))
+           (progn ,@body)))))
 
