@@ -53,8 +53,7 @@
         ((integerp res) (setf (hunchentoot:return-code*)
                               res))
         (t (setf (hunchentoot:content-type*)
-                 (or (route-content-type route)
-                     "text/html"))
+                 (route-content-type route))
            (funcall (route-render-method route)
                     res))))))
 
@@ -71,8 +70,8 @@
     (funcall (slot-value route 'symbol))))
 
 (defmacro define-route (name (template &key
-                                       (content-type "text/html") 
                                        (method :get)
+                                       content-type
                                        render-method
                                        requirement
                                        parse-vars)
@@ -104,7 +103,9 @@
                                                                (get symbol :parse-vars)))
                  :symbol symbol
                  :content-type (or (get symbol :content-type)
-                                   (string-symbol-value +content-type-symbol+))
+                                   (string-symbol-value +content-type-symbol+
+                                                        (symbol-package symbol))
+                                   "text/html")
                  :required-method (get symbol :method)
                  :arbitrary-requirement (get symbol :requirement)
                  :render-method (get symbol :render-method)

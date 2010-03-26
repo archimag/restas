@@ -106,8 +106,8 @@
            (defparam +routes-symbol+ (defpackage ,impl-package-name (:use)))
            (defparam +baseurl-symbol+)
            (defparam +submodules-symbol+ (make-hash-table))
-           (defparam +render-method-symbol+ ,(second (assoc :default-render-method options)))
-           (defparam +content-type-symbol+ ,(second (assoc :default-content-type options )))
+           (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
+           (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
            *package*)))))
 
 (defmacro define-initialization ((context) &body body)
