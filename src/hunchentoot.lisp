@@ -5,7 +5,6 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-
 (in-package :restas)
 
 (setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
@@ -113,8 +112,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defparameter *acceptors* nil)
 
 (defun reconnect-all-routes ()
   (iter (for acceptor in *acceptors*)

@@ -13,6 +13,8 @@
            #:define-route
            #:define-module
 
+           #:render-object
+
            #:make-context
            #:context-add-variable
            #:context-remove-variable

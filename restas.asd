@@ -20,9 +20,11 @@
     ((:module "src"
               :components
               ((:file "packages")
-               (:file "context" :depends-on ("packages"))
+               (:file "special" :depends-on ("packages"))
+               (:file "render" :depends-on ("special"))
+               (:file "context" :depends-on ("special"))
                (:file "module" :depends-on ("context"))
-               (:file "route" :depends-on ("module"))
+               (:file "route" :depends-on ("module" "render"))
                (:file "hunchentoot" :depends-on ("module"))))
      #+swank-archimag 
      (:module "slime" 

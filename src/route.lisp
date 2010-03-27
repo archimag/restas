@@ -8,12 +8,6 @@
 
 (in-package :restas)
 
-(defvar *route* nil)
-
-(defvar *submodule* nil)
-
-(defvar *bindings*)
-
 (defgeneric process-route (route bindings))
 (defgeneric process-route/impl (route bindings))
 
@@ -30,7 +24,7 @@
                            (slot-value (slot-value route
                                                    'submodule)
                                        'module))
-      #'identity))
+      #'identity))  
 
 (defmethod routes:route-check-conditions ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'submodule)
@@ -47,15 +41,10 @@
 (defmethod process-route ((route base-route) bindings)
   (with-context (slot-value (slot-value route 'submodule)
                             'context)
-    (let ((res (process-route/impl route bindings)))
-      (cond
-        ((pathnamep res) (hunchentoot:handle-static-file res))
-        ((integerp res) (setf (hunchentoot:return-code*)
-                              res))
-        (t (setf (hunchentoot:content-type*)
-                 (route-content-type route))
-           (funcall (route-render-method route)
-                    res))))))
+    (setf (hunchentoot:content-type*)
+          (route-content-type route))
+    (render-object (route-render-method route)
+                   (process-route/impl route bindings))))
 
 (defclass simple-route (base-route)
   ((symbol :initarg :symbol)))
