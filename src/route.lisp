@@ -9,10 +9,10 @@
 (in-package :restas)
 
 (defgeneric process-route (route bindings))
-(defgeneric process-route/impl (route bindings))
 
-(defclass base-route (routes:route)
-  ((submodule :initarg :submodule :initform nil)
+(defclass route (routes:route)
+  ((symbol :initarg :symbol)
+   (submodule :initarg :submodule :initform nil)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
@@ -24,9 +24,9 @@
                            (slot-value (slot-value route
                                                    'submodule)
                                        'module))
-      #'identity))  
+      #'identity))
 
-(defmethod routes:route-check-conditions ((route base-route) bindings)
+(defmethod routes:route-check-conditions ((route route) bindings)
   (with-context (slot-value (slot-value route 'submodule)
                             'context)
     (with-slots (required-method arbitrary-requirement) route
@@ -38,25 +38,15 @@
                  (funcall arbitrary-requirement))
                t)))))
 
-(defmethod process-route ((route base-route) bindings)
-  (with-context (slot-value (slot-value route 'submodule)
-                            'context)
-    (setf (hunchentoot:content-type*)
-          (route-content-type route))
+(defmethod process-route ((route route) bindings)
+  (setf (hunchentoot:content-type*)
+        (route-content-type route))
+  (with-context (slot-value (slot-value route 'submodule) 'context)
+    (let ((*route* route)
+          (*bindings* bindings)
+          (*submodule* (slot-value route 'submodule)))
     (render-object (route-render-method route)
-                   (process-route/impl route bindings))))
-
-(defclass simple-route (base-route)
-  ((symbol :initarg :symbol)))
-
-(defmethod process-route ((route simple-route) bindings)
-  (let ((*route* route)
-        (*submodule* (slot-value route 'submodule)))
-    (call-next-method)))
-
-(defmethod process-route/impl ((route simple-route) bindings)
-  (let ((*bindings* bindings))
-    (funcall (slot-value route 'symbol))))
+                   (funcall (slot-value route 'symbol))))))
 
 (defmacro define-route (name (template &key
                                        (method :get)
@@ -85,7 +75,7 @@
          (reconnect-all-routes)))))
 
 (defun create-route-from-symbol (symbol submodule)
-  (make-instance 'simple-route
+  (make-instance 'route
                  :template (concatenate 'list
                                         (submodule-full-baseurl submodule)
                                         (routes:parse-template (get symbol :template)
