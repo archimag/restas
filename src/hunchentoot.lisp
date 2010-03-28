@@ -31,24 +31,6 @@
                               args)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; debuggable-acceptor
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar *catch-errors-p* t)
-
-(defclass debuggable-acceptor (hunchentoot:acceptor)
-    ())
-
-(defmethod hunchentoot:acceptor-request-dispatcher ((acceptor debuggable-acceptor))
-  (if *catch-errors-p*
-      (call-next-method)
-      (let ((dispatcher (handler-bind ((error #'invoke-debugger))
-                          (call-next-method))))
-        (lambda (request)
-          (handler-bind ((error #'invoke-debugger))
-            (funcall dispatcher request))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-acceptor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -64,16 +46,14 @@
    (mapper :initform (make-instance 'routes:mapper))
    (modules :initform nil)))
 
-(defclass restas-acceptor (debuggable-acceptor) 
+(defclass restas-acceptor (hunchentoot:acceptor) 
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
 
-(defmethod initialize-instance :after ((acceptor restas-acceptor) &key)
-  (setf (hunchentoot:acceptor-request-dispatcher acceptor)
-        'restas-dispatcher))
-
-(defmethod hunchentoot:acceptor-request-class ((acceptor restas-acceptor))
-  'restas-request)
-
+(defmethod shared-initialize :after ((acceptor restas-acceptor) slot-names &rest initargs &key)
+  (declare (ignore slot-names initargs))
+  (setf (hunchentoot:acceptor-request-dispatcher acceptor) 'restas-dispatcher
+        (hunchentoot:acceptor-request-class acceptor) 'restas-request))
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatcher
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
