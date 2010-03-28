@@ -124,7 +124,9 @@
 
 (defun start (module &key hostname (port 80) (context (make-context))
               &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
-  (let* ((acceptor (or (find port
+  (let* ((package (or (find-package module)
+                      (error "Package ~A not found" module)))
+         (acceptor (or (find port
                             *acceptors*
                             :key #'hunchentoot:acceptor-port)
                       (car (push (hunchentoot:start (make-instance 'restas-acceptor
@@ -142,7 +144,7 @@
                                               :host hostname/port)
                                (restas-acceptor-vhosts acceptor))))))
     (push (make-instance 'submodule
-                         :module module
+                         :module package
                          :context context)
           (slot-value vhost 'modules))
     (reconnect-all-routes)))

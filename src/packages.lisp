@@ -23,6 +23,7 @@
 
            #:define-initialization
            #:define-finalization
+           #:define-default-render-method
            
            #:*route*
 

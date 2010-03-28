@@ -70,7 +70,8 @@
 (defgeneric module-routes (module submodule)
   (:documentation "List routes of the module")
   (:method ((module symbol) submodule)
-    (module-routes (find-package module)
+    (module-routes (or (find-package module)
+                       (error "Module ~A not found" module))
                    submodule)))
 
 (defun submodule-routes (submodule)
@@ -110,14 +111,6 @@
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
            *package*)))))
 
-(defmacro define-initialization ((context) &body body)
-  `(defmethod initialize-module-instance ((module (eql ,*package*)) ,context)
-     ,@body))
-
-(defmacro define-finalization ((context) &body body)
-  `(defmethod finalize-module-instance ((module (eql ,*package*)) ,context)
-     ,@body))
-
 (defmethod module-routes ((module package) submodule)
   (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
                                    (collect (create-route-from-symbol (find-symbol (symbol-name route-symbol)
@@ -144,3 +137,20 @@
          (initialize-module-instance ',module context))
        (eval-when (:execute)
          (reconnect-all-routes)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Macros for simplify develop modules
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro define-initialization ((context) &body body)
+  `(defmethod initialize-module-instance ((module (eql ,*package*)) ,context)
+     ,@body))
+
+(defmacro define-finalization ((context) &body body)
+  `(defmethod finalize-module-instance ((module (eql ,*package*)) ,context)
+     ,@body))
+
+(defmacro define-default-render-method ((data) &body body)
+  `(setf ,(find-symbol +render-method-symbol+ *package*)
+         #'(lambda (,data)
+             ,@body)))
