@@ -26,7 +26,7 @@
                (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module" "render"))
                (:file "hunchentoot" :depends-on ("module"))))
-     #+swank-archimag 
+     #+swank
      (:module "slime" 
               :components ((:file "restas-swank"))
               :depends-on ("src"))

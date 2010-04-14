@@ -26,6 +26,9 @@
 (defmethod swank:object-source-location ((route %restas-route))
   (swank:object-source-location (symbol-function (%restas-route-symbol route))))
 
+(defmethod swank:object-source-location ((route restas::simple-route))
+  (swank:object-source-location (symbol-function (slot-value route 'symbol))))
+
 
 (defstruct %restas-module
   package)
@@ -186,7 +189,6 @@
                                   ))
                    (collect '(:newline)))
              '("None"))))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -49,6 +49,10 @@
 (defclass simple-route (base-route)
   ((symbol :initarg :symbol)))
 
+(defmethod routes:route-name ((route simple-route))
+  (string-downcase (write-to-string (slot-value route 'symbol))))
+;;  (symbol-name (slot-value route 'symbol)))
+
 (defmethod process-route ((route simple-route) bindings)
   (let ((*route* route)
         (*submodule* (slot-value route 'submodule)))
