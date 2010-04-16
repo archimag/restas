@@ -38,6 +38,9 @@
                  (funcall arbitrary-requirement))
                t)))))
 
+(defmethod routes:route-name ((route route))
+  (string-downcase (write-to-string (slot-value route 'symbol))))
+
 (defmethod process-route ((route route) bindings)
   (setf (hunchentoot:content-type*)
         (route-content-type route))

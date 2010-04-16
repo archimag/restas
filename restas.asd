@@ -15,7 +15,7 @@
   (operate 'load-op 'asdf-system-connections))
 
 (defsystem restas
-    :depends-on (#:hunchentoot #:routes #:garbage-pools #+swank-archimag #:closer-mop)
+    :depends-on (#:hunchentoot #:routes #:garbage-pools #+swank #:closer-mop)
     :components
     ((:module "src"
               :components
@@ -26,7 +26,7 @@
                (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module" "render"))
                (:file "hunchentoot" :depends-on ("module"))))
-     #+swank-archimag 
+     #+swank
      (:module "slime" 
               :components ((:file "restas-swank"))
               :depends-on ("src"))
