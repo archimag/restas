@@ -58,7 +58,7 @@
                                        requirement
                                        parse-vars)
                         &body body)
-  (let* ((variables (iter (for var in (routes.unify:template-variables (routes:parse-template template)))
+  (let* ((variables (iter (for var in (routes:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
                                          (list 'cdr (list 'assoc var '*bindings*)))))))
     `(progn

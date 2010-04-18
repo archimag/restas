@@ -79,13 +79,13 @@
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
     (when vhost
-      (let ((match-result (routes:match (slot-value vhost 'mapper)
-                                        (hunchentoot:request-uri*))))
-        (if match-result
+      (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
+                                                         (hunchentoot:request-uri*))
+        (if route
             (gp:with-garbage-pool (*request-pool*)
-              (let ((*bindings* (cdr match-result)))
-                (process-route (car match-result)
-                               (cdr match-result))))
+              (let ((*bindings* bindings))
+                (process-route route
+                               bindings)))
             (setf (hunchentoot:return-code*)
                   hunchentoot:+HTTP-NOT-FOUND+))))))
 
