@@ -21,11 +21,12 @@
               :components
               ((:file "packages")
                (:file "special" :depends-on ("packages"))
+               (:file "memoize" :depends-on ("special"))
                (:file "render" :depends-on ("special"))
                (:file "context" :depends-on ("special"))
                (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module" "render"))
-               (:file "hunchentoot" :depends-on ("module"))))
+               (:file "hunchentoot" :depends-on ("module" "memoize"))))
      #+swank
      (:module "slime" 
               :components ((:file "restas-swank"))

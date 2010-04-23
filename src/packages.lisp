@@ -15,6 +15,9 @@
 
            #:render-object
 
+           #:with-memoization
+           #:define-memoized-function
+
            #:make-context
            #:context-add-variable
            #:context-remove-variable

@@ -15,3 +15,4 @@
 
 (defvar *bindings*)
 
+(defvar *memotable* nil)
