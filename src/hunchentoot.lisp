@@ -66,7 +66,9 @@
   (cdr (assoc :host (hunchentoot:headers-in request))))
 
 (defun restas-dispatcher (req &aux (host (header-host req)))
-  (let ((vhost (or (find host
+  (let ((vhost (or (find (if (find #\: host)
+                             host
+                             (format nil "~A:80" host))
                          (restas-acceptor-vhosts hunchentoot:*acceptor*)
                          :key #'vhost-host
                          :test #'string=)
