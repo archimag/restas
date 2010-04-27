@@ -101,6 +101,8 @@
 
 (defpref *sites*)
 
+(defpref *default-host-redirect*)
+
 (delete-package '#:sbcl.daemon.preferences)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -332,6 +334,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (asdf:operate 'asdf:load-op '#:restas)
+
+(setf (symbol-value (read-from-string "restas:*default-host-redirect*"))
+      *default-host-redirect*)
 
 (loop
    for system in *asdf-load-systems*
