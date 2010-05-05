@@ -17,7 +17,9 @@
 (defmethod render-object (designer (file pathname))
   "Default handler for pathname"
   (declare (ignore designer))
-  (hunchentoot:handle-static-file file))
+  (hunchentoot:handle-static-file file
+                                  (or (hunchentoot:mime-type file)
+                                      (hunchentoot:content-type hunchentoot:*reply*))))
 
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
