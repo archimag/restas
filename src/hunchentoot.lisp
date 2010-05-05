@@ -9,6 +9,22 @@
 
 (setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
 
+(defun request-full-uri (&optional (request hunchentoot:*request*))
+  (let ((uri (puri:parse-uri (hunchentoot:request-uri request))))
+    (setf (puri:uri-scheme uri)
+          (if (hunchentoot:acceptor-ssl-p (hunchentoot:request-acceptor request))
+              :https
+              :http))
+    (ppcre:register-groups-bind  (host port) ("([^:]+)(?=:(.+))?" (hunchentoot:host request))
+      (setf (puri:uri-host uri)
+            host)
+      (unless (or (null port)
+                  (= (parse-integer port) 80))
+        (setf (puri:uri-port uri)
+              port)))
+    uri))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; redirect
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

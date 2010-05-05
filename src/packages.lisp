@@ -39,6 +39,7 @@
            
            #:reconnect-all-routes
 
+           #:request-full-uri
            #:genurl
            #:genurl-toplevel
            #:genurl-with-host
