@@ -40,25 +40,25 @@
 
 (defclass submodule ()
   ((symbol :initarg :symbol :initform nil :reader submodule-symbol)
-   (module :initarg :module :initform nil)
+   (module :initarg :module :initform nil :reader submodule-module)
    (context :initarg :context :initform (make-context))
-   (parent :initarg :parent :initform nil)
-   (submodules :initform nil)))
+   (parent :initarg :parent :initform nil :reader submodule-parent)
+   (submodules :initform nil :accessor submodule-submodules)))
 
 (defmethod shared-initialize :after ((obj submodule) slot-names &rest initargs &key)
   (declare (ignore initargs))
-  (setf (slot-value obj 'submodules)
+  (setf (submodule-submodules obj)
         (iter (for (key sub) in-hashtable (symbol-value (find-symbol +submodules-symbol+
-                                                                     (slot-value obj 'module))))
+                                                                     (submodule-module obj))))
               (collect (make-instance 'submodule
                                       :symbol key
-                                      :module (slot-value sub 'module)
+                                      :module  (submodule-module sub)
                                       :context (slot-value sub 'context)
                                       :parent obj)))))
 
 (defun find-submodule (symbol &optional (parent *submodule*))
   (find symbol
-        (slot-value parent 'submodules)
+        (submodule-submodules parent)
         :key #'submodule-symbol))
 
 (defmacro with-submodule-context (submodule &body body)
@@ -68,11 +68,11 @@
 (defun submodule-baseurl (submodule)
   (with-submodule-context submodule
     (symbol-value (find-symbol +baseurl-symbol+
-                               (slot-value submodule 'module)))))
+                               (submodule-module submodule)))))
 
 (defun submodule-full-baseurl (submodule)
   (let ((prefix (submodule-baseurl submodule))
-        (parent (slot-value submodule 'parent)))
+        (parent (submodule-parent submodule)))
     (if parent
         (concatenate 'list
                      (submodule-full-baseurl parent)
@@ -80,19 +80,19 @@
         prefix)))
 
 (defun submodule-toplevel (submodule)
-  (let ((parent (slot-value submodule 'parent)))
+  (let ((parent (submodule-parent submodule)))
     (if parent
         (submodule-toplevel parent)
         submodule)))
 
 (defun submodule-routes (submodule)
-  (let ((module (slot-value submodule 'module)))
+  (let ((module (submodule-module submodule)))
     (with-submodule-context submodule
       (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
                                        (collect (create-route-from-symbol (find-symbol (symbol-name route-symbol)
                                                                                        module)
                                                                           submodule )))
-                                 (iter (for ss in (slot-value submodule 'submodules))
+                                 (iter (for ss in (submodule-submodules submodule))
                                        (collect (submodule-routes ss))))))))
 
 (defun connect-submodule (submodule mapper)

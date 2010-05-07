@@ -30,7 +30,11 @@
            
            #:*route*
 
+           #:*submodule*
            #:submodule
+           #:submodule-symbol
+           #:submodule-module
+           #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
 
