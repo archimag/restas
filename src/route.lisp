@@ -123,7 +123,9 @@
 
 (defun genurl-submodule (submodule-symbol route-symbol &rest args)
   (puri:render-uri (genurl/impl (concatenate 'list
-                                             (submodule-full-baseurl (find-submodule  submodule-symbol))
+                                             (submodule-full-baseurl (if submodule-symbol
+                                                                         (find-submodule  submodule-symbol)
+                                                                         *submodule*))
                                              (route-symbol-template route-symbol))
                                 args)
                    nil))
