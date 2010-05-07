@@ -42,7 +42,6 @@
            #:request-full-uri
            #:genurl
            #:genurl-submodule
-           #:genurl-toplevel
            #:genurl-with-host
            #:apply-format-aux
            #:redirect

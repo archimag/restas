@@ -130,18 +130,6 @@
                                 args)
                    nil))
 
-
-(defun genurl-toplevel (submodule route-symbol &rest args)
-  (puri:render-uri (genurl/impl (concatenate 'list
-                                             (submodule-full-baseurl (submodule-toplevel *submodule*))
-                                             (if submodule
-                                                 (submodule-baseurl submodule))
-                                             (route-symbol-template route-symbol))
-                                args)
-                   nil))
-  
-
-
 (defun genurl-with-host (route &rest args)
   (let ((uri (genurl/impl (concatenate 'list
                                        (submodule-full-baseurl *submodule*)
