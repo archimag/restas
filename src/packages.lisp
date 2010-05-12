@@ -10,9 +10,7 @@
   (:use :cl :iter :split-sequence)
   (:export #:*request-pool*
            #:*bindings*
-           #:define-route
-           #:define-module
-
+           
            #:render-object
 
            #:with-memoization
@@ -23,13 +21,13 @@
            #:context-remove-variable
            #:context-symbol-value
            #:with-context
-
+           ;; modules
+           #:define-module           
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
-           
-           #:*route*
-
+           ;; submodules
+           #:define-submodule
            #:*submodule*
            #:submodule
            #:submodule-symbol
@@ -37,21 +35,20 @@
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
-
-           #:parse-host
-           #:start
-           
-           #:reconnect-all-routes
-
-           #:request-full-uri
+           ;; routes
+           #:define-route
+           #:*route*
            #:genurl
            #:genurl-submodule
            #:genurl-with-host
-           #:apply-format-aux
+           
            #:redirect
 
-           #:restas-request-bindings
+
+           #:request-full-uri
+           #:start           
+           #:reconnect-all-routes
+
            #:process-route
 
-           #:define-submodule
            #:*default-host-redirect*))

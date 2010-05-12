@@ -102,9 +102,8 @@
                                                 (hunchentoot:request-uri*))
           (if route
               (gp:with-garbage-pool (*request-pool*)
-                (let ((*bindings* bindings))
-                  (process-route route
-                                 bindings)))
+                (process-route route
+                               bindings))
               (setf (hunchentoot:return-code*)
                     hunchentoot:+HTTP-NOT-FOUND+)))))))
 
