@@ -127,18 +127,20 @@
            *package*)))))
 
 (defmacro define-submodule (name (module) &body bindings)
-  (let ((submodules (find-symbol +submodules-symbol+)))
+  (let ((submodules (find-symbol +submodules-symbol+))
+        (submodule (gensym))
+        (context (gensym)))
     `(progn
-       (let ((submodule (gethash ',name ,submodules)))
-         (when submodule
+       (let ((,submodule (gethash ',name ,submodules)))
+         (when ,submodule
            (finalize-module-instance ',module
-                                     (slot-value submodule 'context))))
-       (let ((context (make-context ,@bindings)))
+                                     (slot-value ,submodule 'context))))
+       (let ((,context (make-context ,@bindings)))
          (setf (gethash ',name ,submodules)
                (make-instance 'submodule
                               :module ',module
-                              :context context))
-         (initialize-module-instance ',module context))
+                              :context ,context))
+         (initialize-module-instance ',module ,context))
        (eval-when (:execute)
          (reconnect-all-routes)))))
 

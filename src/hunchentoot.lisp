@@ -117,6 +117,7 @@
               (let ((mapper (slot-value vhost 'mapper)))
                 (routes:reset-mapper mapper)
                 (iter (for module in (slot-value vhost 'modules))
+                      (reinitialize-instance module)
                       (connect-submodule module mapper))))))
 
 
