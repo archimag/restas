@@ -118,7 +118,8 @@
                 (routes:reset-mapper mapper)
                 (iter (for module in (slot-value vhost 'modules))
                       (reinitialize-instance module)
-                      (connect-submodule module mapper))))))
+                      (connect-submodule module mapper)))))
+  (values))
 
 
 (defun start (module &key hostname (port 80) (context (make-context))
