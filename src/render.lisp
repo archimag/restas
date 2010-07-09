@@ -36,6 +36,9 @@
   (check-type octets (vector (unsigned-byte 8)))
   octets)
 
+(defmethod render-object (designer (obj (eql nil)))
+  (render-object designer hunchentoot:+http-not-found+))
+
 (defmethod render-object (designer object)
   (error "Unknown as render ~A via ~A" object designer))
 
