@@ -10,6 +10,9 @@
   (:use :cl :iter :split-sequence)
   (:export #:*request-pool*
            #:*bindings*
+
+           #:debug-mode-on
+           #:debug-mode-off
            
            #:render-object
 

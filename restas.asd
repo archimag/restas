@@ -22,11 +22,12 @@
               ((:file "packages")
                (:file "special" :depends-on ("packages"))
                (:file "memoize" :depends-on ("special"))
+               (:file "errors" :depends-on ("special"))
                (:file "render" :depends-on ("special"))
                (:file "context" :depends-on ("special"))
                (:file "module" :depends-on ("context"))
                (:file "route" :depends-on ("module" "render"))
-               (:file "hunchentoot" :depends-on ("module" "memoize"))))
+               (:file "hunchentoot" :depends-on ("module" "memoize" "errors"))))
      #+swank-archimag
      (:module "slime" 
               :components ((:file "restas-swank"))

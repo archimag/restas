@@ -69,14 +69,12 @@
   (declare (ignore slot-names initargs))
   (setf (hunchentoot:acceptor-request-dispatcher acceptor) 'restas-dispatcher
         (hunchentoot:acceptor-request-class acceptor) 'restas-request))
+
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatcher
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *default-host-redirect* nil)
-
-(defvar *request-pool*)
 
 (defun header-host (request)
   (cdr (assoc :host (hunchentoot:headers-in request))))
@@ -101,9 +99,10 @@
         (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
                                                 (hunchentoot:request-uri*))
           (if route
-              (gp:with-garbage-pool (*request-pool*)
-                (process-route route
-                               bindings))
+              (handler-bind ((error #'maybe-invoke-debugger))
+                (gp:with-garbage-pool (*request-pool*)
+                  (process-route route
+                                 bindings)))
               (setf (hunchentoot:return-code*)
                     hunchentoot:+HTTP-NOT-FOUND+)))))))
 
