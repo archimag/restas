@@ -1,4 +1,4 @@
-;;;; hunchentoot.lisp
+;;;; special.lisp
 ;;;;
 ;;;; This file is part of the RESTAS library, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
