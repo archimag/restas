@@ -11,7 +11,7 @@
 (defgeneric process-route (route bindings))
 
 (defclass route (routes:route)
-  ((symbol :initarg :symbol)
+  ((symbol :initarg :symbol :reader route-symbol)
    (submodule :initarg :submodule :initform nil)
    (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)

@@ -41,6 +41,7 @@
            ;; routes
            #:define-route
            #:*route*
+           #:route-symbol
            #:genurl
            #:genurl-submodule
            #:genurl-with-host
