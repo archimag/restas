@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" />
+
+        <title>{$title}</title>
+
+        <link rel="stylesheet" type="text/css" href="{staticHref('style.css')}" />
+        <link rel="stylesheet" type="text/css" href="{staticHref('colorize.css')}" />
+    </head>
+
+    <body>
+        <div id="frame">
+            <div id="page-title">
+                <h1>RESTAS</h1>
+                <b>Фрэймворк для разработки web-приложений на Common Lisp</b>
+            </div>
+
+            <div id="menu">
+                <ul>
+                    {foreach $item in $contents}
+                    <li>
+                        {if $item.href}
+                        <a href="{$item.href}">{$item.title}</a>
+                        {else}
+                        <strong>{$item.title}</strong>
+                        {/if}
+
+                        {if $item.childs}                            
+                        <ul>
+                            {foreach $item2 in $item.childs}
+                            <li>
+                                {if $item2.href}
+                                <a href="{$item2.href}">{$item2.title}</a>
+                                {else}
+                                <strong>{$item2.title}</strong>
+                                {/if}
+                            </li>
+                            {/foreach}
+                        </ul>
+                        {/if}
+                    </li>
+                    {/foreach}
+                </ul>
+            </div>
+
+            <div id="content">
+                {$content |noAutoescape}</div>
+            </div>
+        </div>
+
+        <div class="bottom">@2009-2010 Moskvitin Andrey</div>        
+    </body>
+</html>
+

@@ -1,0 +1,38 @@
+/* style.css */
+
+body { margin: 0.5em 2em; }
+
+#frame {  border: 1px solid gray;  }
+
+h1, h2, h3 {color: green;}
+
+#page-title { margin: 0; padding: 0.2em 1em; background-color: #d48d66; border-bottom: 1px solid gray; }
+
+#page-title h1 { margin: 0;}
+
+#menu { float: right; width: 240px;}
+
+#menu > ul { margin: 0; padding: 1em;}
+
+#menu > ul ul { margin: 0; padding-left: 1em;}
+
+#menu li { margin-top: 0.3em; margin-bottom: 0.3em; list-style-type: none;}
+
+#menu a { color: #c3454f; font-weight: bold;}
+
+#content { margin: 0 240px 0 0; padding: 1em; border-right: 1px solid gray; min-height: 500px; }
+
+.bottom { font-size: 90%; color: #666; padding: 1em; clear: both; text-align: center;  }
+
+
+
+div.note {
+    margin: 1em ;
+    border: medium outset ;
+    padding: 1em ;
+}
+
+div.note .first { 
+  font-weight: bold ;
+  font-family: sans-serif;
+}

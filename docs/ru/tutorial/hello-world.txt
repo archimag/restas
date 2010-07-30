@@ -1,0 +1,188 @@
+Hello World
+===========
+
+Простейший пример
+-----------------
+
+Классический "Hello world", куда же без него:
+
+.. code-block:: common-lisp
+
+  (asdf:operate 'asdf:load-op '#:restas)
+
+  (restas:define-module #:restas.hello-world
+    (:use :cl))
+
+  (in-package #:restas.hello-world)
+
+  (restas:define-route main ("")
+    "<h1>Hello world!</h1>")
+
+  (restas:start '#:restas.hello-world :port 8080)
+
+Если после выполнения данного кода открыть в браузере ссылку http://localhost:8080/, 
+то можно будет увидеть заголовок "Hello world", очень мило :)
+
+
+Теперь по порядку, строчка за строчкой:
+
+Для начала загружает сам RESTAS:
+
+.. code-block:: common-lisp
+
+  (asdf:operate 'asdf:load-op '#:restas)
+
+Объявляем новый сайт:
+
+.. code-block:: common-lisp
+
+  (restas:defmodule #:restas.hello-world
+    (:use :cl))
+
+Фактически, данный код просто создаёт пакет и проводит его инициализацию: добавляет
+несколько переменных. Это довольно любопытный момент, что сайт не является объектом,
+либо символом, а связан с пакетом. Почему так сделано? Я хочу, что бы процесс
+создания веб-приложения был максимально простым и не требовал бы много буков. А
+использовании "пакета в качестве сайта" позволяет во многих случаях не указывать сайт
+явно, а просто размещать код, как-то влияющий на сайт, внутрь связанного с ним пакета.
+
+Меняем текущий пакет, как следует из предыдущего пункта, это важно:
+
+.. code-block:: common-lisp
+
+  (in-package #:restas.hello-world)
+
+Создаём маршрут, ответственный за обработку GET-запроса к корню сайта:
+
+.. code-block:: common-lisp
+
+  (restas:define-route main ("")
+    "<h1>Hello world!</h1>")
+
+Внутри макроса define-route может быть произвольный код, который должен вернуть 
+либо строку, либо octets array, либо pathname (в этом случае клиент получит
+соответствующий файл), либо целое число (которое будет интерпретироваться как
+статус ответа, например hunchentoot:+http-not-found++). Также, это код может
+свободно использовать все переменные, указанные в документации на веб-сервер
+hunchentoot (например, hunchentoot:*request* или hunchentoot:*reply*). 
+
+Запускаем веб-сервер и активизуем сайт:
+
+.. code-block:: common-lisp
+
+  (restas:start '#:restas.hello-world :port 8080)
+
+Обработка POST-запросов
+-----------------------
+
+А это пример демонстрирует различную обработку GET и POST-запросов:
+
+.. code-block:: common-lisp
+
+  (asdf:operate 'asdf:load-op :cl-who)
+  (asdf:operate 'asdf:load-op :restas)
+
+  (restas:define-module :restas.example-1
+    (:use :cl))
+
+  (in-package :restas.example-1)
+
+  (restas:define-route main ("" :method :get)
+    (who:with-html-output-to-string (out)
+      (:html
+       (:body
+        ((:form :method :post)
+         ((:input :name "message"))
+         ((:input :type "submit" :value "Send")))))))
+
+  (restas:define-route main/post ("" :method :post)
+    (who:with-html-output-to-string (out)
+      (:html
+       (:body
+        (:div
+         (:b (who:fmt "test message: ~A"
+                      (hunchentoot:post-parameter "message"))))
+        ((:a :href (restas:genurl 'main)) "Try again")))))
+
+  (restas:start '#:restas.example-1 :port 8080)
+
+
+После его выполнения и открытия страницы http://localhost:8080/ становится доступна
+элементарная форма, в которую предлагается ввести произвольное сообщение. После
+чего можно выполнить Send и получить новую страницу, содержащую введённое сообщение
+и ссылку с предположение повторить, ещё немного доработать и можно будет продавать :)
+
+Данный пример отличается от предыдущего тем, что содержит уже целых два маршрута,
+один для обработки GET-запроса, а другой для обработки POST. Как видно, тип 
+запроса, за который отвечает маршрут, можно указать с помощью ключа :method, 
+по-умолчанию это :get. Наличие в имени маршрута 'main/post, отвечающего за обработку
+POST-запроса, суффикса "post" является чистым совпадением: маршруты могу именоваться
+произвольным образом, лишь бы каждый маршрут имел уникальное имя. Также, в данном
+коде для генерации html используется библиотека cl-who, которую я совершенно не 
+рекомендую использовать для реальных приложений, но для небольших демонстраций 
+это самое то.
+
+Маршруты с параметрами
+----------------------
+
+Шаблон url, указываемый в define-route не обязан быть столь простым, как в предыдущих
+примерах, и может содержать несколько параметров, которые являются доступными дл
+я кода-обработчика, указанного внутри define-route.
+
+.. code-block:: common-lisp
+
+  (asdf:operate 'asdf:load-op :cl-who)
+  (asdf:operate 'asdf:load-op :restas)
+
+  (restas:define-module :restas.example-2
+    (:use :cl :iter))
+
+  (in-package :restas.example-2)
+
+  (restas:define-route root ("")
+    (who:with-html-output-to-string (out)
+      (:html
+       (:head
+        (:title "Example 2: Index"))
+       (:body
+        (:h1 "Index")
+        (:ul
+         (iter (for x from 1 to 10)
+               (who:htm (:li
+                         ((:a :href (genurl 'chapter-?.html :id x))
+                          (who:fmt "Chapter ~A" x))))))))))
+
+  (restas:define-route chapter-?.html ("chapter-:(id).html")
+    (who:with-html-output-to-string (out)
+      (:html
+       (:head
+        (:title (who:fmt "Example 2. Chapter ~A" id)))
+       (:body
+        (:h1 (who:fmt "Chapter ~A" id))
+        (:ul
+         (iter (for x from 1 to 10)
+               (who:htm (:li
+                         ((:a :href (genurl 'chapter-?-?.html :id1 id :id2 x))
+                          (who:fmt "Chapter ~A-~A" id x))))))
+        ((:a :href (genurl 'root))
+         "Back to Index")))))
+  
+  (restas:define-route chapter-?-?.html ("chapter-:(id1)-:(id2).html")
+    (who:with-html-output-to-string (out)
+      (:html
+       (:head
+        (:title (who:fmt "Example 2. Chapter ~A-~A" id1 id2)))
+       (:body
+        (:h1 (who:fmt "Chapter ~A-~A" id1 id2))
+        (:p (who:fmt "This is a chapter ~A-~A" id1 id2))
+        ((:a :href (genurl 'chapter-?.html :id id1))
+         (who:fmt "Back to Chapter ~A" id1))))))
+
+  (restas:start :restas.example-2 :port 8080)
+
+Я не знаю, какой из примеров является более глупым, но данный демонстрирует 
+навигацию по некой "книге с оглавлением" и нравится мне меньше всего. С другой
+стороны, он позволят не только показать маршруты с параметрами, но также и
+генерацию ссылок на основе имени маршрутов.
+
+Код приведённых примеров входит в поставку RESTAS и находиться в директории example.

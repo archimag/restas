@@ -1,0 +1,10 @@
+Manual
+======
+
+.. toctree::
+   :maxdepth: 1
+
+   routes
+   modules
+   view
+   daemon
