@@ -1,20 +1,14 @@
 Начало
 ======
 
-.. note:: Примечание
-
-   Здесь будет документация к RESTAS, но пока просто собраны некоторые
-   статьи из моего `блога <http://archimag-dev.blogspot.com/>`_. Это ещё не документация!
-
-
 Первые шаги
 -----------
 
 * **С нуля:**
-  :ref:`Обзор <overview>` 
+  :ref:`Обзор <overview>` | :ref:`Установка <installation>`
 
 * **Tutorial:**
-  :ref:`Здравтсвуй мир <tutorial/hello-world>` 
+  :ref:`Здравствуй мир <tutorial/hello-world>` 
 
 Подробности
 -----------
@@ -27,4 +21,7 @@
 
 * :ref:`Демонизация <manual/daemon>`
 
+Поддержка
+---------
 
+* `Форум <http://lisper.ru/forum/restas>`_

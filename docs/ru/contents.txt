@@ -6,6 +6,7 @@
 
    index
    overview
+   installation
    tutorial/contents
    manual/contents
 

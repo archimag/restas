@@ -17,8 +17,10 @@ a.symbol:hover { color : #229955; background-color : transparent; text-decoratio
 /* span.paren6:hover { color : inherit; background-color : #FFBAFF; } */
 
 pre, .code {
-    background-color: #eee;
-    border: 1px solid #d0d0d0;
+    background-color: #fdfdd2;
+    font-weight: bold;
+    border: 1px solid #222;
+    /*border: 1px solid #418901;*/
     margin: 0.2em;
     padding: 0.5em;
     font-family: "Courier New", monospace;
