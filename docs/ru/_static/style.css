@@ -33,3 +33,5 @@ div.note {margin: 1em ; border: medium outset ; padding: 1em ;}
 div.note .first { font-weight: bold ; font-family: sans-serif; }
 
 .common-lisp-entity { font-weight: bold; }
+
+.toctree li  { margin-top: 0.6em; margin-bottom: 0.6em;}

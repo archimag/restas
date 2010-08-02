@@ -1,3 +1,5 @@
+.. _index:
+
 Начало
 ======
 
@@ -8,18 +10,18 @@
   :ref:`Обзор <overview>` | :ref:`Установка <installation>`
 
 * **Tutorial:**
-  :ref:`Здравствуй мир <tutorial/hello-world>` 
+  :ref:`Здравствуй мир <tutorial-hello-world>` 
 
 Подробности
 -----------
 
-* :ref:`Маршруты <manual/routes>`
+* :ref:`Маршруты <manual-routes>` | :ref:`manual-routes-requirement`
 
-* :ref:`Модули <manual/modules>`
+* :ref:`Модули <manual-modules>`
 
-* :ref:`Разделение логики и представления <manual/view>`
+* :ref:`Разделение логики и представления <manual-view>`
 
-* :ref:`Демонизация <manual/daemon>`
+* :ref:`Демонизация <manual-daemon>`
 
 Поддержка
 ---------
