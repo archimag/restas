@@ -1,56 +1,54 @@
 .. _overview:
 
-Обзор
+Overview
 =====
 
-`RESTAS`_ - фреймворк для разработки web-приложений на языке Common Lisp.
-Ключевые свойства:
+`RESTAS`_ is a framework for development of web-application with Common Lisp
+language. Its key features are:
 
-* Разрабатывался для упрощения разработки веб-приложений, придерживающихся
-  архитектурного стиля `REST`_.
+* `RESTAS`_ was developed to simplify development of web applications,
+following `REST`_ architecture style.
 
-* Основан на `Hunchentoot`_. Хотя RESTAS и упрощает многие аспекты
-  разработки веб-приложений по сравнению с `Hunchentoot`_, но знание
-  `Hunchentoot`_ является обязательными, по крайней мере, в области
-  работы с :var:`hunchentoot:*request*` и :var:`hunchentoot:*reply*`.
+* RESTAS is based on `Hunchentoot`_. Despite of that web application development
+  with RESTAS is in many aspects simplier, than with `Hunchentoot`_,
+  knowledge of `Hunchentoot`_ is required, at least about working with 
+  :var:`hunchentoot:*request*` and :var:`hunchentoot:*reply*`.
 
-* Диспетчеризация запросов на основе системы маршрутов. Является ключевой
-  концепцией RESTAS и в своей области предоставляет возможности,
-  не имеющие аналогов в других веб-фреймворках.
+* Request dispatch is based on route system. Route system is key concept of
+  `RESTAS`_ and in this area it provides opportunities having no counterparts
+  in other web frameworks.
+
+* Mechanics of reusing code with module system is other key concept. It
+  provides flexible way for design reuse of modules with maximal simplisity
+  of their development.
   
-* Механизм повторного использования кода, система модулей, тоже является
-  ключевой концепцей. Обеспечивает гибкий механизм повторного использования
-  модулей и предельную простоту их разработки.
+* Full support of interactive development. Any code concernig RESTAS (such as
+  definition of route, module or submodule) can be recompiled at any time
+  when you work in `SLIME`_ and any changes you made can be immediatly seen in
+  your browser. No webserver restart or other complicated actions are needed.
 
-* Полная поддержка интерактивной разработки. Любой код, относящийся к RESTAS
-  (такой, как определение маршрута, модуля или подмодуля) может быть в любой
-  момент "перекомпилирован" непосредственно при работе в `SLIME`_ и внесённые
-  изменения можно немедленно увидеть в браузере. Никаких перезагрузок
-  веб-сервера и других сложных действий.
+* `SLIME`_ integration. Now it mainly lets investigate inner structure of web
+  applications with standard "SLIME Inspector". For example, there is a
+  "site map" and a simple code navigation with it.
 
-* Интеграция со `SLIME`_. В данный момент она в основном позволяет исследовать
-  внутреннее устройство веб-приложений на основе стандартного "SLIME Inspector".
-  Например, доступна наглядная "карта сайта" и простая навигация по коду
-  приложения на её основе.
+* Easy to use, pure Lisp web application demonization facility based on
+  `RESTAS`_ and `SBCL`_ in Linux without usage of `Screen`_ or `detachtty`_,
+  which are traditional solutions of this problem and create tonns of promlebs
+  when intensively used.
 
-* Простой в использовании "pure lisp" способ демонизации веб-приложений на основе
-  `RESTAS`_ и `SBCL`_ в Linux без использования `Screen`_
-  или `detachtty`_, которые традиционно используются для решения данной задачи
-  и создают массу проблем при интенсивном использовании.
+* RESTAS is not a MVC famework, though it doesn't contradict the concept.
+  From MVC point of view, `RESTAS`_ provides the level of controller. Nevertheless,
+  `RESTAS`_ provides effective and flexible way for separation of logic and
+  representation, because it doesn't put any constraints on structure of
+  developed applications. Separation of model and controller can be effectively
+  performed with Common Lisp facilities, and, hence, doesn't need any special
+  support from the framework.
 
-* RESTAS не является MVC-фреймворком, хотя и не противоречит данной концепции.
-  С точки зрения MVC `RESTAS`_ обеспечивает уровень контролёра. Тем не менее,
-  `RESTAS`_ предоставляет эффективный и гибкий механизм разделения логики и представления,
-  поскольку он не накладывает каких-либо ограничений на структуру разрабатываемых
-  приложений. Разделение модели и контролёра может быть эффективно выполнено
-  средствами Common Lisp и поэтому не нуждается в какой-либо специальной поддержке
-  со стороны фреймворка.
+* RESTAS doesn't contain a template library. Though, we recomend using one when
+  you develop a real web application. The Author recommends `cl-closure-template`_.
+  Other well-known template libraty is `HTML-TEMPLATE`_.
 
-* RESTAS не содержит библиотеки шаблонов. Тем не менее, рекомендуется использовать таковые
-  при разработке реальных веб-приложений. Автор рекомендует `cl-closure-template`_.
-  Другой известной библиотекой шаблонов является `HTML-TEMPLATE`_.
-
-`RESTAS`_ распространяется на условиях лицензии `Lisp LGPL`_.
+`RESTAS`_ is distributed under the terms of `Lisp LGPL`_ license.
 
 .. _RESTAS: http://restas.lisper.ru/
 .. _SLIME: http://common-lisp.net/project/slime/    
@@ -62,3 +60,4 @@
 .. _cl-closure-template: http://code.google.com/p/cl-closure-template/
 .. _REST: http://ru.wikipedia.org/wiki/REST
 .. _Lisp LGPL: http://opensource.franz.com/preamble.html
+

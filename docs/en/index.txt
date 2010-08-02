@@ -1,29 +1,29 @@
 .. _index:
 
-Начало
+Begining
 ======
 
-Первые шаги
+First steps
 -----------
 
-* **С нуля:**
-  :ref:`Обзор <overview>` | :ref:`Установка <installation>`
+* **Start from scratch:**
+  :ref:`Overview <overview>` | :ref:`Installation <installation>`
 
 * **Tutorial:**
-  :ref:`Здравствуй мир <tutorial-hello-world>` 
+  :ref:`Hello, World! <tutorial-hello-world>` 
 
-Подробности
+Details
 -----------
 
-* :ref:`Маршруты <manual-routes>` | :ref:`manual-routes-requirement`
+* :ref:`Routes <manual-routes>` | :ref:`manual-routes-requirement`
 
-* :ref:`Модули <manual-modules>`
+* :ref:`Modules <manual-modules>`
 
-* :ref:`Разделение логики и представления <manual-view>`
+* :ref:`Separation of logic and representation <manual-view>`
 
-* :ref:`Демонизация <manual-daemon>`
+* :ref:`Demonisation <manual-daemon>`
 
 Поддержка
 ---------
 
-* `Форум <http://lisper.ru/forum/restas>`_
+* `Forum <http://lisper.ru/forum/restas>`_

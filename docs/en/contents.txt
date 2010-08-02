@@ -1,6 +1,6 @@
 .. _contents:
 
-Документация о RESTAS
+RESTAS documentation
 =====================
 
 .. toctree::
