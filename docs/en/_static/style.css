@@ -1,0 +1,37 @@
+/* style.css */
+
+body { margin: 0 4em; background-color: /*#cbd7d9*/#d6d9d9; color: #333333; }
+
+a { color: #ca7900; }
+a:hover { color: #2491CF; }
+
+#frame {  border: 1px solid #222; background-color: white; font-family: arial, helvetica, clean, sans-serif; font-size: 0.9em;}
+
+h1, h2, h3, h1 *, h2 *, h3 * {color: #00607B; font-family: Georgia, 'Times New Roman', Times, serif; }
+
+
+#page-title { margin: 0; padding: 0.6em 1em; background-color: #333; border-bottom: 0.6em solid gray; font-size: 1.5em;  color: #ffd630;}
+
+#page-title h1 { margin: 0; color: #cccccc; }
+
+#menu { float: right; width: 14em;}
+
+#menu > ul { margin: 0; padding: 1em;}
+
+#menu > ul ul { margin: 0; padding-left: 1em;}
+
+#menu li { margin-top: 0.3em; margin-bottom: 0.3em; list-style-type: none;}
+
+#menu a { font-weight: bold;}
+
+#content { margin: 0 14em 0 0; padding: 1em; border-right: 1px solid #222; min-height: 40em; }
+
+.bottom { font-size: 90%; color: #666; padding: 1em; clear: both; text-align: center;  }
+
+div.note {margin: 1em ; border: medium outset ; padding: 1em ;}
+
+div.note .first { font-weight: bold ; font-family: sans-serif; }
+
+.common-lisp-entity { font-weight: bold; }
+
+.toctree li  { margin-top: 0.6em; margin-bottom: 0.6em;}

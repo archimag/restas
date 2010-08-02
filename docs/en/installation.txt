@@ -1,0 +1,81 @@
+.. _installation:
+
+===========
+ Установка
+===========
+
+Ручная установка
+================
+
+`RESTAS`_ это обычная, `ASDF`_-система, и его установка ничем не отличается от
+установки большинства других пакетов:
+
+Перед установкой `RESTAS`_ необходимо установить следующие зависимости: 
+
+* `Hunchentoot`_
+* `alexandria`_
+* `cl-routes`_
+* `garbage-pools`_
+
+Далее необходимо получить исходный код. Последнюю версию `RESTAS`_ можно скачать
+на странице http://code.google.com/p/restas/downloads/list.
+
+Любители нестабильных версий могут также воспользоваться имеющимся `git`_-репозиторием:
+::
+
+  git clone git://github.com/archimag/restas.git
+
+Теперь необходимо распаковать исходный код и добавить его в :var:`asdf:*central-registry*`:
+
+.. code-block:: common-lisp
+
+  (push #P"/path/to/restas/" asdf:*central-registry*)
+
+Или создать символическую ссылку:
+::
+
+  cd ~/sbcl/.systems   # Или любая другая директория, указанная в asdf:*central-registry*
+  ln -s /path/to/restas/restas.asd .
+
+Использование clbuild
+=====================
+
+Другой вариант установки - использовать форк `clbuild`_, репозиторий которого
+находится на странице http://github.com/archimag/clbuild-archimag. Использование
+этого инструмента ничем не отличается от использования оригинального `clbuild`_.
+
+Gentoo Linux
+============
+
+Пользователи Gentoo Linux могут воспользоваться `archimag-lisp-overlay`_,
+который является форком `gentoo-lisp-overlay`_.
+
+Установить этот оверлей при помощи `layman`_ можно следующим образом:
+::
+
+  emerge layman
+
+Теперь необходимо добавить http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+в параметр overlays в конфигурационном файле /etc/layman/layman.cfg:
+::
+
+  overlays  : http://www.gentoo.org/proj/en/overlays/repositories.xml
+              http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+
+И наконец:
+::
+
+  layman -f -a archimag-lisp
+  emerge restas
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _ASDF: http://common-lisp.net/projects/asdf/
+.. _Hunchentoot: http://www.weitz.de/hunchentoot/
+.. _alexandria: http://common-lisp.net/project/alexandria/
+.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _cl-routes: http://code.google.com/p/cl-routes/
+.. _git: http://git-scm.com/
+.. _clbuild: http://common-lisp.net/project/clbuild/
+.. _archimag-lisp-overlay: http://github.com/archimag/archimag-lisp-overlay
+.. _layman: http://layman.sourceforge.net/
+.. _gentoo-lisp-overlay: http://repo.or.cz/w/gentoo-lisp-overlay.git
