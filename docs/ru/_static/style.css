@@ -1,6 +1,6 @@
 /* style.css */
 
-body { margin: 0 4em; background-color: /*#cbd7d9*/#d6d9d9; color: #333333; }
+body { margin: 0 4em; background-color: /*#cbd7d9*/#d6d9d9; color: #333333; text-align: justify; }
 
 a { color: #ca7900; }
 a:hover { color: #2491CF; }
@@ -26,7 +26,7 @@ h1, h2, h3, h1 *, h2 *, h3 * {color: #00607b; font-family: Georgia, 'Times New R
 
 .bottom { font-size: 90%; color: #666; padding: 1em; clear: both; text-align: center;  }
 
-div.note { margin: 1em; border: 1px solid #dedede; background: url('note.png') no-repeat 0.8em 0.8em; padding-left: 65px; }
+div.note { margin: 1em; border: 1px solid #dedede; background: url('note.png') no-repeat 0.8em 0.8em; padding-left: 65px; padding-right: 1em; }
 div.note .first { font-weight: bold ; font-family: sans-serif; }
 
 .common-lisp-entity { font-weight: bold; }
