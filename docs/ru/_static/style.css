@@ -7,11 +7,9 @@ a:hover { color: #2491CF; }
 
 #frame {  border: 1px solid #222; background-color: white; font-family: arial, helvetica, clean, sans-serif; font-size: 0.9em;}
 
-h1, h2, h3, h1 *, h2 *, h3 * {color: #00607B; font-family: Georgia, 'Times New Roman', Times, serif; }
-
+h1, h2, h3, h1 *, h2 *, h3 * {color: #00607b; font-family: Georgia, 'Times New Roman', Times, serif; }
 
 #page-title { margin: 0; padding: 0.6em 1em; background-color: #333; border-bottom: 0.6em solid gray; font-size: 1.5em;  color: #ffd630;}
-
 #page-title h1 { margin: 0; color: #cccccc; }
 
 #menu { float: right; width: 14em;}
@@ -28,8 +26,7 @@ h1, h2, h3, h1 *, h2 *, h3 * {color: #00607B; font-family: Georgia, 'Times New R
 
 .bottom { font-size: 90%; color: #666; padding: 1em; clear: both; text-align: center;  }
 
-div.note {margin: 1em ; border: medium outset ; padding: 1em ;}
-
+div.note { margin: 1em; border: 1px solid #dedede; background: url('note.png') no-repeat 0.8em 0.8em; padding-left: 65px; }
 div.note .first { font-weight: bold ; font-family: sans-serif; }
 
 .common-lisp-entity { font-weight: bold; }

@@ -1,0 +1,637 @@
+.. _tutorial-pastebin:
+
+==========
+ Pastebin
+==========
+
+В качестве демонстрации использования `RESTAS`_ для создания полноценного
+веб-приложения я хочу показать, как можно построить простейший pastebin-сервис.
+
+.. note:: Примечание
+
+  Из `Википедии <http://ru.wikipedia.org/wiki/Pastebin>`_: pastebin или nopaste - веб-приложение, которое позволяет загружать
+  отрывки текста, обычно фрагменты исходного кода, для возможности просмотра
+  окружающими. Такой сервис очень популярен среди пользователей IRC сетей, где
+  вставка больших фрагментов текста считается плохим тоном. Сервис также часто
+  используется пользователями IM. В интернете существует множество pastebin
+  веб-приложений, большинство из которых предоставляет подсветку синтаксиса
+  различных языков программирования и специальной разметки.
+
+Pastebin - это очень простое приложение, на примере которого, однако, можно показать
+основные принципы построения `RESTAS`_-приложений. Кроме того, это реальное
+приложение, которое используется на сайте `lisper.ru`_, посмотреть или даже
+попробовать его в работе можно `здесь <http://lisper.ru/apps/format/>`_.
+
+Итак, я хочу получить компонент, который будет обладать следующими функциональными
+возможностями:
+
+* Форма для создания нового элемента
+
+* Список всех зарегистрированных элементов, щелчком на которых можно выполнить
+  переход к просмотру этих элементов
+
+* Представление для просмотра каждого элемента
+
+* Подсветка синтаксиса 
+
+Кроме того, я хочу, что бы данный компонент был предназначен для повторного
+использования в составе комплексных сайтов и таким образом он должен обладать
+возможностями по гибкой конфигурации:
+
+* Использовал предоставляемую систему аутентификаци
+
+* Использовал предоставляемую модель для хранения данных
+
+* Предусматривал настройку способа отображения страниц
+
+Логическая структура
+====================
+
+Для данного приложения я буду следовать модели MVC, с чётким разделением модели,
+контролёра и представления.
+
+Настройка модуля будет производиться через `специальные <http://lisper.ru/articles/cl-vars>`_
+(динамические) переменные (подробнее о настройке модулей с помощью динамических
+переменных смотрите раздел :ref:`manual-modules`).
+
+Хранить данные этого приложения можно множеством различных способов, поэтому я
+просто определю необходимый интерфейс и введу специальную переменную :fun:`*storage*`,
+с помощью которой внешнее приложение сможет указать используемый способ хранения
+данных. Поскольку для разработки и отладки нужно иметь какую-то функционирующую
+модель, то я реализую тривиальный класс :class:`memory-storage`, который обеспечит
+хранения необходимых данных в памяти - такой подход позволяет вести разработку не
+акцентируя внимание на структуре базы данных, а вводить её только при реальной
+необходимости.
+
+Типично сайты имеют единую схему аутентификации, которая должна использоваться во всех
+компонентах. Поэтому разрабатываемый компонент не должен ничего знать об используемой
+схеме аутентификации, а только о текущем пользователе. Фактически, ему нужно знать
+только имя пользователя, который работает с данным компонентом.  Поэтому достаточно
+ввести одну единственную специальную переменную :var:`*colorize-user-function*`, в
+которой будет храниться функция, возвращающая имя пользователя. 
+
+Поскольку я хочу, что бы компонент допускал гибкую настройку отображения страниц,
+то для отделения логики представления буду использовать создаваемую `RESTAS`_
+специальную переменную :var:`*default-render-method*`, в которой будет храниться
+объект, ответственный за представление (подробнее об этом смотрите в разделе
+:ref:`manual-view`). Кроме того, я буду использовать библиотеку
+`cl-closure-template`_ для определения шаблонов страниц.
+
+Физическая структура
+====================
+
+Для упрощения понимания структуры кода я разобью его на следующие файлы:
+
+* **defmodule.lisp** - содержит определение модуля, а также специальных переменных,
+  с помощью которых можно будет настроить поведение компонента
+
+* **storage.lisp** - содержит определения интерфейса, которому должна удовлетворять
+  используемая модель, а также простейшую реализацию этой модели
+
+* **drawer.lisp** - интерфейс и реализация по-умолчанию объекта drawer, для установки
+  которого будет использоваться специальная переменная :var:`*default-render-method*`
+
+* **drawer.tmpl** - файл с шаблонами в формат `cl-closure-template`_
+
+* **routes.lisp** - центральная часть приложения, в которой определяется схема URL и код
+  для обработки поступающих запросов
+
+Реализация
+==========
+
+defmodule.lisp
+--------------
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:restas.colorize
+    (:use #:cl #:iter)
+    (:export ..))
+
+  (in-package #:restas.colorize)
+
+  (defvar *max-on-page* 10)
+
+  (defvar *storage* nil)
+
+  (defvar *colorize-user-function* #'(lambda () "anonymous"))
+
+  (defun colorize-user ()
+    (if *colorize-user-function*
+        (funcall *colorize-user-function*)))
+
+Здесь я определил новый модуль **#:restas.colorize** (при этом в целях экономии
+места опустил список экспортируемых символов) и ввёл несколько специальных
+переменных, которые будут использоваться для настройки модуля (для переменных
+:var:`*max-on-page*` и :var:`*colorize-user-function*` определены значения
+по-умолчанию), а также определил вспомогательную функцию :fun:`colorize-user`,
+которая будет вычислять имя пользователя.
+  
+storage.lisp
+------------
+
+Определяем интерфейс, которому должен удовлетворять объект :var:`*storage*`:
+
+.. code-block:: common-lisp
+
+  (defgeneric storage-count-notes (storage)
+    (:documentation "Колличество записей"))
+
+  (defgeneric storage-list-notes (storage offset limit))
+    (:documenation "Список записей начиная с offset, но колличеством не больше limit"
+
+  (defgeneric storage-get-note (storage id)
+    (:documentation "Получить записть по id")
+
+  (defgeneric storage-add-note (storage note
+    (:documentation "Добавить новую запись"))
+
+Вспомогательный класс, для хранения информации о записи:
+
+.. code-block:: common-lisp
+    
+  (defclass note ()
+    ((id :initarg :id :initform nil :accessor note-id)
+     (date :initarg :date :initform nil :accessor note-date)
+     (author :initarg :author :initform nil :accessor note-author)
+     (title :initarg :title :initform nil :accessor note-title)
+     (lang :initarg :lang :initform nil :accessor note-lang)
+     (code :initarg :code :initform nil :accessor note-code)))
+
+Реализация хранилища в памяти тривиальная, поэтому здесь я ограничусь
+только определением класса:
+
+.. code-block:: common-lisp
+
+  (defclass memory-storage ()
+    ((notes :initform nil)
+     (last-id :initform 0)))
+
+Присваиваем переменной :var:`*storage*` значение по-умолчанию:
+
+.. code-block:: common-lisp
+
+  (setf *storage* (make-instance 'memory-storage))
+
+routes.lisp
+-----------
+
+В этом файле определяются обрабатываемые URL и управляющая логика.
+Поскольку всю логику представлению я переношу на объект :var:`*default-render-method*`,
+то обработчики маршрутов должны только собирать и подготавливать данные,
+которые после этого будут обрабатываться с помощью функции :fun:`restas:render-object`.
+Для реализации логики представления я буду использовать, как говорил выше, библиотеку
+`cl-closure-template`_, которая в качестве входного формата данных
+использует *plist* (подробнее об использовании *property list* можно почитать
+`здесь <http://lisper.ru/pcl/practical-a-simple-database>`_), поэтому обработчики
+маршрутов будут генерировать данные в этом формате.
+
+Для начала пара вспомогательных функций, переводящих информацию о записи
+в формат *plist*:
+
+.. code-block:: common-lisp
+
+  (defun note-plist/short (note)
+    (list :href (restas:genurl 'view-note :id (note-id note))
+          :date (local-time:format-timestring nil (note-date note))
+          :title (note-title note)
+          :author (note-author note)))
+
+  (defun note-plist (note)
+    (list* :title (note-title note)
+           :code (note-code note)
+           :lang (note-lang note)
+           (note-plist/short note)))
+
+В этом коде наибольший интерес представляет вызов
+
+.. code-block:: common-lisp
+
+  (restas:genurl 'view-note :id (note-id note))
+
+Который генерирует URL для просмотра записи на основе имени маршрута ('view-node)
+и параметра :id.
+
+.. note:: Примечание
+
+  В системах на основе маршрутов не принято "ручное" создание URL, поскольку
+  автоматическая генерация значительно повышает гибкость приложения и избавляет
+  от многих потенциальных проблем. Помимо прочего в данном случае будет
+  учтён базовый URL, по которому подключён модуль.
+
+Теперь точка входа:
+
+.. code-block:: common-lisp
+
+  (restas:define-route main ("")
+    (restas:redirect 'list-notes))
+
+Данный маршрут обрабатывает запрос к базовому URL, по которому подключён модуль
+и просто перенаправляет на страницу со списком записей. Для перенаправления
+используется функция :fun:`restas:redirect`, которая, подобно :fun:`restas:genurl`,
+обрабатывает имя маршрута (и набор параметров, но у маршрута 'list-notes их нет),
+так что нет необходимости в явному указании URL.
+
+Для отображения списка записей используется постраничное отображение, с тем
+ограничением, что на одной странице не может одновременно отображаться более
+:var:`*max-on-page*` записей (эта переменная введена в **defmodule.lisp**). Поэтому,
+кроме самого списка записей необходимо собрать информацию об общем количество записей,
+а также предоставить ссылки на предыдущую и следующую страницы:
+
+.. code-block:: common-lisp
+
+  (restas:define-route list-notes ("all")
+    (let* ((total-count (storage-count-notes *storage*))
+           (start (min (max (or (ignore-errors (parse-integer (hunchentoot:get-parameter "start")))
+                                1)
+                            1)
+                       total-count)))
+      (list :title "All notes"
+            :notes (iter (for note in (storage-list-notes *storage*
+                                                          (1- start)
+                                                          *max-on-page*))
+                         (collect (note-plist/short note)))
+            :first start
+            :total-count total-count
+            :href-before (if (< (+ (1- start) *max-on-page*)
+                                total-count)
+                             (format nil
+                                     "~A?start=~A"
+                                     (restas:genurl 'list-notes)
+                                     (+ start *max-on-page*)))
+            :href-after (if (> start 1)
+                            (format nil
+                                    "~A?start=~A"
+                                    (restas:genurl 'list-notes)
+                                    (max (- start *max-on-page*) 1))))))
+
+Данный код несколько более запутан, чем следовало бы, по той причине, что реально
+обрабатываемый URL выглядит как "all?start=n" (где n это порядковый номер первой
+записи на странице), а система маршрутов `RESTAS`_ пока не умеет учитывать
+GET-параметры запроса. 
+
+За просмотр конкретной записи отвечает следующий маршрут:
+
+.. code-block:: common-lisp
+
+  (restas:define-route view-note (":id"
+                                  :parse-vars (list :id #'parse-integer))
+    (note-plist (storage-get-note *storage* id)))
+
+Он очень просто, но содержит один любопытный момент - параметр :parse-vars.
+Индефикатором записи является id, который должен быть целым числом. Данный код
+позволяет убедиться, что указанный URL содержит именно целое число и преобразует
+его из строкового представления, так что код обработчика  работает уже с
+целочисленным значением. 
+
+Маршрут, отвечающий за показ формы предельно просто:
+
+.. code-block:: common-lisp
+
+  (restas:define-route create-note ("create")
+    (list :title "Создать"))
+
+Данная форма будет поддерживать как сохранение записи, так и предварительный
+просмотр, поэтому для обработки соответствующего POST-запроса я использую
+два маршрута:
+
+.. code-block:: common-lisp
+
+  (restas:define-route preview-note ("create"
+                                     :method :post
+                                     :requirement #'(lambda () (hunchentoot:post-parameter "preview")))
+    (list :title (hunchentoot:post-parameter "title")
+          :author (colorize-user)
+          :code (hunchentoot:post-parameter "code")
+          :lang (hunchentoot:post-parameter "lang")))
+
+
+  (restas:define-route save-note ("create"
+                                  :method :post
+                                  :requirement #'(lambda () (hunchentoot:post-parameter "save")))
+    (let ((author (colorize-user)))
+      (if author
+          (restas:redirect 'view-note
+                           :id (note-id (storage-add-note
+                                          *storage*
+                                          (make-instance 'note
+                                                         :code (hunchentoot:post-parameter "code")
+                                                         :author author
+                                                         :lang (hunchentoot:post-parameter "lang")
+                                                         :title (hunchentoot:post-parameter "title")))))
+          hunchentoot:+http-forbidden+)))
+
+Для выбора маршрута используется свойство :requirement, в котором проверяется
+какая команда (Save или Preview) была выбрана пользователем. Для проверки того,
+имеет ли пользователь право сохранять запись используется :fun:`coloreize-user`
+(которая была определена в **defmodule.lisp**) и если пользователь не авторизовался,
+то на попытку сохранить запись он получит статус :const:`hunchentoot:+http-forbidden+`.
+
+
+drawer.lisp
+-----------
+
+Все определённые выше маршруты возвращают данные в формате *plist*, поэтому
+для выбора шаблона, который должен отображать переданные данные, я буду
+дополнительно использовать имя текущего маршрута, которое можно вычислить как 
+
+.. code-block:: common-lisp
+
+  (restas:route-symbol restas:*route*)
+
+и для этого определю generic-функцию
+
+.. code-block:: common-lisp
+
+  (defgeneric render-route-data (drawer data route )
+    (:documentation "Отображение страницы для указанного маршрута"))
+
+которую можно будет специализировать с помощью квалификатора *eql*.
+
+Что бы внешнее приложение могло переопределить общую тему оформления
+я использую generic-фукнцию
+
+.. code-block:: common-lisp
+
+  (defgeneric finalize-page (drawer data)
+    (:documentation "Формирование итоговой страницы"))
+
+Для подсветки синтаксиса в CL есть библиотека `colorize`_, которая очень
+хорошо подсвечивает код на Common Lisp, но, честно говоря, далека от
+идеала. Поэтому, я хочу оставить возможность использовать другую инструмент,
+который, возможно, появится в будущем. Для этого я определяю следующие
+интерфейсы с реализацией по-умолчанию на базе `colorize`_:
+
+.. code-block:: common-lisp
+
+  (defgeneric colorize (drawer code lang)
+    (:documentation "Генерация html с подсветкой кода")
+    (:method (drawer code lang)
+      (colorize::html-colorization lang code)))
+
+  (defgeneric colorize-langs (drawer)
+    (:documentation "Список поддерживаемых языков")
+    (:method (drawer)
+      (iter (for (id . title) in (colorize:coloring-types))
+            (collect (list :id (symbol-name id)
+                           :title title)))))
+
+
+Для того, что бы специализировать вызов :fun:`restas:render-object`, а также
+определить реализации объявленных интерфейсов нужен класс:
+
+.. code-block:: common-lisp
+
+  (defclass drawer () ())
+
+Реализация :fun:`finalize-page` по-умолчанию просто вызывающий одноименный шаблон:
+
+.. code-block:: common-lisp
+
+  (defmethod finalize-page ((drawer drawer) data)
+    (restas.colorize.view:finalize-page data))
+
+Теперь :fun:`restas:render-object` записывается следующим образом:
+
+.. code-block:: common-lisp
+
+  (defmethod restas:render-object ((drawer drawer) (data list))
+    (let ((content (render-route-data drawer
+                                      data
+                                      (restas:route-symbol restas:*route*)))
+          (menu (restas.colorize.view:main-menu
+                 (list :href-all  (restas:genurl 'list-notes)
+                       :href-create (restas:genurl 'create-note)))))
+      (finalize-page drawer
+                     (list :content content
+                           :menu menu
+                           :title (getf data :title)))))
+
+Здесь происходит вызов :fun:`finalize-page` куда в формате *plist* передаются
+следующие данные:
+
+* **content** - основное содержимое страницы, которое генерируется с помощью
+  вызова :fun:`render-route-data`
+
+* **menu** - ссылки на просмотр записей и создание новой записи, которые
+  используются для показа меню модуля
+
+* **title** - заголовок страницы, который извлекается из переданных данных
+
+Общая реализация :fun:`render-route-data` обрабатывает переданные данные с помощью
+шаблона, имя которого совпадет с именем переданного маршрута:
+
+.. code-block:: common-lisp
+
+  (defmethod render-route-data ((drawer drawer) list route)
+    (funcall (find-symbol (symbol-name route)
+                          '#:restas.colorize.view)
+             data))
+
+Для некоторых маршрутов необходима небольшая корректировка передаваемых данных,
+чего можно добиться с помощью специализации на основе квалификатора *eql*:
+
+.. code-block:: common-lisp
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'view-note)))
+    (call-next-method drawer
+                      (list* :code (colorize drawer
+                                             (getf data :code)
+                                             (getf data :lang))
+                             data)
+                      route))
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'create-note)))
+    (call-next-method drawer
+                      (list* :langs (colorize-langs drawer)
+                             data)
+                      route))
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'preview-note)))
+    (call-next-method drawer
+                      (list* :langs (colorize-langs drawer)
+                             :preview (colorize drawer
+                                                (getf data :code)
+                                                (getf data :lang))
+                             data)
+                      route))
+
+Ну и наконец переменной :var:`restas:*default-render-method*` присваивается
+значение по-умолчанию:
+
+.. code-block:: common-lisp
+
+  (setf *default-render-method* (make-instance 'drawer))
+
+Таким образом, для генерации реального контента используется достаточно сложная схема,
+которая с одной стороны полностью опирается на шаблоны, а с другой каждый её аспект
+определён как generic-функция, так что для изменения способа отображения достаточно
+определить класс, наследующий от :class:`drawer`, и специализировать нужные функции.
+
+drawer.tmpl
+-----------
+
+Компиляция файла c шаблонами производится кодом:
+
+.. code-block:: common-lisp
+
+  (defparameter *colorize-template-path*
+    (merge-pathnames "src/drawer.tmpl"
+                     (asdf:component-pathname (asdf:find-system '#:restas-colorize))))
+
+  (closure-template:compile-template :common-lisp-backend
+                                     *colorize-template-path*)
+
+А сам он имеет следующее содержание:
+::
+
+  {namespace restas.colorize.view}
+
+  {template finalizePage}
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+      {\n}
+      <html>
+          <head>
+      	      <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" />
+
+              {if $title}
+                  <title>{$title}</title>
+              {/if}
+          </head>
+
+          <body>
+            {$menu |noAutoescape}
+            
+            {$content |noAutoescape}
+          </body>
+      </html>
+  {/template}
+
+  {template main-menu}
+      <ul class="colorize-top-menu">
+          <li>
+              <a href="{$hrefAll}">Все записи</a>
+          </li>
+
+          <li>
+              <a href="{$hrefCreate}">Создать</a>
+          </li>
+     </ul>
+  {/template}
+
+  {template show-note-info}
+      <div class="info">
+          Автор: <strong>{$author}</strong> - {$date}
+      </div>
+  {/template}
+    
+  {template list-notes}
+      <div class="colorize-list-nav" >
+          {if $hrefAfter}<a href="{$hrefAfter}">« Позже</a>{/if}
+          {$first} - {min($first + length($notes) - 1, $totalCount)} 
+          из {$totalCount}  
+          {if $hrefBefore}<a href="{$hrefBefore}">Раньше »</a>{/if}
+      </div>
+
+      {foreach $note in $notes}
+          <div class="note">
+              <a href="{$note.href}">{$note.title != '' ? $note.title : '*notitle*'}</a>
+              {call show-note-info data="$note" /}
+          </div>
+      {/foreach}
+  {/template}
+
+  {template view-note}
+      <div class="note-detail">
+          <strong>{$title}</strong>
+          {call show-note-info data="all" /}
+          <div class="code">
+              {$code |noAutoescape}
+          </div>
+      </div>
+  {/template}    
+    
+  {template create-note}
+      <form method="post">
+          <textarea rows="30" name="code" cols="80" style="width: 100%">{$code}</textarea>
+          <table style="text-align: left">
+              <tbody>
+                  {if $preview and $author}
+                      <tr>
+                          <th>Описание:</th>
+                          <td>
+                              <input size="60" name="title" type="text" {if $title}value="{$title}"{/if}/>
+                          </td>
+                      </tr>
+                  {/if}
+                    
+                  <tr>
+                      <th>Форматировать как:</th>
+                      <td>
+                          <select name="lang" >
+                              {foreach $l in $langs}
+                                  <option {if $l.id == $lang}selected{/if} value="{$l.id}">{$l.title}</option>
+                              {/foreach}
+                          </select>
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+        
+          <input type="submit" value="Форматировать" name="preview" />
+          {if $preview and $author}
+              <input type="submit" value="Сохранить" name="save" />
+          {/if}
+
+          {if $preview}
+              <h3>Предварительный просмотр</h3>
+              <div class="code">
+                  {$preview |noAutoescape}
+              </div>
+          {/if}
+     </form>    
+  {/template}
+
+  {template preview-note}
+      {call create-note data="all" /}
+  {/template}
+
+Использование
+=============
+
+Для использования описанного компонента на сайте `lisper.ru`_ я использую
+следующий код:
+
+.. code-block:: common-lisp
+
+  (defclass pastebin-drawer (restas.colorize::drawer) ())
+
+  (defmethod restas.colorize::finalize-page ((drawer pastebin-drawer) data)
+    (rulisp-finalize-page  :title (getf data :title)
+                           :css '("style.css" "colorize.css")
+                           :content (concatenate 'string
+                                                 (getf data :menu)
+                                                 (getf data :content))))
+
+  (restas:define-submodule rulisp-format (#:restas.colorize)
+    (restas.colorize:*baseurl* '("apps" "format"))
+    (restas.colorize:*max-on-page* 15)
+    (restas.colorize:*storage* *rulisp-db-storage*)
+    (restas.colorize:*colorize-user-function* #'compute-user-login-name)
+    (restas.colorize:*default-render-method* (make-instance 'pastebin-drawer)))
+
+Здесь через динамическое связывание специальных переменных задаётся базовый URL,
+по которому подключается модуль, максимальной количество записей на странице,
+способ хранения данных, способ аутентификации, а также корректируется способ
+отображения, так что данный компонент не выбивается из общего стиля оформления.
+
+Исходный код
+============
+
+Исходный код описанного приложения, который почти полностью приведён выше, доступен
+по адресу http://github.com/archimag/restas-colorize.
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _lisper.ru: http://lisper.ru/
+.. _cl-closure-template: http://code.google.com/p/cl-closure-template/
+.. _colorize: http://www.cliki.net/colorize
