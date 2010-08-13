@@ -135,13 +135,13 @@ storage.lisp
   (defgeneric storage-count-notes (storage)
     (:documentation "Колличество записей"))
 
-  (defgeneric storage-list-notes (storage offset limit))
-    (:documenation "Список записей начиная с offset, но колличеством не больше limit"
+  (defgeneric storage-list-notes (storage offset limit)
+    (:documenation "Список записей начиная с offset, но колличеством не больше limit"))
 
   (defgeneric storage-get-note (storage id)
-    (:documentation "Получить записть по id")
+    (:documentation "Получить записть по id"))
 
-  (defgeneric storage-add-note (storage note
+  (defgeneric storage-add-note (storage note)
     (:documentation "Добавить новую запись"))
 
 Вспомогательный класс, для хранения информации об одной записи:
