@@ -37,8 +37,8 @@
   (let ((pos (position symbol
                        (context-vars context))))
     (if pos
-        (nth pos (context-values context))
-        (symbol-value symbol))))
+        (values (nth pos (context-values context)) t)
+        (values (symbol-value symbol) nil))))
 
 (defun (setf context-symbol-value) (newval context symbol)
   (let ((pos (position symbol
