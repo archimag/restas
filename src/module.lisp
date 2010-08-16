@@ -12,9 +12,8 @@
   (:method (module context)
     (declare (ignore module context)))
   (:method ((module symbol) context)
-    (unless (keywordp module)
-      (initialize-module-instance (find-package module)
-                                  context))))
+    (initialize-module-instance (find-package module)
+                                context)))
 
 (defgeneric finalize-module-instance (module context)
   (:documentation "Call for module finalization")
