@@ -92,8 +92,11 @@ SLIME-ARCHIMAG
 инструментальных средств. `RESTAS`_ поддерживает :ref:`интеграцию <manual-slime>`
 со `SLIME`_, предоставляя ряд инструментов, упрощающих разработку веб-приложений,
 но для их использования необходимо использовать форк `SLIME-ARCHIMAG`_, вместо
-оригинального `SLIME`_.
+оригинального `SLIME`_, и  дополнительная инициализация Emacs:
+::
 
+  (add-to-list 'load-path "/path/to/restas/slime/")
+  (require 'restas)
 
 .. _RESTAS: http://restas.lisper.ru/
 .. _ASDF: http://common-lisp.net/projects/asdf/
