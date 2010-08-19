@@ -116,6 +116,44 @@
     `("" "Module: " ,(module-link (slot-value submodule 'restas::module))
          (:newline)
          (:newline)
+         ,@(let ((package  (slot-value submodule 'restas::module)))
+               `("" ;;"Module:         " (:value ,package ,(package-name package)) (:newline)
+                    "Initialization: " ,(let ((m (find-module-method package #'restas::initialize-module-instance)))
+                                             (if m
+                                                 (list :value m)
+                                                 "None"))
+                    (:newline)
+                    "Finalization:   " ,(let ((m (find-module-method package #'restas::finalize-module-instance)))
+                                             (if m
+                                                 (list :value m)
+                                                 "None"))
+                    (:newline) (:newline)
+                    "Routes: "
+                    (:newline)
+                    "--------------------------------------------------"
+                    (:newline)
+                    ,@(iter (for route in (module-routes package))
+                            (collect (let ((route-symbol (find-symbol (symbol-name route)
+                                                                      package)))
+                                       (list :value
+                                             (make-%restas-route :symbol route-symbol)
+                                             (symbol-name route-symbol))))
+                            (collect '(:newline)))
+                    (:newline)))
+
+         "Submodules: "
+         (:newline)
+         "--------------------------------------------------"
+         (:newline)
+         ,@(or (iter (for sub in (restas::submodule-submodules submodule))
+                     (collect (list :value
+                                    sub
+                                    (symbol-name (restas:submodule-symbol sub ))))
+                     (collect '(:newline)))
+               '("None" (:newline)))
+         (:newline)
+         ;;(:newline)
+
          "Context:"
          (:newline)
          "--------------------------------------------------"
