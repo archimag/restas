@@ -1,0 +1,6 @@
+.. _manual-slime:
+
+=====
+SLIME
+=====
+
