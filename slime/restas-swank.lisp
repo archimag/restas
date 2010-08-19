@@ -62,7 +62,7 @@
 
 (defmethod swank:emacs-inspect ((module %restas-module))
   (let ((package (find-package (%restas-module-package module))))
-    `("" "Module:         " (:value ,package ,(package-name package)) (:newline)
+    `("" "Package:        " (:value ,package ,(package-name package)) (:newline)
          "Initialization: " ,(let ((m (find-module-method package #'restas::initialize-module-instance)))
                                   (if m
                                       (list :value m)
@@ -215,8 +215,8 @@
                (collect '(:newline)))))
 
 (defmethod swank:emacs-inspect ((vhost %restas-vhost))
-  `("" "Host:   " ,(%restas-vhost-string vhost) (:newline)
-       "Mapper: " (:value ,(slot-value (%restas-vhost-vhost vhost) 'restas::mapper)) (:newline)
+  `("" "Host:     " ,(%restas-vhost-string vhost) (:newline)
+       "Site Map: " (:value ,(slot-value (%restas-vhost-vhost vhost) 'restas::mapper)) (:newline)
        (:newline)
        "Submodules: " (:newline)
        "--------------------------------------------------" (:newline)
