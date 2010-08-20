@@ -1,3 +1,5 @@
+.. -*- RST -*-
+
 .. _tutorial-pastebin:
 
 ==========
@@ -460,7 +462,7 @@ drawer.lisp
                              data)
                       route))
 
-Ну и наконец переменной :var:`restas:*default-render-method*` присваивается
+Ну и наконец переменной :var:`*default-render-method*` присваивается
 значение по-умолчанию:
 
 .. code-block:: common-lisp

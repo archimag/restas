@@ -13,18 +13,13 @@
            #:*bindings*
            #:*route*
            #:*submodule*
-           ;; general
-           #:render-object
+           ;; routes
+           #:define-route
+           #:route-symbol
+           #:genurl
+           #:genurl-submodule
+           #:genurl-with-host
            #:redirect
-           ;; cache
-           #:with-memoization
-           #:define-memoized-function
-           ;; context
-           #:make-context
-           #:context-add-variable
-           #:context-remove-variable
-           #:context-symbol-value
-           #:with-context
            ;; modules
            #:define-module           
            #:define-initialization
@@ -38,19 +33,23 @@
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
-           ;; routes
-           #:define-route
-           #:route-symbol
-           #:genurl
-           #:genurl-submodule
-           #:genurl-with-host
+           ;; render
+           #:render-object
+           ;; cache
+           #:define-memoized-function
+           #:with-memoization
+           ;; context
+           #:make-context
+           #:context-add-variable
+           #:context-remove-variable
+           #:context-symbol-value
+           #:with-context
            ;; service
-           #:start 
-           ;; aux
+           #:start
            #:reconnect-all-routes
+           ;; debug
            #:debug-mode-on
            #:debug-mode-off
            ;; misc
            #:request-full-uri
-           ;;#:process-route
            ))

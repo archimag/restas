@@ -1,4 +1,198 @@
-.. _references:
+.. -*- RST -*-
 
-References
-==========
+.. _api-reference:
+
+==============
+API References
+==============
+
+.. defun:: restas:start
+  :args: module &key hostname (port 80) (context (make-context))
+
+  xxx
+
+.. defun:: restas:reconnect-all-routes
+  :args:
+
+  xxx
+
+Специальные переменные
+======================
+
+.. defvar:: restas:*default-host-redirect*
+
+  Хост по-умолчанию, на который будут перенаправлять запросы, адресованные к
+  незарегистрированному хосту.
+
+.. defvar:: restas:*bindings*
+
+  В этой переменной сохраняется набор распарсенных переменных маршрута.
+
+.. defvar:: restas:*submodule*
+
+  Активный submodule, которому принадлежит обрабатываемый маршрут
+
+.. defvar:: restas:*request-pool*
+
+  Пул ресурсов библиотеки `garbage-pools`_, который освобождается после
+  завершения обработки запроса.
+
+.. defvar:: restas:*route*
+   :args: foo bar
+
+  Обрабатываемый *маршрут*.
+
+Маршруты
+========
+
+.. defmacro:: restas:define-route
+  :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
+
+  Создаёт новый маршрут в текущем модуле
+
+.. defun:: restas:route-symbol
+  :args: route
+
+  Hello
+
+.. defun:: restas:genurl
+  :args: route-symbol &rest args
+
+  Hello
+
+.. defun:: restas:genurl-submodule
+  :args: submodule-symbol route-symbol &rest args
+
+  Hello
+
+.. defun:: restas:genurl-with-host
+  :args: route &rest args
+
+  Hello
+
+.. defun:: restas:redirect
+  :args: route-symbol &rest args
+
+  xxx
+
+Модули
+======
+
+.. defmacro:: restas:define-module
+  :args: name &rest options
+
+  xxx
+
+.. defmacro:: restas:define-initialization
+  :args: (context) &body body
+
+  xxx
+
+.. defmacro:: restas:define-finalization
+  :args: (context) &body body
+
+  xxx
+
+.. defmacro:: restas:define-default-render-method
+  :args: (data) &body body
+
+  xxx
+
+Субмодули
+=========
+
+.. defmacro:: restas:define-submodule
+  :args: name (module) &body bindings
+
+  xxx
+
+.. defun:: restas:submodule-symbol
+  :args: submodule
+
+  xxx
+
+.. defun:: restas:submodule-module
+  :args: submodule
+
+  xxx
+
+.. defun:: restas:submodule-parent
+  :args: sybmol
+
+  xxx
+
+.. defun:: restas:connect-submodule
+  :args: submodule mapper
+
+  xxx
+
+.. defmacro:: restas:with-submodule-context
+  :args: submodule &body body
+
+  xxx
+
+Отображение
+===========
+
+.. defun:: restas:render-object
+  :args: designer object
+
+  xxx
+
+
+Контекст
+========
+
+.. defun:: restas:make-context
+  :args: &body bindings
+
+  xxx
+
+.. defun:: restas:context-add-variable
+  :args: context symbol &optional value
+
+  xxx
+
+.. defun:: restas:context-remove-variable
+  :args: context symbol
+
+  xxx
+
+.. defun:: restas:context-symbol-value
+  :args: context symbol
+
+  xxx
+
+.. defmacro:: restas:with-context
+  :args: context &body body
+
+  xxx
+
+Кэш
+===
+
+.. defmacro:: restas:define-memoized-function
+  :args: name args &body body
+
+  xxx
+
+.. defmacro:: restas:with-memoization
+  :args: &body body
+
+  xxx
+
+Отладка
+=======
+
+.. defun:: restas:debug-mode-on
+  :args:
+
+  xxx
+
+.. defun:: restas:debug-mode-off
+  :args:
+
+  xxx
+
+
+.. _garbage-pools: http://code.google.com/p/garbage-pools/
