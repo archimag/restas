@@ -237,49 +237,59 @@ API Reference
 .. defun:: restas:render-object
   :args: drawer object
 
-  xxx
+  Generic-метод, используется для обработки данных, возвращаемых обработчиком
+  маршрутов (определяемого в теле :macro:`restas:define-route`). Если в :macro:`restas:define-route`
+  не указан параметр :render-method, то в качестве объекта *drawer* используется
+  значение переменной :var:`*default-render-method*` из модуля, в котором определён
+  обрабатываемый маршрут (она создаётся автоматически при определении модуля с
+  помощью :macro:`restas:define-module` и её значение равно :hs:`NIL`).
 
+  Более подробную информацию смотрите в разделе :ref:`manual-view`.
 
 Контекст
 ========
 
-.. defun:: restas:make-context
+В `RESTAS`_ для обеспечения модульности используется механизм, напоминающий 
+`Buffer-Local Variables`_ в `GNU Emacs`_.
+
+.. defmacro:: restas:make-context
   :args: &body bindings
 
-  xxx
+  Создаёт новый динамический контекст, связывающий динамические переменные со
+  значениями. Пример:
+
+  .. code-block:: common-lisp
+
+    (restas:make-context (restas.directory-publisher:*baseurl* '("tmp"))
+                         (restas.directory-publisher:*directory* #P"/tmp/")
+                         (restas.directory-publisher:*autoindex* t))
 
 .. defun:: restas:context-add-variable
   :args: context symbol &optional value
 
-  xxx
+  Добавляет новую переменную в контекст
+
+  * context - контекст
+  * symbol - :hs:`symbol`, связанный с динамической переменной
+  * value - значение переменной, если не указано, то используется результат
+    вызова :hs:`symbol-value`.
 
 .. defun:: restas:context-remove-variable
-  :args: context symbol
+  :args: context symbol 
 
-  xxx
+  Удаляет переменную из контекста
 
 .. defun:: restas:context-symbol-value
-  :args: context symbol
+  :args: context symbol => value, present-p
 
-  xxx
+  Возращает значение *value* динамической переменной, если переменная отсутствует
+  в контексте, то для вычисления её значения используется :hs:`symbol-value`, а
+  present-p равен :hs:`NIL`.
 
 .. defmacro:: restas:with-context
   :args: context &body body
 
-  xxx
-
-Кэш
-===
-
-.. defmacro:: restas:define-memoized-function
-  :args: name args &body body
-
-  xxx
-
-.. defmacro:: restas:with-memoization
-  :args: &body body
-
-  xxx
+  Выполняет код в окружении заданного контекста с помощью :hs:`progv`.
 
 Отладка
 =======
@@ -287,13 +297,19 @@ API Reference
 .. defun:: restas:debug-mode-on
   :args:
 
-  xxx
+  Устанавливает отладочный режим.
 
 .. defun:: restas:debug-mode-off
   :args:
 
-  xxx
+  Отменяет отладочный режим.
+
+.. defvar:: restas:*max-debugging-threads*
+
+  Максимально колличество одновременно отлаживаемых поток.
 
 .. _RESTAS: http://restas.lisper.ru/
 .. _garbage-pools: http://code.google.com/p/garbage-pools/
 .. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator
+.. _Buffer-Local Variables: http://www.gnu.org/software/emacs/elisp/html_node/Intro-to-Buffer_002dLocal.html
+.. _GNU Emacs: http://www.gnu.org/software/emacs/

@@ -48,6 +48,7 @@
            #:start
            #:reconnect-all-routes
            ;; debug
+           #:*max-debugging-threads*
            #:debug-mode-on
            #:debug-mode-off
            ;; misc
