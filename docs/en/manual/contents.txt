@@ -1,7 +1,7 @@
 .. _manual-contents:
 
-Руководство
-===========
+Manual
+======
 
 .. toctree::
    :maxdepth: 1

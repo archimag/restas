@@ -1,65 +1,66 @@
 .. _manual-view:
 
-===============
- Представление
-===============
+=======
+ Model
+=======
 
-Отделение логики приложения от логики преставления является мощной и полезной
-техникой, часто используемой при разработке веб-приложений. `RESTAS`_ не
-обязывает использовать подобное разделение, но при желании оно обеспечивается
-за счёт generic-функции:
+Separation of application logic from view logic is powerful and useful
+technique, frequently used in web application development. `RESTAS`_ doesn't
+force you to use such separation, but, if desired, it is provided by
+the generic function
 
 .. code-block:: common-lisp
 
   (defgeneric restas:render-object (drawer object)
     (:documentation "Render object via drawer"))
 
-которая всегда вызывается для обработки данных, возвращаемых обработчиками
-маршрутов (определяемых с помощью :fun:`restas:define-route`). Здесь видно,
-что для генерации контента используется два объекта: drawer и данные, так что
-можно говорить о полноценном разделении логики и представления, ну а
-`мультиметоды <http://lisper.ru/pcl/object-reorientation-generic-functions>`_ CL,
-делают подобный подход весьма мощным. Используемый drawer указывается в переменной
-модуля :var:`*default-render-method*` и по-умолчанию установлен в nil.
-В `RESTAS`_ определены специализации :fun:`restas:render-object`, которые в
-качестве данных могу принимать:
+It is always called for processing the data returned by route handlers
+(defined with :fun:`restas:define-route`). As you see here, two objects are used
+for content generation: a drawer and a data object, so one can speak
+about full-fledged logic and view separation, and CL
+`multimethods <http://lisper.ru/pcl/object-reorientation-generic-functions>`_
+make this approach quite powerful. The drawer for usage is specified
+in module variable :var:`*default-render-method*` and is set to nil by default.
+`RESTAS`_ defines specialized `restas:render-object` methods, which
+can accept as data following types:
 
-* :hs:`string` или :hs:`array` octets - данные просто отдаются клиенту без
-  какой-либо дополнительной обработки
+* :hs:`string` or :hs:`array` octets - data is just sent to client without
+  any additional processing.
 
-* :hs:`pathname` - файл отдаётся клиенту с помощью :fun:`hunchentoot:handle-static-file`
+* :hs:`pathname` - file is sent to client by :fun:`hunchentoot:handle-static-file`
 
-* integer - результат интерпретируется как HTTP-статус и клиенту отдаётся
-  соответствующая специальная страница
+* integer - result is treated as HTTP status and client receives corresponding
+  special page.
 
-* В прочих случаях сообщается об ошибке
+* Report error in other cases.
 
-Так же, определенна специализации, когда в качестве drawer передаётся функция:
+Also there are methods for functions passed as drawer:
 
-* :hs:`pathname` или integer - вызывается обработчик по-умолчанию (данные просто
-  отдаются клиенту без обработки)
+* :hs:`pathname` or integer - default handler is called (data is just sent to
+  client without any processing)
 
-* В прочих случаях с помощью funcall вызывается указанная функция для обработки
-  переданных данных и результат отдаётся клиенту
+* In other cases supplied function is called with funcall for data processing
+  and the result is sent to client.
 
-Кроме этого, определена специализация, когда в качестве drawer передаётся
-произвольный :hs:`package`. Эта возможность имеет следующее обоснование:
+Apart from this, there is a specialized method for accepting arbitrary
+:hs:`package` as drawer. This possibility has following basis:
 
-* Каждый маршрут является именованным и связан с :hs:`symbol`
+* Each route is named and is bounded by :hs:`symbol`.
 
-* Почти всегда для логики представления автор использует `cl-closure-template`_,
-  которая компилирует шаблоны в функции, для которых создаётся отдельный
-  :hs:`package`
-  
-Если следовать небольшому соглашению и именовать шаблоны так же, как и маршруты,
-то можно в качестве :var:`*default-render-method*` указать пакет, содержащий в себе
-функции шаблонов, и `RESTAS`_ будет автоматически вызывать для обработки данных,
-генерированных в обработчике маршрута, функцию-шаблон с именем (:hs:`symbol-name`)
-совпадающим с именем маршрута. Вот такое небольшое волшебство, реализованное весьма
-простым и понятным образом. Поскольку, технически это всего лишь специализация
-:fun:`restas:render-object`, то её можно использовать и другими способами, например,
-сейчас в `restas-colorize`_ (аналог pastebin, в работе его можно посмотреть на
-http://lisper.ru/apps/format/), для генерации разметки используется следующий код:
+* The Author uses `cl-closure-template`_ for view logic almost always,
+  and it compiles templates to functions and creates separate :hs:`package`
+  for them.
+
+If you follow a small agreement and give templates the same names as routes have,
+then you can specify as :var:`*default-render-method*` the package containing
+template functions, and `RESTAS`_ for processing a data generated by a route handler
+will automatically call a template function with the same name as the route, but from
+package with templates. Behold such a little magic implemented in quite simple and
+understandable way. As far as technically this is just a specializers for 
+:fun:`restas:render-object`, you can use it in other ways, for example,
+now `restas-colorize`_ (pastebin analog, you can see it in work at
+http://lisper.ru/apps/format/) uses the following code for generation of
+its layout:
 
 .. code-block:: common-lisp
 
@@ -74,23 +75,23 @@ http://lisper.ru/apps/format/), для генерации разметки ис�
             :css (iter (for item in '("style.css" "colorize.css"))
                        (collect (restas:genurl 'css :file item))))))
 
-Здесь задаётся :var:`*default-render-method*` в виде функции (для упрощения и наглядности
-используется макрос :macro:`restas:define-default-render-method`), которая с помощью
-"пакета с шаблонами" генерирует содержательную часть страницы:
+Here we defined :var:`*default-render-method*` as function (for simplicity, macro
+:macro:`restas:define-default-render-method` was used) which with aid of "package
+with templates" generates substantial part of page:
 
 .. code-block:: common-lisp
 
   (restas:render-object (find-package '#:restas.colorize.view) obj)
 
-которую затем использует для генерации законченного html-кода. 
+and which later is used for generation of complete html code.
 
-Ну и конечно, разработчик может определить собственные специализации
-:fun:`restas:render-object` для своего типа drawer. 
+And, of course, a developer can define his own specializers of
+:fun:`restas:render-object` for his own drawer type.
 
-Другим способом отделения логики от представления, который может использоваться,
-например, когда использование :var:`*default-render-method*` не подходит
-для конкретного маршрута - это параметр :render-method макроса :macro:`restas:define-route`.
-Например:
+The other way for separation of logic and view can be used, for example,
+when using :var:`*default-render-method*` doesn't fits for particular 
+route, and it is :render-method parameter of :macro:`restas:define-route`.
+Example:
 
 .. code-block:: common-lisp
 

@@ -1,46 +1,47 @@
 .. _manual-daemon: 
 
-Демонизация
-===========
+Daemonization
+=============
 
-При развертывании Common Lisp приложения (например, сайта) на сервере под
-управлением GNU/Linux возникает проблема организации lisp-демона, что связано
-с некоторыми техническими проблемами, которые, вероятно, могут вызвать у
-начинающих некоторое непонимание (или даже ужас).
+When you are deploying a Common Lisp application (e.g., a site) on a server
+with GNU/Linux, the problem of organizing a lisp daemon arises and it is bound
+with certain technical problems, which can probably cause some misunderstanding
+(or even fear) among beginners.
 
-Корень этих проблем в том, что обычно lisp процесс не может быть оторван от 
-терминала (причины этого восходят к тем далёким временам, когда компьютеры были
-большими...) и при закрытии стандартного потока ввода немедленно завершает свою работу.
+The root of these problems is that usually lisp process cant be torn off
+a terminal (source of this rise to time when computers were large...)
+and when standard input stream is closed, the process will immediately
+terminate itself.
 
-Для решения этой проблемы известно несколько крайне не удобных и не надёжных
-методов (см. `swank-daemon`_ и `detachtty`_). Но для развёртывания веб-приложений на
-базе `RESTAS`_ использующих `SBCL`_ в GNU/Linux есть простой и удобный
-инструмент: скрипт `restas-daemon.lisp`_, который находится в директории contrib
-пакета `RESTAS`_. Создать демона с помощью этого скрипта очень просто:
+There are several very inconvenient and unreliable methods for solving this problem 
+(see `swank-daemon`_ and `detachtty`_). But for deploying `RESTAS`_-based
+web applications using `SBCL`_ under GNU/Linux, there is a simple and convenient
+tool: `restas-daemon.lisp`_ script, which is placed in 'contrib' directory
+of RESTAS package. With this script, you can quite simply make a daemon:
 ::
 
   sbcl --load /path/to/restas/contrib/restas-daemon.lisp /path/to/daemon.conf COMMAND
 
-Как видно, данный скрипт принимает два параметра: путь к файлу конфигурации демона
-и имя команды. Поддерживаются следующие команды:
+As you see, the script accepts two parameters: path to the daemon configuration file
+and a command name. Following commands are supported:
 
-* **start** - запуск
+* **start** - launching
 
-* **stop** - остановка
+* **stop** - stopping
 
-* **restart** - рестарт
+* **restart** - restart
 
-* **kill** - убийство, если почему-то демон не хочет останавливаться с помощью stop
+* **kill** - kill the daemon, if it somehow doesn't want to halt with 'stop'. 
 
-* **zap** - удалят pid-файл, это может потребоваться, если демон был остановлен как-нибудь 
-  грубо
+* **zap** - remove PID file, you will need it, if the daemon was stopped roughly.
 
-* **nodaemon** - в основном тоже, что и start (в том числе происходит смена прав и т.п.),
-  но при этом процесс не делает себе fork и не отключается от терминала, что даёт
-  возможность наблюдать весь его вывод - удобно для отладки демона.
-  
-Файл конфигурации демона может содержать определение нескольких переменных, влияющих на 
-поведение демона, вот полный конфиг моего домашнего демона:
+* **nodaemon** - basically the same, as 'start' (including rights change etc.),
+  but during this the process doesn't fork itself and doesn't disconnect from 
+  the terminal, this gives you possibility to examine all its output and is handy
+  for debugging a daemon.
+
+Daemon configuration file can contain definitions for several variables altering 
+daemon behavior, here is the full config of my home daemon:
 
 .. code-block:: common-lisp
 
@@ -57,47 +58,47 @@
 
   (defparameter *sites*  '((#:homesite nil 80)))
 
-Возможны следующие параметры:
+Following parameters are possible:
 
-* :var:`*name*` - имя демона, в данный момент единственный обязательный параметр
+* :var:`*name*` - daemon name, the only required parameter now.
 
-* :var:`*user*` - имя пользователя, от которого должен работать демон, по-умолчанию
-  совпадает с именем демона
+* :var:`*user*` - name of a user to be owner of the daemon, by default is the
+  same as daemon name.
 
-* :var:`*group*` - группа пользователя
+* :var:`*group*` - user group
 
-* :var:`*fasldir*` - путь к каталогу, в который будут складываться fasl-файлы,
-  по-умолчанию определяется из имени демона как
+* :var:`*fasldir*` - path to directory for putting fasl files, by default
+  is derived from daemon name as
 
   .. code-block:: common-lisp
   
     (format nil "/var/cache/~A/fasl/" *name*)
   
-* :var:`*pidfile*` - pid-файла демона, по-умолчанию
+* :var:`*pidfile*` - daemon PID file, by default
 
   .. code-block:: common-lisp
 
     (format nil "/var/run/~A/~A.pid" *name* *name*)
 
-* :var:`*swankport*` - порт, на котором следует запускать swank, если не указан
-  или nil, то swank не запускается
-  
-* :var:`*default-host-redirect*` - в `RESTAS`_ сайты запускаются с помощью
-  :fun:`restas:start-site`, при этом можно указать имя хоста (аналог виртуальных хостов),
-  данная переменная указывает хост, на который будет производиться редирект, если для
-  хоста запроса нет сайта, например, на `lisper.ru`_ можно попасть набрав в браузере
-  http://www.lisper.ru/, http://lisp.catap.ru/ или просто прямой адрес, все такие запросы
-  переплавляются на `lisper.ru`_.
-  
-* :var:`*asdf-central-registry*` - список директорий, в которых будет производиться поиск систем
+* :var:`*swankport*` - port for starting swank, if it isn't supplied or nil,
+  swank won't be started.
 
-* :var:`*asdf-load-systems*` - список систем, которые необходимо загрузить при старте демона
+* :var:`*default-host-redirect*` - in `RESTAS`_ sites are started with
+  :fun:`restas:start-site`, in this case you can supply a host name (virtual host analog),
+  this variable designates host for making a redirect if there is no site
+  for requested host, e.g. you can get in `lisper.ru`_ by typing in a browser 
+  http://www.lisper.ru/, http://lisp.catap.ru/ or just the direct address, all such requests
+  are redirected to `lisper.ru`_.
+  
+* :var:`*asdf-central-registry*` - list of directories for searching of systems.
 
-* :var:`*sites*` - список сайтов, которые необходимо запустить при запуске демона с помощью
-  функции :fun:`restas:start`. В качестве сайта может быть указано просто модуля
-  `RESTAS`_, либо список, содержащий имя модуля, имя хоста и порт. Например, сайт
-  http://restas.lisper.ru и сайт `lisper.ru`_ запускаются в одном процессе, а в конфиге
-  демона переменная :var:`*sites*` определена так:
+* :var:`*asdf-load-systems*` - list of systems which are necessary to load when the daemon starts. 
+
+* :var:`*sites*` - list of sites to be loaded at daemon's startup with function
+  :fun:`restas:start`. You can supply just a `RESTAS`_ module or a list containing
+  module name, host name, and port as a site. For example, site 
+  http://restas.lisper.ru and site `lisper.ru`_ are loaded in one process, and
+  variable :var:`*sites*` is defined in daemon config as
   
   .. code-block:: common-lisp
 
@@ -105,11 +106,10 @@
       '((#:rulisp "lisper.ru" 80)
         (#:rulisp.restas "restas.lisper.ru" 80)))
     
-  
-Для систем на базе Gentoo есть специальная поддержка. При установке `RESTAS`_ с помощью 
-`archimag-lisp-overlay`_ в каталог /etc/init.d/ добавляется скрипт restas.lo. Теперь,
-для создания initd-скрипта необходимо создать симлинк на этот файл и создать
-конфигурационный файл в /etc/conf.d/, например:
+For Gentoo-based systems there is special support. During installation of `RESTAS`_ 
+with `archimag-lisp-overlay`_ script restas.lo is added to directory /etc/init.d/.
+Now, for creation of initd script you can create a symlink to this file and create
+configuration file in /etc/conf.d/, for example,
 ::
 
   cd /etc/init.d/
