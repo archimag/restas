@@ -1,68 +1,70 @@
 .. _installation:
 
-===========
- Установка
-===========
+==============
+ Installation
+==============
 
-Ручная установка
-================
+Manual installation
+===================
 
-`RESTAS`_ это обычная, `ASDF`_-система, и его установка ничем не отличается от
-установки большинства других пакетов:
+`RESTAS`_ is usual `ASDF`_ system and its installation doesn't differ from
+installation of most other packages.
 
-Перед установкой `RESTAS`_ необходимо установить следующие зависимости: 
+Before installing `RESTAS`_ you should install several dependencies:
 
 * `Hunchentoot`_
 * `alexandria`_
 * `cl-routes`_
 * `garbage-pools`_
 
-Далее необходимо получить исходный код. Последнюю версию `RESTAS`_ можно скачать
-на странице http://code.google.com/p/restas/downloads/list.
+After this you should get the source code. The latest version of `RESTAS`_
+can be downloaded at http://code.google.com/p/restas/downloads/list.
 
-Любители нестабильных версий могут также воспользоваться имеющимся `git`_-репозиторием:
+Fans of unstable versions can also use the git repository:
 ::
 
   git clone git://github.com/archimag/restas.git
 
-Теперь необходимо распаковать исходный код и добавить его в :var:`asdf:*central-registry*`:
+Now you have to unpack the source code and add it to
+:var:`asdf:*central-registry*`:
 
 .. code-block:: common-lisp
 
   (push #P"/path/to/restas/" asdf:*central-registry*)
 
-Или создать символическую ссылку:
+Or create a symbolic link:
 ::
 
+  cd ~/sbcl/.systems   # or any other directory, specified with asdf:*central-registry*
   cd ~/sbcl/.systems   # Или любая другая директория, указанная в asdf:*central-registry*
   ln -s /path/to/restas/restas.asd .
 
-Использование clbuild
-=====================
+Using clbuild
+=============
 
-Другой вариант установки - использовать форк `clbuild`_, репозиторий которого
-находится на странице http://github.com/archimag/clbuild-archimag. Использование
-этого инструмента ничем не отличается от использования оригинального `clbuild`_.
+Other variant of installation is to use a fork of `clbuild`_ whose repository
+is situated at page http://github.com/archimag/clbuild-archimag. Usage of this
+tool doesn't differ a single bit from usage of original `clbuild`_.
 
 Gentoo Linux
 ============
 
-Пользователи Gentoo Linux могут воспользоваться `archimag-lisp-overlay`_,
-который является форком `gentoo-lisp-overlay`_.
+Gentoo Linux users can take advantage of `archimag-lisp-overlay`_, a fork of
+`gentoo-lisp-overlay`_.
 
-Установить этот оверлей при помощи `layman`_ можно следующим образом:
+Installation of this overlay with `layman`_ is done in the following way:
 ::
 
   emerge layman
 
-Теперь необходимо добавить http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
-в параметр overlays в конфигурационном файле /etc/layman/layman.cfg:
+Now you just need to add http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+to the overlays parameter of /etc/layman/layman.cfg configuration file:
 ::
 
   overlays  : http://www.gentoo.org/proj/en/overlays/repositories.xml
               http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
 
-И наконец:
+And, at last:
 ::
 
   layman -f -a archimag-lisp

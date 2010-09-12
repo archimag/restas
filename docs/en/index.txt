@@ -1,7 +1,7 @@
 .. _index:
 
 Begining
-======
+========
 
 First steps
 -----------
@@ -13,7 +13,7 @@ First steps
   :ref:`Hello, World! <tutorial-hello-world>` 
 
 Details
------------
+-------
 
 * :ref:`Routes <manual-routes>` | :ref:`manual-routes-requirement`
 
@@ -23,7 +23,7 @@ Details
 
 * :ref:`Demonisation <manual-daemon>`
 
-Поддержка
----------
+Support
+-------
 
 * `Forum <http://lisper.ru/forum/restas>`_
