@@ -62,7 +62,7 @@
 
 (defmethod swank:emacs-inspect ((module %restas-module))
   (let ((package (find-package (%restas-module-package module))))
-    `("" "Module:         " (:value ,package ,(package-name package)) (:newline)
+    `("" "Package:        " (:value ,package ,(package-name package)) (:newline)
          "Initialization: " ,(let ((m (find-module-method package #'restas::initialize-module-instance)))
                                   (if m
                                       (list :value m)
@@ -116,6 +116,44 @@
     `("" "Module: " ,(module-link (slot-value submodule 'restas::module))
          (:newline)
          (:newline)
+         ,@(let ((package  (slot-value submodule 'restas::module)))
+               `("" ;;"Module:         " (:value ,package ,(package-name package)) (:newline)
+                    "Initialization: " ,(let ((m (find-module-method package #'restas::initialize-module-instance)))
+                                             (if m
+                                                 (list :value m)
+                                                 "None"))
+                    (:newline)
+                    "Finalization:   " ,(let ((m (find-module-method package #'restas::finalize-module-instance)))
+                                             (if m
+                                                 (list :value m)
+                                                 "None"))
+                    (:newline) (:newline)
+                    "Routes: "
+                    (:newline)
+                    "--------------------------------------------------"
+                    (:newline)
+                    ,@(iter (for route in (module-routes package))
+                            (collect (let ((route-symbol (find-symbol (symbol-name route)
+                                                                      package)))
+                                       (list :value
+                                             (make-%restas-route :symbol route-symbol)
+                                             (symbol-name route-symbol))))
+                            (collect '(:newline)))
+                    (:newline)))
+
+         "Submodules: "
+         (:newline)
+         "--------------------------------------------------"
+         (:newline)
+         ,@(or (iter (for sub in (restas::submodule-submodules submodule))
+                     (collect (list :value
+                                    sub
+                                    (symbol-name (restas:submodule-symbol sub ))))
+                     (collect '(:newline)))
+               '("None" (:newline)))
+         (:newline)
+         ;;(:newline)
+
          "Context:"
          (:newline)
          "--------------------------------------------------"
@@ -177,8 +215,8 @@
                (collect '(:newline)))))
 
 (defmethod swank:emacs-inspect ((vhost %restas-vhost))
-  `("" "Host:   " ,(%restas-vhost-string vhost) (:newline)
-       "Mapper: " (:value ,(slot-value (%restas-vhost-vhost vhost) 'restas::mapper)) (:newline)
+  `("" "Host:     " ,(%restas-vhost-string vhost) (:newline)
+       "Site Map: " (:value ,(slot-value (%restas-vhost-vhost vhost) 'restas::mapper)) (:newline)
        (:newline)
        "Submodules: " (:newline)
        "--------------------------------------------------" (:newline)

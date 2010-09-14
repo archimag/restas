@@ -8,22 +8,18 @@
 
 (defpackage :restas
   (:use :cl :iter :split-sequence)
-  (:export #:*request-pool*
+  (:export #:*default-host-redirect*
+           #:*request-pool*
            #:*bindings*
-
-           #:debug-mode-on
-           #:debug-mode-off
-           
-           #:render-object
-
-           #:with-memoization
-           #:define-memoized-function
-
-           #:make-context
-           #:context-add-variable
-           #:context-remove-variable
-           #:context-symbol-value
-           #:with-context
+           #:*route*
+           #:*submodule*
+           ;; routes
+           #:define-route
+           #:route-symbol
+           #:genurl
+           #:genurl-submodule
+           #:genurl-with-host
+           #:redirect
            ;; modules
            #:define-module           
            #:define-initialization
@@ -31,28 +27,30 @@
            #:define-default-render-method
            ;; submodules
            #:define-submodule
-           #:*submodule*
            #:submodule
            #:submodule-symbol
            #:submodule-module
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
-           ;; routes
-           #:define-route
-           #:*route*
-           #:route-symbol
-           #:genurl
-           #:genurl-submodule
-           #:genurl-with-host
-           
-           #:redirect
-
-
-           #:request-full-uri
-           #:start           
+           ;; render
+           #:render-object
+           ;; cache
+           #:define-memoized-function
+           #:with-memoization
+           ;; context
+           #:make-context
+           #:context-add-variable
+           #:context-remove-variable
+           #:context-symbol-value
+           #:with-context
+           ;; service
+           #:start
            #:reconnect-all-routes
-
-           #:process-route
-
-           #:*default-host-redirect*))
+           ;; debug
+           #:*max-debugging-threads*
+           #:debug-mode-on
+           #:debug-mode-off
+           ;; misc
+           #:request-full-uri
+           ))

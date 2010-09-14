@@ -10,3 +10,4 @@
    modules
    view
    daemon
+   slime

@@ -1,0 +1,315 @@
+.. -*- RST -*-
+
+.. _api-reference:
+
+=============
+API Reference
+=============
+
+.. defun:: restas:start
+  :args: module &key hostname (port 80) (context (make-context))
+
+  Устанавливает (запускает) модуль для обработки HTTP-запросов. `RESTAS`_
+  поддерживает концепцию `виртуальных хостов <http://httpd.apache.org/docs/current/vhosts/>`_,
+  что позволяет в рамках одного процесса размещать несколько сайтов с различными доменными
+  именами. Кроме того, также возможно обслуживание нескольких портов.
+
+  **Параметры**:
+
+  * module - `package designator`_, индентифицирующий модуль, определённый
+    с помощью :macro:`restas:define-module`
+
+  * hostname - имя хоста, запросы к которму долж
+
+  * port - порт на котором будут приниматься запросы
+
+  * context - окружение, аналогичное указываемумо в :macro:`restas:define-submodule`,
+    которое позволяет настроить параметры модуля.
+
+  Данная функция может быть вызвана несколько раз с различными параметрами. Если
+  разные модули были запущены для одной и той же комбинации имени хости и номера
+  порта, то возможны конфликты маршрутов и в случае их возникновеня способ
+  диспетчерезации запросов не определён.
+
+.. defun:: restas:reconnect-all-routes
+  :args:
+
+  Реинициализирует диспетчер запросов. Обычно в непосредственном вызове данной
+  функции нет необходимости, посольку при выполнении (:execute) макросов
+  :macro:`restas:define-submodule` и :macro:`restas:define-route` она вызывается
+  автоматически.
+
+Специальные переменные
+======================
+
+.. defvar:: restas:*default-host-redirect*
+
+  Хост по-умолчанию, на который будут перенаправлять запросы, адресованные к
+  незарегистрированному хосту.
+
+.. defvar:: restas:*bindings*
+
+  В этой переменной сохраняется набор распарсенных переменных маршрута.
+
+.. defvar:: restas:*submodule*
+
+  Активный submodule, которому принадлежит обрабатываемый маршрут
+
+.. defvar:: restas:*request-pool*
+
+  Пул ресурсов библиотеки `garbage-pools`_, который освобождается после
+  завершения обработки запроса.
+
+.. defvar:: restas:*route*
+   :args: foo bar
+
+  Обрабатываемый маршрут.
+
+Маршруты
+========
+
+.. defmacro:: restas:define-route
+  :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
+
+  Создаёт новый маршрут в текущем модуле
+
+  * name - уникальный :hs:`symbol`, являющийся индефикатором маршрута. Один и
+    тот же :hs:`symbol` не может использоваться для различных маршрутов.
+
+  * template - шаблон URL, на основе которого проверяется соответствие маршрута
+    запросу. Может содержать переменные, которые непосредственно доступны в
+    теле маршрута.
+    
+  * method - тип обрабатываемого HTTP-запроса, возможные значения: :GET, :POST,
+    :PUT, :DELETE.
+
+  * content-type - **Content-Type** результата обработки запроса,
+    устанавлиевается в заголовке HTTP-ответа.
+
+  * render-method - объект, который будет использоваться в вызове :fun:`restas:render-object`
+    для обработки результата маршрута перед отдачей его клиенту.
+
+  * requirement - произвольное функция, которая вызвается для проверки
+    соответствия маршрута условиям запроса. Если результат :hs:`NIL`, то маршрут
+    считается не удовлетворяющим запросу.
+
+  * parse-vars - *plist* с именами переменных (в виде :hs:`keyword`) и функциям
+    их парсинга.
+
+  * body - тело обработчика, может содержать произвольный код, результат выполнения
+    которого возвращается клиенту (после обработки с помощью :fun:`restas:render-object`).
+
+  Пример объявления тривиального маршрута:
+
+  .. code-block:: common-lisp
+
+    (restas:define-route main ("")
+      "<h1>Hello world!</h1>")
+
+  Подробнее об определении маршрутов смотрие :ref:`manual-routes`
+
+.. defun:: restas:route-symbol
+  :args: route
+
+  Возвращает :hs:`symbol`, связанный с объектом-маршрутом (например, во время
+  обработки запроса такой объект связан  с переменной :var:`restas:*route*`).
+
+.. defun:: restas:genurl
+  :args: route-symbol &rest args
+
+  Вычисляет URL маршрута на основе индентифицирующего :hs:`symbol` и набора
+  значений переменных его шаблона (см. :macro:`restas:define-route`)
+
+  * route-symbol - индентификатор маршрута
+
+  * args - последовательность (в формате *plist*) имён переменных маршрута и
+    их значений.
+
+  Пример:
+
+  .. code-block:: common-lisp
+
+    (restas:genurl 'my-route
+                   :arg1 "foo"
+                   :arg2 "bar")
+
+  **Важно**: данная функция работает правильно только маршрутов, которые находятся
+  в одном модуле с обрабатываемым в момент вызова маршрутом.
+
+.. defun:: restas:genurl-submodule
+  :args: submodule-symbol route-symbol &rest args
+
+  Аналогична :fun:`restas:genurl`, но используется для маршрутов из подключаемых
+  с помощью :macro:`restas:define-submodule` модулей.
+
+  * submodule-symbol - индефикатор субмодуля, указаный при его определении с помощю
+    :macro:`restas:define-submodule`.
+
+.. defun:: restas:genurl-with-host
+  :args: route &rest args
+
+  Данная функция аналогична :fun:`restas:genurl` за тем исключением, что в генерируемый
+  URL также включается имя хоста.
+
+.. defun:: restas:redirect
+  :args: route-symbol &rest args
+
+  Перенаправляет запрос с помощью :fun:`hunchentoot:redirect` для URL, вычисляемого с
+  помощью :fun:`restas:genurl`. Параметры аналогичны параметрам функции :fun:`restas:genurl`.
+
+Модули
+======
+
+.. defmacro:: restas:define-module
+  :args: name &rest options
+
+  Инициализирует новый модуль: создаёт новый :hs:`package` и проводит его инициализацию
+  (добавляет в него некоторые служебные переменные)
+
+.. defmacro:: restas:define-initialization
+  :args: (context) &body body
+
+  Определяет функцию, которая вызывается при подключении модуля с помощью
+  :macro:`restas:define-submodule`. Может использваться, например, для дополнительной
+  настройки контекста субмодуля. Должна находиться внутри пакета, определённого
+  с помощью :macro:`restas:define-module`.
+
+.. defmacro:: restas:define-finalization
+  :args: (context) &body body
+
+  Определяет функцию, противоположную определённой с помощью :macro:`restas:define-initialization`.
+  Вызывается при повторном вычислении :macro:`restas:define-submodule` и может использоваться,
+  например, для освобождении ресрсов, выделенных при инциализации субмодуля.
+
+Субмодули
+=========
+
+.. defmacro:: restas:define-submodule
+  :args: name (module) &rest bindings
+
+  Определяет субмодуль, который становится частью модуля, в пакете которого
+  он определяется.
+
+  * name - индентификатор (:hs:`symbol`) субмодуля.
+
+  * module - `package designator`_ присоеденяемого модуля.
+
+  * bindings - набор символов переменных и их значений, определяющий контекст
+    субмодуля. Обработка маршрутов, принадлежащих данному субмодулю, будет
+    производиться в этом контексте с помощью вызова :hs:`progv`.
+
+  Пример:
+
+  .. code-block:: common-lisp
+
+    (restas:define-submodule tmp (#:restas.directory-publisher)
+      (restas.directory-publisher:*baseurl* '("tmp"))
+      (restas.directory-publisher:*directory* #P"/tmp/"))
+
+
+.. defun:: restas:submodule-symbol
+  :args: submodule
+
+  Возвращает :hs:`symbol`, связанный с объектом-субмодулем (например, во время
+  обработки запроса такой объект связан  с переменной :var:`restas:*submodule*`).
+
+
+.. defun:: restas:submodule-module
+  :args: submodule
+
+  Возвращает `package designator`_, связанный с объектом-субмодулем
+
+.. defun:: restas:submodule-parent
+  :args: submodule
+
+  Возвращает субмодуль, к которому присоединён переданный субмодуль. С помощью
+  макроса :macro:`restas:define-submodule` можно создавать целые иерархии
+  субмодулей.
+
+.. defmacro:: restas:with-submodule-context
+  :args: submodule &body body
+
+  Позволяет произвольный выполнить код в окружении контекста указанного субмодуля.
+
+Отображение
+===========
+
+.. defun:: restas:render-object
+  :args: drawer object
+
+  Generic-метод, используется для обработки данных, возвращаемых обработчиком
+  маршрутов (определяемого в теле :macro:`restas:define-route`). Если в :macro:`restas:define-route`
+  не указан параметр :render-method, то в качестве объекта *drawer* используется
+  значение переменной :var:`*default-render-method*` из модуля, в котором определён
+  обрабатываемый маршрут (она создаётся автоматически при определении модуля с
+  помощью :macro:`restas:define-module` и её значение равно :hs:`NIL`).
+
+  Более подробную информацию смотрите в разделе :ref:`manual-view`.
+
+Контекст
+========
+
+В `RESTAS`_ для обеспечения модульности используется механизм, напоминающий 
+`Buffer-Local Variables`_ в `GNU Emacs`_.
+
+.. defmacro:: restas:make-context
+  :args: &body bindings
+
+  Создаёт новый динамический контекст, связывающий динамические переменные со
+  значениями. Пример:
+
+  .. code-block:: common-lisp
+
+    (restas:make-context (restas.directory-publisher:*baseurl* '("tmp"))
+                         (restas.directory-publisher:*directory* #P"/tmp/")
+                         (restas.directory-publisher:*autoindex* t))
+
+.. defun:: restas:context-add-variable
+  :args: context symbol &optional value
+
+  Добавляет новую переменную в контекст
+
+  * context - контекст
+  * symbol - :hs:`symbol`, связанный с динамической переменной
+  * value - значение переменной, если не указано, то используется результат
+    вызова :hs:`symbol-value`.
+
+.. defun:: restas:context-remove-variable
+  :args: context symbol 
+
+  Удаляет переменную из контекста
+
+.. defun:: restas:context-symbol-value
+  :args: context symbol => value, present-p
+
+  Возращает значение *value* динамической переменной, если переменная отсутствует
+  в контексте, то для вычисления её значения используется :hs:`symbol-value`, а
+  present-p равен :hs:`NIL`.
+
+.. defmacro:: restas:with-context
+  :args: context &body body
+
+  Выполняет код в окружении заданного контекста с помощью :hs:`progv`.
+
+Отладка
+=======
+
+.. defun:: restas:debug-mode-on
+  :args:
+
+  Устанавливает отладочный режим.
+
+.. defun:: restas:debug-mode-off
+  :args:
+
+  Отменяет отладочный режим.
+
+.. defvar:: restas:*max-debugging-threads*
+
+  Максимально колличество одновременно отлаживаемых поток.
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator
+.. _Buffer-Local Variables: http://www.gnu.org/software/emacs/elisp/html_node/Intro-to-Buffer_002dLocal.html
+.. _GNU Emacs: http://www.gnu.org/software/emacs/

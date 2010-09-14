@@ -1,3 +1,5 @@
+.. -*- RST -*-
+
 .. _index:
 
 Начало
@@ -10,18 +12,20 @@
   :ref:`Обзор <overview>` | :ref:`Установка <installation>`
 
 * **Tutorial:**
-  :ref:`Здравствуй мир <tutorial-hello-world>` 
+  :ref:`Здравствуй мир <tutorial-hello-world>` | :ref:`tutorial-pastebin`
 
 Подробности
 -----------
 
-* :ref:`Маршруты <manual-routes>` | :ref:`manual-routes-requirement`
+* :ref:`Маршруты <manual-routes>`
 
 * :ref:`Модули <manual-modules>`
 
 * :ref:`Разделение логики и представления <manual-view>`
 
 * :ref:`Демонизация <manual-daemon>`
+
+* :ref:`Интеграция с SLIME <manual-slime>`
 
 Поддержка
 ---------
