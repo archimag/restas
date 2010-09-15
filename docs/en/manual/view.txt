@@ -15,7 +15,7 @@ the generic function
     (:documentation "Render object via drawer"))
 
 It is always called for processing the data returned by route handlers
-(defined with :fun:`restas:define-route`). As you see here, two objects are used
+(defined with :macro:`restas:define-route`). As you see here, two objects are used
 for content generation: a drawer and a data object, so one can speak
 about full-fledged logic and view separation, and CL
 `multimethods <http://lisper.ru/pcl/object-reorientation-generic-functions>`_

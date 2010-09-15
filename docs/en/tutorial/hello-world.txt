@@ -1,3 +1,5 @@
+.. -*- RST -*-
+
 .. _tutorial-hello-world: 
 
 Hello World

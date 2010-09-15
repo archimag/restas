@@ -10,3 +10,4 @@ Manual
    modules
    view
    daemon
+   slime

@@ -1,3 +1,5 @@
+.. -*- RST -*-
+
 .. _index:
 
 Begining
@@ -10,18 +12,20 @@ First steps
   :ref:`Overview <overview>` | :ref:`Installation <installation>`
 
 * **Tutorial:**
-  :ref:`Hello, World! <tutorial-hello-world>` 
+  :ref:`Hello, World! <tutorial-hello-world>` | :ref:`tutorial-pastebin`
 
 Details
 -------
 
-* :ref:`Routes <manual-routes>` | :ref:`manual-routes-requirement`
+* :ref:`Routes <manual-routes>`
 
 * :ref:`Modules <manual-modules>`
 
 * :ref:`Separation of logic and representation <manual-view>`
 
 * :ref:`Demonisation <manual-daemon>`
+
+* :ref:`SLIME integration <manual-slime>`
 
 Support
 -------

@@ -70,6 +70,53 @@ And, at last:
   layman -f -a archimag-lisp
   emerge restas
 
+Optional packages
+=================
+
+PURI-UNICODE
+------------
+
+`RESTAS`_ depends on `puri`_, which is a very good library, but has an
+essential disadvantage of not providing a correct parsing for URLs containing
+non-ASСII characters (those which are coded with UTF-8). For solution of this
+problem you can instead of `puri`_ use `puri-unicode`_ which is a fork of 
+`puri`_ and provides correct processing such symbols with `babel`_ library.
+You can download stable version of this library from the address
+http://github.com/archimag/puri-unicode/downloads. 
+
+`RESTAS`_ зависит от `puri`_, которая является очень хорошей библиотекой, но
+имеет тот существенный недостаток, что не обеспечивает корректного разбора URL
+содержащих не-ASСII символы (для кодирования которых используется UTF-8). Для
+решения этой проблемы вместо `puri`_ можно использовать `puri-unicode`_, которая
+является форком `puri`_ и обеспечивает корректную обработку подобных символов с
+помощью библиотеки `babel`_. Скачать стабильную версию этой библиотеки можно
+по адресу: http://github.com/archimag/puri-unicode/downloads.
+
+SLIME-ARCHIMAG
+--------------
+
+`SLIME`_, unboubtly, is profound tool for development applications in Common
+Lisp, but sadly it is self-contained and doesn't provide any easy to use
+mechamisms of extending functionality. Meanwhile, it contains outsnanding 
+infrastructure which can be used for providing different instrumental facilities.
+`RESTAS`_ supports :ref:`integration <manual-slime>` with `SLIME`_ and provides
+a series of tools simplifying web application development but for using the you need
+to use the `SLIME-ARCHIMAG`_ fork instead of original `SLIME`_ and do some 
+additional Emacs initialization.
+
+`SLIME`_ является, безусловно, выдающимся инструментом для разработки приложений
+на Common Lisp, но, к сожалению, он замкнут на себя и не предусматривает простых
+механизмов расширения функционала. Между тем, он содержит замечательную
+инфраструктуру, которая могла бы быть использована для предоставления различных
+инструментальных средств. `RESTAS`_ поддерживает :ref:`интеграцию <manual-slime>`
+со `SLIME`_, предоставляя ряд инструментов, упрощающих разработку веб-приложений,
+но для их использования необходимо использовать форк `SLIME-ARCHIMAG`_, вместо
+оригинального `SLIME`_, и  дополнительная инициализация Emacs:
+::
+
+  (add-to-list 'load-path "/path/to/restas/slime/")
+  (require 'restas)
+
 .. _RESTAS: http://restas.lisper.ru/
 .. _ASDF: http://common-lisp.net/projects/asdf/
 .. _Hunchentoot: http://www.weitz.de/hunchentoot/
@@ -81,3 +128,8 @@ And, at last:
 .. _archimag-lisp-overlay: http://github.com/archimag/archimag-lisp-overlay
 .. _layman: http://layman.sourceforge.net/
 .. _gentoo-lisp-overlay: http://repo.or.cz/w/gentoo-lisp-overlay.git
+.. _puri: http://puri.b9.com/
+.. _puri-unicode: http://github.com/archimag/puri-unicode
+.. _babel: http://common-lisp.net/project/babel/
+.. _SLIME-ARCHIMAG: http://github.com/archimag/slime-archimag
+.. _SLIME: http://common-lisp.net/project/slime/
