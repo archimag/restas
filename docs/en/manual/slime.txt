@@ -1,0 +1,157 @@
+.. _manual-slime:
+
+SLIME
+=====
+
+M-C-x vs C-c C-c
+----------------
+
+One of Common Lisp strengths is powerful support for interactive development.
+`RESTAS`_ aspires to provide corresponding abilities on the web development
+domain. This possiblility is provided by :fun:`restas:reconnect-all-routes`
+fucntion reinitialising request dispatcher. The definitions of submodules 
+(:macro:`restas:define-submodule`) and routes (:macro:`restas:define-route`) can
+be reevaluated at any moment and any introduced changes will immedeately 
+affect the work ot active restas applications. Among other things, this macros 
+include the following code:
+
+Одной из самых сильных сторон Common Lisp является мощная поддержка интерактивной
+разработки. `RESTAS`_ стремится предоставить соответствующие возможности в области
+разработки веб-приложений. Эта возможность обеспечивается за счёт функции
+:fun:`restas:reconnect-all-routes`, которая пере-инициализирует диспетчер запросов.
+Определения субмодулей (:macro:`restas:define-submodule`) и маршрутов (:macro:`restas:define-route`)
+могут быть в любой момент "перевычисленны" и внесённые изменения немедленно
+отражаться на работе активных restas-приложений.  Данные макросы, в том числе,
+содержат примерно такой код:
+
+.. code-block:: common-lisp
+
+  (eval-when (:execute)
+    (reconnect-all-routes))
+
+That is, for made changes to take effect, these macros must be executed,
+and not just loaded or compiled. When using `SLIME`_ it is done by using
+C-M-x command (slime-eval-defun) instead of usual С-с С-с (slime-compile-defun). 
+However, if only the boudy of the route (defined with macro
+:macro:`restas:define-route`) has changed then for activation of the changes
+just C-c C-c compiling is enough, and it is indeed recomended do it in such way,
+because compilation, contrary to execution, lests you save information about 
+the position of the route in the source code (technically it is connected with
+that route definition creates a function with the same name), and this can
+be very useful for working with site map (see later).
+
+Т.е. для того, что бы внесённые изменения вступили в силу данные макросы должны
+быть выполнены, а не просто загружены или скомпилированы. При использовании
+`SLIME`_ это достигается за счёт использования команды C-M-x (slime-eval-defun),
+вместо более обычной С-с С-с (slime-compile-defun). Однако, если изменилось только
+тело маршрута (определённого с помощью :macro:`restas:define-route`), то для
+активизации изменений достаточно и просто скомпилировать C-c C-c, мало того,
+именно так и рекомендуется делать, поскольку компиляция, в отличие от выполнения,
+позволяет сохранить информацию о расположении маршрута в исходном коде (технически
+это связано с тем, что определение маршрута также создаёт одноимённую функцию) -
+это может оказаться очень полезным при работе с картой сайта (см. далее).
+
+SLIME-ARCHIMAG
+--------------
+
+When using `SLIME-ARCHIMAG`_ *M-x restas-inspect-module* and
+*M-x restas-inspect-vhost-list* become available in Emacs. They are implemented
+on the basis of standard SLIME INSPECTOR (object inspector).
+
+При использовании `SLIME-ARCHIMAG`_ в Emacs становятся доступны команды
+*M-x restas-inspect-module* и *M-x restas-inspect-vhost-list*, реализованные
+на основе стандартного SLIME INSPECTOR (инспектора объектов).
+
+Module inspector
+
+Инспектор модулей
++++++++++++++++++
+
+It is activated by call to *M-x restas-inspect-module* and when you use it, it
+is important of specify module's name (name of corresponding package).
+
+Активизируется вызовом *M-x restas-inspect-module*, при этом надо указать
+имя модуля (имя соответствующего пакета). 
+
+.. image:: module-inspector.png
+   :alt: module inspector
+
+Appeared inspector shows you the following:
+
+В появившемся инспекторе показываются:
+
+* Initialisation and finalization functions of module. You can open their 
+  definitions by placing cursor to the show function and pressing "."
+  (slime-inspector-show-source command), this is `SLIME`_ standard ability.
+
+* Функции инициализации и финализации модуля. Открыть определение этих функций
+  можно установив курсор на показанную функцию и нажав "." (команда
+  slime-inspector-show-source) - это стандартная возможность `SLIME`_.
+
+* The list of routes defined by module. Enter or Space will open more
+  detailed information about route. And "." will show its defintion in the
+  source code.
+
+* Список маршрутов, определяемых модулем. Enter или Space откроет более
+  подробную информацию о маршруте. А "." покажет определение его в исходном
+  коде.
+
+* The list of module's submodules. Enter or Space will open submodule inpector.
+
+* Список субмодулей модуля. Enter или Space откроет инспектор субмодлуей.
+
+
+Инспектор хостов
+++++++++++++++++
+
+Команда *M-x restas-inspect-vhost-list* показывает список активных virtual
+hosts.
+
+.. image:: vhosts-inspector.png
+   :alt: vhosts inspector
+  
+После выбора нужного vhost открывается доступ к "карте сайта" и списку субмодулей,
+которые присоединяются к vhost во время запуска сайта функцией :fun:`restas:start`.
+
+.. image:: vhost-inspector.png
+   :alt: vhosts inspector
+
+Карта сайт
+++++++++++
+
+.. image:: site-map-inspector.png
+   :alt: site map inspector
+
+Инспектор карты сайта позволяет наглядно рассмотреть дерево маршрутов. Переменные
+шаблонов подсвечиваются и показываются с префиксами $ и * (для wilcard переменных).
+Каждую переменную также можно исследовать, например, что бы увидеть с помощью
+какой функции производиться парсинг переменной. В конце каждого листа этого дерева
+находиться объект-маршрут, нажав на нём "." можно перейти к месту определения
+маршрута, а Enter позволит исследовать его более детально (какой HTTP-метод
+обрабатывает, какие для него проводятся дополнительные проверки и т.п.). Таким
+образом, данный функционал позволяет исследовать и лучше понять как именно идёт
+обработка запроса и также может использоваться для простой, ориентированной на
+специфику веб-приложений, навигации по коду.
+
+Инспектор субмодулей
+++++++++++++++++++++
+
+.. image:: submodule-inspector.png
+   :alt: submodule inspector
+
+Инспектор субмодулей похож на инспектор модулей, но также содержит раздел Context, 
+в котором перечисляются переменные, связанные при подключении модуля с помощью
+:macro:`restas:define-submodule`
+
+.. image:: planet-submodule-inspector.png
+   :alt: planet submodule inspector
+
+Команда **"Use this context as global"** делает его глобальным (путем непосредственного
+присваивания соответствующим переменным значений) - это может оказаться очень
+удобным для отладки приложения  в REPL. После чего можно будет вернуть изначальное
+состояние командой **"Restore global context"**.
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _SLIME-ARCHIMAG: http://github.com/archimag/slime-archimag
+.. _SLIME: http://common-lisp.net/project/slime/
+
