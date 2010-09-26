@@ -75,8 +75,8 @@ hosts.
 .. image:: vhost-inspector.png
    :alt: vhosts inspector
 
-Карта сайт
-++++++++++
+Карта сайта
++++++++++++
 
 .. image:: site-map-inspector.png
    :alt: site map inspector

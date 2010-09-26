@@ -100,15 +100,23 @@ Appeared inspector shows you the following:
 
 * Список субмодулей модуля. Enter или Space откроет инспектор субмодлуей.
 
+Host inspector
 
 Инспектор хостов
 ++++++++++++++++
+
+*M-x restas-inspect-vhost-list* command shows the list of active virtual
+hosts. 
 
 Команда *M-x restas-inspect-vhost-list* показывает список активных virtual
 hosts.
 
 .. image:: vhosts-inspector.png
    :alt: vhosts inspector
+
+After selecting needed vhost you get access to "site map" and the list of
+submodules which were connected to vhost at the site start time by function
+:fun:`restas:start`.
   
 После выбора нужного vhost открывается доступ к "карте сайта" и списку субмодулей,
 которые присоединяются к vhost во время запуска сайта функцией :fun:`restas:start`.
@@ -116,11 +124,23 @@ hosts.
 .. image:: vhost-inspector.png
    :alt: vhosts inspector
 
+Site map
+
 Карта сайт
 ++++++++++
 
 .. image:: site-map-inspector.png
    :alt: site map inspector
+
+Site map inspector lets you visually look at the tree of routes. The variables
+of templates are highlited and shown with prefixes $ and * (for wildcard varables).
+Each variable you can also examine, for example, for seeing which function does
+parsing of a variable. At the end of each leaf of this tree a route object is
+placed and if you press "." you can go to the place of route definition, and if
+you hit Enter it will let you examine it in more detail (which HTTP method 
+it processes, which checks are done for it and so on). Therefore this functional
+lets you study and better undestand how happens the proccessing of the requests
+and also it can be used for simple web application oriented code navitation.
 
 Инспектор карты сайта позволяет наглядно рассмотреть дерево маршрутов. Переменные
 шаблонов подсвечиваются и показываются с префиксами $ и * (для wilcard переменных).
@@ -133,11 +153,18 @@ hosts.
 обработка запроса и также может использоваться для простой, ориентированной на
 специфику веб-приложений, навигации по коду.
 
+Submodule inspector
+
 Инспектор субмодулей
 ++++++++++++++++++++
 
 .. image:: submodule-inspector.png
    :alt: submodule inspector
+
+Submodule inspector does look like the moudle inpector, but it also conthains the
+Context section, where variables bound during submodule activation with 
+:macro:`restas:define-submodule` are shown.
+
 
 Инспектор субмодулей похож на инспектор модулей, но также содержит раздел Context, 
 в котором перечисляются переменные, связанные при подключении модуля с помощью
@@ -145,6 +172,11 @@ hosts.
 
 .. image:: planet-submodule-inspector.png
    :alt: planet submodule inspector
+
+**"Use this context as global"** command makes it global (by direct assigning values
+to corresponding variables), this can become very handy for debugging a web application
+in REPL. After doing so you can return to original state with command
+**"Restore global context"**.
 
 Команда **"Use this context as global"** делает его глобальным (путем непосредственного
 присваивания соответствующим переменным значений) - это может оказаться очень
