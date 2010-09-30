@@ -33,6 +33,7 @@
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
+           #:find-submodule
            ;; render
            #:render-object
            ;; cache
@@ -44,6 +45,7 @@
            #:context-remove-variable
            #:context-symbol-value
            #:with-context
+           #:copy-restas-context
            ;; service
            #:start
            #:reconnect-all-routes
