@@ -110,13 +110,14 @@
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun reconnect-all-routes ()
+(defun reconnect-all-routes (&key (reinitialize t))
   (iter (for acceptor in *acceptors*)
         (iter (for vhost in (restas-acceptor-vhosts acceptor))
               (let ((mapper (slot-value vhost 'mapper)))
                 (routes:reset-mapper mapper)
                 (iter (for module in (slot-value vhost 'modules))
-                      (reinitialize-instance module)
+                      (when reinitialize
+                        (reinitialize-instance module))
                       (connect-submodule module mapper)))))
   (values))
 
@@ -146,6 +147,6 @@
                          :module package
                          :context context)
           (slot-value vhost 'modules))
-    (reconnect-all-routes)))
+    (reconnect-all-routes :reinitialize nil)))
     
     
