@@ -20,6 +20,7 @@
            #:genurl-submodule
            #:genurl-with-host
            #:redirect
+           #:parse-route-url
            ;; modules
            #:define-module           
            #:define-initialization

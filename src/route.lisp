@@ -77,12 +77,15 @@
        (eval-when (:execute)
          (reconnect-all-routes)))))
 
+(defun route-template-from-symbol (symbol submodule)
+  (concatenate 'list
+               (submodule-full-baseurl submodule)
+               (routes:parse-template (get symbol :template)
+                                      (get symbol :parse-vars))))
+
 (defun create-route-from-symbol (symbol submodule)
   (make-instance 'route
-                 :template (concatenate 'list
-                                        (submodule-full-baseurl submodule)
-                                        (routes:parse-template (get symbol :template)
-                                                               (get symbol :parse-vars)))
+                 :template (route-template-from-symbol symbol submodule)
                  :symbol symbol
                  :content-type (or (get symbol :content-type)
                                    (string-symbol-value +content-type-symbol+
@@ -144,3 +147,19 @@
     (puri:render-uri uri nil)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; parse url for route
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun parse-route-url (url route-symbol &optional submodule-symbol)
+  (let ((mapper (make-instance 'routes:mapper)))
+    (routes:connect mapper
+                    (make-instance 'routes:route
+                                   :template (route-template-from-symbol route-symbol
+                                                                         (if submodule-symbol
+                                                                             (find-submodule  submodule-symbol)
+                                                                             *submodule*))))
+    (multiple-value-bind (route bindings) (routes:match mapper url)
+      (if route
+          (alexandria:alist-plist bindings)))))
+  
