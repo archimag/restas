@@ -66,23 +66,34 @@ API Reference
   :macro:`restas:define-submodule` и :macro:`restas:define-route` она вызывается
   автоматически.
 
+Special variables
+
 Специальные переменные
 ======================
 
 .. defvar:: restas:*default-host-redirect*
+
+  All requests to unregistered hosts will be redirected to this default host.
 
   Хост по-умолчанию, на который будут перенаправлять запросы, адресованные к
   незарегистрированному хосту.
 
 .. defvar:: restas:*bindings*
 
+  Set of parsed variables of the route is stored here.
+
   В этой переменной сохраняется набор распарсенных переменных маршрута.
 
 .. defvar:: restas:*submodule*
 
+  Active submodule route in processing belogns to.
+
   Активный submodule, которому принадлежит обрабатываемый маршрут
 
 .. defvar:: restas:*request-pool*
+
+  `garbage-pools`_ library's resource pool for freeing it after processing
+  request.
 
   Пул ресурсов библиотеки `garbage-pools`_, который освобождается после
   завершения обработки запроса.
@@ -90,7 +101,11 @@ API Reference
 .. defvar:: restas:*route*
    :args: foo bar
 
+  Request under processing.
+
   Обрабатываемый маршрут.
+
+Routes
 
 Маршруты
 ========
@@ -98,33 +113,61 @@ API Reference
 .. defmacro:: restas:define-route
   :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
 
+  Creates new route in the current module
   Создаёт новый маршрут в текущем модуле
+
+  * name - unique :hs:`symbol`, beeing route's identifier. One and the same
+    :hs:`symbol` cant be used for different routes.
 
   * name - уникальный :hs:`symbol`, являющийся индефикатором маршрута. Один и
     тот же :hs:`symbol` не может использоваться для различных маршрутов.
 
+  * template - URL template for matching a route and a request on its basis.
+    It can contain variables which will be directly available in the body of
+    the route.
+
   * template - шаблон URL, на основе которого проверяется соответствие маршрута
     запросу. Может содержать переменные, которые непосредственно доступны в
     теле маршрута.
+
+  * method - type of HTTP request under processing, possible values are :GET :POST,
+    :PUT, :DELETE.
     
   * method - тип обрабатываемого HTTP-запроса, возможные значения: :GET, :POST,
     :PUT, :DELETE.
 
+  * content-type - **Content-Type** of the result of the request processing to be
+    set in HTTP request's header.
+
   * content-type - **Content-Type** результата обработки запроса,
     устанавлиевается в заголовке HTTP-ответа.
 
+  * render-method - object, used by call to :fun:`restas:render-object` for processing of
+    the result of route before serving it to client.
+
   * render-method - объект, который будет использоваться в вызове :fun:`restas:render-object`
     для обработки результата маршрута перед отдачей его клиенту.
+
+  * requirement - arbitrary function called for checking wheter a route an a request match
+    each other. If result si :hs:`NIL` then route is regarded as not satisfying the request.
 
   * requirement - произвольное функция, которая вызвается для проверки
     соответствия маршрута условиям запроса. Если результат :hs:`NIL`, то маршрут
     считается не удовлетворяющим запросу.
 
+  * parse-vars - *plist* with variables names (as :fun:`restas:render-object`).:hs:`keyword`s) and funtions for
+    their parsing.
+
   * parse-vars - *plist* с именами переменных (в виде :hs:`keyword`) и функциям
     их парсинга.
 
+  * body - the body of handler can containg an arbitrary code, its result is returned
+    to client (after processing it with :fun:`restas:render-object`).
+
   * body - тело обработчика, может содержать произвольный код, результат выполнения
     которого возвращается клиенту (после обработки с помощью :fun:`restas:render-object`).
+
+  Example of definition of a trivial route:
 
   Пример объявления тривиального маршрута:
 
@@ -133,10 +176,15 @@ API Reference
     (restas:define-route main ("")
       "<h1>Hello world!</h1>")
 
+  For more details about route definition, see :ref:`manual-routes`
+
   Подробнее об определении маршрутов смотрие :ref:`manual-routes`
 
 .. defun:: restas:route-symbol
   :args: route
+
+  Returns :hs:`symbol`, bound to route object (for example, during request
+  processing such object is bound to :var:`restas:*route*`).
 
   Возвращает :hs:`symbol`, связанный с объектом-маршрутом (например, во время
   обработки запроса такой объект связан  с переменной :var:`restas:*route*`).
@@ -144,13 +192,22 @@ API Reference
 .. defun:: restas:genurl
   :args: route-symbol &rest args
 
+  Computes URL of the route on the basis of identifying :hs:`symbol` and the
+  set of values of variables of its template (see :macro:`restas:define-route`)
+
   Вычисляет URL маршрута на основе индентифицирующего :hs:`symbol` и набора
   значений переменных его шаблона (см. :macro:`restas:define-route`)
 
+  * route-symbol - route identifier
+
   * route-symbol - индентификатор маршрута
+
+  * args - sequence (in the *plist* format) of route variables and their values.
 
   * args - последовательность (в формате *plist*) имён переменных маршрута и
     их значений.
+
+  Example:
 
   Пример:
 
@@ -160,14 +217,23 @@ API Reference
                    :arg1 "foo"
                    :arg2 "bar")
 
+  **Important**: this fucntions works right only for routes being in the same 
+  module with proccessed route at the call time.
+
   **Важно**: данная функция работает правильно только маршрутов, которые находятся
   в одном модуле с обрабатываемым в момент вызова маршрутом.
 
 .. defun:: restas:genurl-submodule
   :args: submodule-symbol route-symbol &rest args
 
+  Analogous to :fun:`restas:genurl`, but is used for routes from modules plugged
+  with :macro:`restas:define-submodule`.
+
   Аналогична :fun:`restas:genurl`, но используется для маршрутов из подключаемых
   с помощью :macro:`restas:define-submodule` модулей.
+
+  * submodule-symbol - identifier of submodule, specified at its definition 
+    with :macro:`restas:define-submodule`.
 
   * submodule-symbol - индефикатор субмодуля, указаный при его определении с помощю
     :macro:`restas:define-submodule`.
@@ -175,14 +241,22 @@ API Reference
 .. defun:: restas:genurl-with-host
   :args: route &rest args
 
+  This function is analogous to :fun:`restas:genurl` with exception of generated URL
+  also includes the host name.
+
   Данная функция аналогична :fun:`restas:genurl` за тем исключением, что в генерируемый
   URL также включается имя хоста.
 
 .. defun:: restas:redirect
   :args: route-symbol &rest args
 
+  Redirects the request with :fun:`hunchentoot:redirect` for URL computed with
+  :fun:`restas:genurl`. The parameters are analogous to those of function :fun:`restas:genurl`.
+
   Перенаправляет запрос с помощью :fun:`hunchentoot:redirect` для URL, вычисляемого с
   помощью :fun:`restas:genurl`. Параметры аналогичны параметрам функции :fun:`restas:genurl`.
+
+Modules
 
 Модули
 ======
@@ -190,11 +264,18 @@ API Reference
 .. defmacro:: restas:define-module
   :args: name &rest options
 
+  Initializes a new module, creates new :hs:`package`, and conducts its initialization.
+  (Adds certain sevrice variable to it.)
   Инициализирует новый модуль: создаёт новый :hs:`package` и проводит его инициализацию
   (добавляет в него некоторые служебные переменные)
 
 .. defmacro:: restas:define-initialization
   :args: (context) &body body
+
+  Defines a function to be called at plugging a module with
+  :macro:`restas:define-submodule`. It can be called, for example, for addinitional 
+  adjustment of submodule context. It should be placed in the package, defined with
+  aid of :macro:`restas:define-module`.
 
   Определяет функцию, которая вызывается при подключении модуля с помощью
   :macro:`restas:define-submodule`. Может использваться, например, для дополнительной
@@ -204,9 +285,15 @@ API Reference
 .. defmacro:: restas:define-finalization
   :args: (context) &body body
 
+  Defines a function contrary to those defined with :macro:`restas:define-initialization`.
+  Is called at the repeated evaluation of :macro:`restas:define-submodule` and can be used
+  e.g. for freeing the resources, allocated at submodule initialization.
+
   Определяет функцию, противоположную определённой с помощью :macro:`restas:define-initialization`.
   Вызывается при повторном вычислении :macro:`restas:define-submodule` и может использоваться,
   например, для освобождении ресрсов, выделенных при инциализации субмодуля.
+
+Submodules
 
 Субмодули
 =========
@@ -214,16 +301,28 @@ API Reference
 .. defmacro:: restas:define-submodule
   :args: name (module) &rest bindings
 
+  Defines a submodule which becomes a part of module it is defined in.
+
   Определяет субмодуль, который становится частью модуля, в пакете которого
   он определяется.
 
+  * name - identifyer (:hs:`symbol`) of a submodule.
+
   * name - индентификатор (:hs:`symbol`) субмодуля.
 
+  * module - `package designator`_  of the plugged module.
+
   * module - `package designator`_ присоеденяемого модуля.
+
+  * bindings - the set of variables and their values defining the context of
+    submodule. The processing of routes from this submodule will be conducted
+    in this context by call to :hs:`progv`.
 
   * bindings - набор символов переменных и их значений, определяющий контекст
     субмодуля. Обработка маршрутов, принадлежащих данному субмодулю, будет
     производиться в этом контексте с помощью вызова :hs:`progv`.
+
+  Example:
 
   Пример:
 
@@ -237,6 +336,9 @@ API Reference
 .. defun:: restas:submodule-symbol
   :args: submodule
 
+  Return :hs:`symbol`, bound to submodule object (e.g., at the request processing
+  time such object is bound to :var:`restas:*submodule*`).
+
   Возвращает :hs:`symbol`, связанный с объектом-субмодулем (например, во время
   обработки запроса такой объект связан  с переменной :var:`restas:*submodule*`).
 
@@ -244,10 +346,15 @@ API Reference
 .. defun:: restas:submodule-module
   :args: submodule
 
+  Return the `package designator`_ associated with submodule object.
+
   Возвращает `package designator`_, связанный с объектом-субмодулем
 
 .. defun:: restas:submodule-parent
   :args: submodule
+
+  Returns a submoudle the passed submodule is plugged to. With ais of macro
+  :macro:`restas:define-submodule` you can create entire hierarchies of submodules.
 
   Возвращает субмодуль, к которому присоединён переданный субмодуль. С помощью
   макроса :macro:`restas:define-submodule` можно создавать целые иерархии
@@ -255,6 +362,8 @@ API Reference
 
 .. defmacro:: restas:with-submodule-context
   :args: submodule &body body
+
+  Lets you execute an arbitrary code at the context of specified submodule.
 
   Позволяет произвольный выполнить код в окружении контекста указанного субмодуля.
 
