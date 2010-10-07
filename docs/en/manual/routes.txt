@@ -9,7 +9,7 @@ popular among other web frameworks. Also, `Django`_'s `URLConf`_ is conceptually
 very close system. Among subsequent developments, http://routes.groovie.org/
 (used by `Pylons`_) is probably the most powerful implementation of this idea.
 
-Routes meet the key problem of web development: matching a code to URL.
+Routes deal with the key problem of web development: matching a code to URL.
 For example, which code should respond to processing request to
 "/blog/2008/01/08" or "/login" address? Many frameworks use fixed dispatch
 system, e.g. "/A/B/C" means read file "C" in directory "B", or call method "C"
@@ -20,7 +20,7 @@ will become invalid. Apart of this, if you want to change addresses
 debugged logic of link generation inside the site.
 
 Routes propose other approach. You define URL template and bind it to your code.
-If you change you decision about a particular URL, you will just change the
+If you change your decision about a particular URL, you will just change the
 URL template - code will work fine just as before and you won't have to change
 any logic.
 
@@ -52,8 +52,8 @@ only in each template)
 
 The majority of routes implementations (including dispatch systems of 
 `Ruby On Rails`_, `Django`_, and `Pylons`_) store routes in a plain list,
-and a search of matching route is made with brute force up to first match.
-Usually for matching a request and a route they use regular expressions.
+and the search of a matching route is made with brute force up to first match.
+Usually, for matching a request and a route they use regular expressions.
 So for big sites having hundreds (or even thousands) of routes,
 the dispatch system can become bottleneck, notably lowering overall 
 performance. `cl-routes`_ compiles all routes in one tree, because
@@ -65,21 +65,21 @@ Apart from this, in contrast to above mentioned systems, `cl-routes`_'s
 route isn't a string, but an object of class :class:`routes:route`,
 for which one can specialize `generic`_ method 
 :fun:`routes:routes:route-check-conditions`, that allows making arbitrary 
-checks and comparisons beetween a route and a request. This possibility
+checks and comparisons between a route and a request. This possibility
 is used by `RESTAS`_ for implementation of a more flexible dispatching.
 
 During specifying routes conflicts are possible when one and the same URL
-matches several templates. In systems with sequential seach of matching route
+matches several templates. In systems with sequential search of matching route
 the first match is always picked, and `cl-routes`_ tries to select the
 most specific route, for example, the route having more variables,
 or having the longest static part. Now there is no accurate description of
-the collision resolition algorith, but usually there is no poblems with it:
-the system behavior is quite reasonable and mainly meets intuitive expectations.
+the collision resolution algorithm, but usually there is no problem with it:
+the system behaviour is quite reasonable and mainly meets intuitive expectations.
 
 Usage
 =====
 
-For route creation `RESTAS`_ uses macro :macro:`restas:define-route`
+For a route creation `RESTAS`_ uses macro :macro:`restas:define-route`
 e.g.:
 
 .. code-block:: common-lisp
@@ -91,16 +91,16 @@ e.g.:
   
 
 In other words, we define an URL template and its handler, meanwhile the handler
-body have immediate access to variables defined in the URL template. Embedded handler
+body have immediate access to the variables defined in the URL template. Embedded handler
 by default may return :hs:`string`  or "octets :hs:`array`", or integer number
 (which will be interpreted as a code of request status), or :hs:`pathname`
 (in this case :fun:`hunchentoot:handle-static-file` is called, which, contrary
 to Ruby- and Python-based systems, works fast enough and usually there is
 no need for additional servers for static content, such as `nginx`_ server.
 
-When defining a route with :fun:`restas:define-route` you need to specify 
+When you define a route with :fun:`restas:define-route` you need to specify 
 :hs:`symbol` (in sited example it is 'article), which will became the route name.
-Firstly, it gives you a possibility to redefine the route (including the URL template, 
+Firstly, it gives you the possibility to redefine the route (including the URL template, 
 just keep the same name for it) at any moment you want, just send the code
 to REPL (for example, with M-C-x in `SLIME`_). Secondly, it lets you use
 this :hs:`symbol` for URL generation:
@@ -109,7 +109,7 @@ this :hs:`symbol` for URL generation:
 
   (restas:genurl 'article
                  :author "archimag"
-                 :item "introduction-in-routes")
+                 :item "introduction-to-routes")
 
 or for a redirect:
 
@@ -117,15 +117,15 @@ or for a redirect:
 
   (restas:redirect 'article
                    :author "archimag"
-                   :item "introduction-in-routes")
+                   :item "introduction-to-routes")
 
 For one and the same URL template you can create several routes by setting 
-addition requirements to them.
+additional requirements to them.
 
 HTTP request type requirement
 -----------------------------
 
-Specified with :method parameter (:get by default) of
+This requirement is specified with :method parameter (:get by default) of
 macro :macro:`restas:define-route`, for example:
 
 .. code-block:: common-lisp
@@ -144,7 +144,7 @@ URL parameter control
 ---------------------
 
 Often there is a need to put a restriction to URL template parameters, e.g.
-a restriction of type, or a need to transform them from string representation to
+a restriction of type, or a need to transform them from a string representation to
 some objects. For this you can use :parse-vars parameter of macro
 :macro:`restas:define-route`, for example:
 
@@ -157,7 +157,7 @@ some objects. For this you can use :parse-vars parameter of macro
     ...)
 
 Here id parameter is parsed as integer, bar is checked with aid of 
-#'check-bar function, and page is left as is. If parse function
+#'check-bar function, and page parameter is left as is. If a parse function
 returns :hs:`NIL` or generates an error, then the route is considered
 as not meeting the condition and is skipped. In the case of success
 route body has the access to already parsed parameter value, 
@@ -172,7 +172,7 @@ With :requirement parameter of macro :macro:`restas:define-route`
 you can specify an arbitrary function to be called when the route is 
 checked. If it returns :hs:`NIL` then the route is treated as inappropriate.
 
-For example, `restas-wiki`_ for processing an edit form of wiki page
+For example, `restas-wiki`_ for processing of editing form of wiki page
 uses the following code:
 
 .. code-block:: common-lisp
@@ -192,7 +192,7 @@ uses the following code:
                                      :requirement (lambda () (hunchentoot:post-parameter "save")))
     ...)
 
-Here routes edit-wiki-page/preview, edit-wiki-page/cancel, and edit-wiki-page/save
+Here the routes edit-wiki-page/preview, edit-wiki-page/cancel, and edit-wiki-page/save
 reply for pressing form buttons Preview, Cancel, and Save accordingly.
 
 .. _RESTAS: http://restas.lisper.ru/

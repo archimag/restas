@@ -367,11 +367,20 @@ Submodules
 
   Позволяет произвольный выполнить код в окружении контекста указанного субмодуля.
 
+Representation
+
 Отображение
 ===========
 
 .. defun:: restas:render-object
   :args: drawer object
+
+  Generic method used for processing the data returned by route handler
+  (specified in the body of :macro:`restas:define-route`). If you didn't specify
+  :render-method parameter for :macro:`restas:define-route` macro then the value of
+  :var:`*default-render-method*` from the module where route under processing was
+  defined (It is automatically created at module definition time by macro 
+  :macro:`restas:define-module` and its value is :hs:`NIL`).
 
   Generic-метод, используется для обработки данных, возвращаемых обработчиком
   маршрутов (определяемого в теле :macro:`restas:define-route`). Если в :macro:`restas:define-route`
@@ -380,16 +389,26 @@ Submodules
   обрабатываемый маршрут (она создаётся автоматически при определении модуля с
   помощью :macro:`restas:define-module` и её значение равно :hs:`NIL`).
 
+  For more detailed description see at section :ref:`manual-view`.
+
   Более подробную информацию смотрите в разделе :ref:`manual-view`.
+
+Context
 
 Контекст
 ========
+
+To provide modularity RESTAS uses mechanism close to Buffer-Local Variables`_
+in `GNU Emacs`_.
 
 В `RESTAS`_ для обеспечения модульности используется механизм, напоминающий 
 `Buffer-Local Variables`_ в `GNU Emacs`_.
 
 .. defmacro:: restas:make-context
   :args: &body bindings
+
+  Creates dynamic context binging of dynamic variables to their values.
+  Example:
 
   Создаёт новый динамический контекст, связывающий динамические переменные со
   значениями. Пример:
@@ -403,7 +422,14 @@ Submodules
 .. defun:: restas:context-add-variable
   :args: context symbol &optional value
 
+  Adds a variable to the context.
+
   Добавляет новую переменную в контекст
+
+  * context - contex
+  * symbol - :hs:`symbol`, associated to dynamic variable.
+  * value - value of the variable, if not specified then the result of 
+    call to :hs:`symbol-value` is used.
 
   * context - контекст
   * symbol - :hs:`symbol`, связанный с динамической переменной
@@ -413,10 +439,16 @@ Submodules
 .. defun:: restas:context-remove-variable
   :args: context symbol 
 
+  Removes the variable from the context.
+
   Удаляет переменную из контекста
 
 .. defun:: restas:context-symbol-value
   :args: context symbol => value, present-p
+
+  Return the *value* of a dynamic variable, if the variable is missing in the context
+  then for evaluating its value :hs:`symbol-value` is used and present-p is equal to
+  :hs:`NIL`.
 
   Возращает значение *value* динамической переменной, если переменная отсутствует
   в контексте, то для вычисления её значения используется :hs:`symbol-value`, а
@@ -424,6 +456,8 @@ Submodules
 
 .. defmacro:: restas:with-context
   :args: context &body body
+
+  Executes the code in the given context with :hs:`progv`.
 
   Выполняет код в окружении заданного контекста с помощью :hs:`progv`.
 
@@ -433,14 +467,20 @@ Submodules
 .. defun:: restas:debug-mode-on
   :args:
 
+  Sets up the debug mode.
+
   Устанавливает отладочный режим.
 
 .. defun:: restas:debug-mode-off
   :args:
 
+  Cancels debug mode.
+
   Отменяет отладочный режим.
 
 .. defvar:: restas:*max-debugging-threads*
+
+  Maximal number of simultaneously debugged threads.
 
   Максимально колличество одновременно отлаживаемых поток.
 

@@ -4,12 +4,12 @@ Daemonization
 =============
 
 When you are deploying a Common Lisp application (e.g., a site) on a server
-with GNU/Linux, the problem of organizing a lisp daemon arises and it is bound
-with certain technical problems, which can probably cause some misunderstanding
-(or even fear) among beginners.
+with GNU/Linux, you immediately get the problem of organizing a lisp daemon
+and it is tightly connected with certain technical problems, which can
+probably cause some misunderstanding (or even fear) among beginners.
 
 The root of these problems is that usually lisp process cant be torn off
-a terminal (source of this rise to time when computers were large...)
+a terminal (reasons for this rise to times when computers were large...)
 and when standard input stream is closed, the process will immediately
 terminate itself.
 
@@ -33,7 +33,7 @@ and a command name. Following commands are supported:
 
 * **kill** - kill the daemon, if it somehow doesn't want to halt with 'stop'. 
 
-* **zap** - remove PID file, you will need it, if the daemon was stopped roughly.
+* **zap** - remove PID file, you need it, if the daemon was stopped roughly.
 
 * **nodaemon** - basically the same, as 'start' (including rights change etc.),
   but during this the process doesn't fork itself and doesn't disconnect from 
@@ -41,7 +41,7 @@ and a command name. Following commands are supported:
   for debugging a daemon.
 
 Daemon configuration file can contain definitions for several variables altering 
-daemon behavior, here is the full config of my home daemon:
+daemon behaviour, here is the full config of my home daemon:
 
 .. code-block:: common-lisp
 
@@ -62,12 +62,12 @@ Following parameters are possible:
 
 * :var:`*name*` - daemon name, the only required parameter now.
 
-* :var:`*user*` - name of a user to be owner of the daemon, by default is the
+* :var:`*user*` - name of a user to be owner of the daemon, by default it is the
   same as daemon name.
 
 * :var:`*group*` - user group
 
-* :var:`*fasldir*` - path to directory for putting fasl files, by default
+* :var:`*fasldir*` - path to a directory for putting fasl files, by default
   is derived from daemon name as
 
   .. code-block:: common-lisp
@@ -84,7 +84,7 @@ Following parameters are possible:
   swank won't be started.
 
 * :var:`*default-host-redirect*` - in `RESTAS`_ sites are started with
-  :fun:`restas:start-site`, in this case you can supply a host name (virtual host analog),
+  :fun:`restas:start-site`, in this case you can supply a host name (virtual host analogue),
   this variable designates host for making a redirect if there is no site
   for requested host, e.g. you can get in `lisper.ru`_ by typing in a browser 
   http://www.lisper.ru/, http://lisp.catap.ru/ or just the direct address, all such requests
@@ -106,8 +106,8 @@ Following parameters are possible:
       '((#:rulisp "lisper.ru" 80)
         (#:rulisp.restas "restas.lisper.ru" 80)))
     
-For Gentoo-based systems there is special support. During installation of `RESTAS`_ 
-with `archimag-lisp-overlay`_ script restas.lo is added to directory /etc/init.d/.
+There is special support for Gentoo-based systems. During installation of `RESTAS`_ 
+with `archimag-lisp-overlay`_ the script restas.lo is added to directory /etc/init.d/.
 Now, for creation of initd script you can create a symlink to this file and create
 configuration file in /etc/conf.d/, for example,
 ::

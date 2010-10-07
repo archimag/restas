@@ -108,7 +108,7 @@ Routes является ключевой концепцией `RESTAS`_, а их
 
   (restas:genurl 'article
                  :author "archimag"
-                 :item "introduction-in-routes")
+                 :item "introduction-to-routes")
 
 или для перенаправления:
 
@@ -116,7 +116,7 @@ Routes является ключевой концепцией `RESTAS`_, а их
 
   (restas:redirect 'article
                    :author "archimag"
-                   :item "introduction-in-routes")
+                   :item "introduction-to-routes")
 
 Для одного и того же шаблона URL можно создать несколько маршрутов, накладывая на
 них дополнительные ограничения.

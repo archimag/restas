@@ -12,20 +12,12 @@ structure. Module is created with macro :macro:`restas:define-module`
 which creates a package with corresponding name and also makes some
 additional initialization of it. For example:
 
-С точки зрения Common Lisp, модуль -- это просто пакет(:hs:`package`). С точки зрения
-`RESTAS`_ модуль -- это набор маршрутов , определяющих структуру web-приложения.
-Модуль создаётся с помощью макроса :macro:`restas:define-module`, который 
-создаёт пакет с соответствующим именем, а ещё проводит некоторую
-дополнительную инициализацию этого пакета. Например:
-
 .. code-block:: common-lisp
 
   (restas:define-module #:hello-world
     (:use #:cl))
 
 Now you can create several routes in this module:
-
-Теперь можно создать в этом модуле несколько маршрутов:
 
 .. code-block:: common-lisp
  
@@ -34,17 +26,11 @@ Now you can create several routes in this module:
   (restas:define-route main ("hello")
     "<h1>Hello world!</h1>")
 
-I point out the principial importancy of macroexpansion of
-:macro:`restas:define-route` in package (after :hs:`in-package`), bind
+I should point out the principial importancy of macroexpansion of
+:macro:`restas:define-route` in package (after :hs:`in-package`), bound
 to certain module.
 
-Обращаю внимание на принципиальную важность раскрытия макроса
-:macro:`restas:define-route` в пакете (после :hs:`in-package`), связанном с
-определённым модулем. 
-
 At last, obtained module can be launched as a site:
-
-И наконец, полученный модуль можно запустить как web-сайт:
 
 .. code-block:: common-lisp
 
@@ -53,37 +39,21 @@ At last, obtained module can be launched as a site:
 You can also pass the :hostname keyword parameter to the function :fun:`restas:start`
 which lets you serve several virtual hosts within one process.
 
-В функцию :fun:`restas:start` можно также передать ключевой параметр :hostname, что
-позволяет обслуживать несколько виртуальных хостов в рамках одного процесса.
-
 Thus, after placing several routes in a module you can use the module for 
-launching of a web application. But modules have also other way to use them.
-
-Таким образом, после размешения в модуле нескольких маршрутов, модуль можно использовать для
-запуска web-приложения. Но у модулей есть ещё и другой вариант использования.
+launching of a web application. But also there is another way of using modules.
 
 Submodules
 ----------
 
-Modules propose interesting way of repeted code usage for web application development.
-The difference of web component from usual library containing functions, macros,
-classes and others is that that web component also must contain information about
-served urls and this information mush be used in request dispatch mechanism and
-rightly determine code responsible form processing incoming request. In the terms
-of routes every repeatebly used web component is just a list of routes proccessed
+Modules propose interesting way of repeated code usage for web application development.
+The difference of a web component from an usual library containing functions, macros,
+classes and other shuff is that web component also must contain information about
+served urls and this information must be used by request dispatch mechanism and
+rightly determine code responsible for processing incoming request. In the terms
+of routes every repeatedly used web component is just a list of routes processed
 by it, and this is just what modules are from the RESTAS point of view. For
-repeated use of a module from an other module one can use :macro:`restas:define-submodule`
+repeated use of a module from other module one can use :macro:`restas:define-submodule`
 macro. Example (depens on code above):
-
-Модули предлагают интересный подход к повторному использованию кода при разработке
-web-приложений. Отличие web-компонента  от простой библиотеки, содержащей функции,
-макросы, классы и т.п в том, что web-компонент также должен содержать информацию
-об обслуживаемых им url, и эту информацию надо использовать в механизме диспетчеризации
-запросов, правильно определяя код, ответственный за обработку поступившего запроса.
-В терминах routes (маршрутов) любой повторно используемый web-компонент является
-просто списком обрабатываемых им маршрутов, а это как раз и есть то, чем являются
-модули с точки зрения `RESTAS`_. Для повторного использования модуля из другого
-модуля используется макрос :macro:`restas:define-submodule`. Пример (зависит от кода выше):
 
 .. code-block:: common-lisp
 
@@ -102,12 +72,6 @@ and module test was started at 8080 port. Inspite of inside the 'test' module it
 no route is defined, in the end it is able to process requests coming to /hello
 due to inclusion in inself hellow-word module.
 
-В данном примере определяется новый модуль test, к нему присоединяется определённый
-выше модуль hello-world (а получившийся подмодуль ассоциируется с символом
-test-hello-world) и модуль test запускается на порту 8080. Хотя в самом модуле test
-не определён ни один маршрут, но в итоге он способен обрабатывать запросы, 
-поступающие на /hello благодаря включению в себя модуля hello-world.
-
 In this state this functionality doesn't look very usable and this a reason to that.
 For successful repeted use of any component you shoud know how to configure it,
 tune its parameters, without this possibility repeted usage will boil down to
@@ -123,21 +87,6 @@ a simple domain as web application development. For solution of this problem Com
 Lisp has one more tremendous mechamism: dynamic variables. Here is an emple of code
 used by `lisper.ru`_ for publishing of static files:
 
-В таком виде данный функционал не выглядит очень полезным и вот почему. Для успешного
-повторного использования любого компонента надо уметь его конфигурировать, настраивать
-его параметры - без этой возможности повторное использование сведётся к технике
-copy/paste с последующим редактированием кода, что выглядит удручающее само по себе,
-а в контексте CL ещё имеет и множество технических ограничений (что связано с тем,
-что понятие пакета никак не связано с физическим размещением кода на файловой системе).
-В ООП традиционным способом решения проблем конфигурации является использование классов, 
-но, хотя Common Lisp и имеет сверхмощную поддержку ООП (CLOS + MOP), я решил всё-таки
-отказаться от подобного подхода: возникающие проблемы дизайна, проектирования, 
-бесконечные интерфейсы и наследование всегда существенным образом повышают уровень 
-сложности системы, что кажется мне совершенно излишним для такой простой области, как
-разработка web-приложений. Для решения этой проблемы в Common Lisp есть ещё один
-потрясающий механизм: динамические переменные. Вот пример настоящего кода, используемого
-на `lisper.ru`_ для публикации статических файлов:
-
 .. code-block:: common-lisp
 
   (restas:define-submodule rulisp-static (#:restas.directory-publisher)
@@ -145,8 +94,6 @@ copy/paste с последующим редактированием кода, ч
     (restas.directory-publisher:*autoindex* nil))
 
 In this example we use `restas-directory-publisher`_ moudle.
-
-В данном примере используется модуль `restas-directory-publisher`_.
 
 In the module :package:`restas.directory-publisher` several global dynamic
 variables are defined (with :hs:`defparameter` or :hs:`defvar`) which can
@@ -159,16 +106,6 @@ and makes later processing of request inside this environment (using special
 operator :hs:`progv`). This mechanism resemles Buffer-Local Variables in
 Emacs.
 
-В модуле :package:`restas.directory-publisher` определены (с помощью :hs:`defparameter`
-или :hs:`defvar`) несколько глобальных динамических переменных, которые можно
-использоваться для настройки его работы. В макросе :marcro:`restas:define-submodule`
-некоторые из этих переменных связываются c новыми значениями, но эти связки не
-применяются непосредственно, а сохраняются в виде контекста для использования в
-будущем. При обработке запроса диспетчер находит маршрут, определяет связанный с
-ним подмодуль, настраивает окружение на основе сохранённого контекста и производит
-дальнейшую обработку запроса в рамках этого окружения (для этого используется
-вызов :hs:`progv`). Данный механизм напоминает Buffer-Local Variables в Emacs.
-
 When defining a new module with :macro:`restas:define-module` the
 :var:`*baseurl*` variable is added to it (to its :hs:`package`), the variable should
 be a list of string and define a base url to activate the module, it is set to
@@ -176,14 +113,6 @@ be a list of string and define a base url to activate the module, it is set to
 for definiton of an url to plug in a module. Here is a more complex example of 
 module `restas-directory-publisher`_ of the `lisper.ru`_ site (you can see it in
 action at address http://lisper.ru/files/).
-
-При определении нового модуля с помощью :macro:`restas:define-module` в него
-(в :hs:`package`) добавляется переменная :var:`*baseurl*`, которая должна быть списком
-строк и определяет базовый url, по которому будет активизирован данный модуль,
-по-умолчанию она установленная в :hs:`nil`. Данную переменную можно использовать в
-:macro:`restas:define-submodule` для задания url, по которому будет подключён
-подмодуль. Вот более сложный пример использования модуля `restas-directory-publisher`_
-на сайте `lisper.ru`_ (посмотреть этот код в работе можно по адресу http://lisper.ru/files/):
 
 .. code-block:: common-lisp
 
@@ -200,10 +129,6 @@ Besides this, coupled to preceding example show double usage of the same
 module with different operation modes within the bounds of the same site
 without any conflicts beetween them.
 
-Кстати, вкупе с предыдущим, данный пример показывает двукратное использование
-одного модуля с различными режимами работы в рамках одного и того же сайта, без
-каких-либо конфликтов между собой.
-
 Internal dispatching
 --------------------
 
@@ -215,15 +140,6 @@ according to schedule, reads ribbons and merges them to single one), which
 should be computed on the basis of variable which can be placed in submodule's
 context. For such cases a :macro:`restas:define-initialization` macro is
 provided, and here is the real code from planet.lisp:
-
-Макрос :macro:`restas:define-submodule` позволяет контролировать настройку модуля
-"снаружи", но порой надо иметь возможность влиять на создаваемый контекст изнутри
-модуля. Например, модуль `restas-planet`_, который используется для организации
-`Russian Lisp Planet`_ нуждается в механизме для сохранения объекта-робота (он по
-заданному расписанию считывает ленты и объединяет их в одну), который должен быть
-вычислен на основе переменных, которые могут быть помещены в контекст submodule.
-Для такого случая предусмотрен макрос :macro:`restas:define-initialization`, вот
-реальный код из planet.lisp:
 
 .. code-block:: common-lisp
 
@@ -248,13 +164,6 @@ form. Considering that creation of spider object leads to launching of a schedul
 :macro:`restas:define-submodule` in the second time. The macro
 :macro:`restas:define-finalization` is provided for this.
 
-Здесь производится вычисление объекта spider, который ассоциируется с переменной 
-:var:`*spider*` и помещается в контекст создаваемого submodule. Данный код будет
-вычислен при вычислении формы :macro:`restas:define-submodule`. Поскольку создание
-объекта spider приводит к запуску планировщика (в частности, создаётся таймер), то
-также надо уметь останавливать их при повторном вычислении формы :macro:`restas:define-submodule`,
-для этого предусмотрен макрос :macro:`restas:define-finalization`:
-
 .. code-block:: common-lisp
 
   (restas:define-finalization (context)
@@ -272,18 +181,8 @@ after that turing it into repeatedly use componet at minimal costs (just
 by bringing it to the "right" design). Such approach, as I think, lets
 in many cases escape from problems immanent to traditional OOP design.
 
-Описанная схема подразумевает дуализм: модуль как standalone-приложение, и он же
-как компонент повторного использования, что позволяет разрабатывать модуль без
-какого-либо учёта возможности повторного использования, а потом минимальной ценой
-(просто приводя его к "правильному" дизайну) превращать в многократно используемый
-компонент. Подобный подход, как мне кажется, позволяет в значительной степени 
-избежать проблем, свойственных традиционному ООП-дизайну.
-
 As a demonstration, here is the code for launching `restas-directory-publisher`_,
 which I used above as a repetedly used component, as a standalone application:
-
-В качестве демонстрации, вот код для запуска `restas-directory-publisher`_, который
-я использовал выше как повторно используемый компонент, в виде standalone-приложения:
 
 .. code-block:: common-lisp
 
@@ -295,9 +194,6 @@ which I used above as a repetedly used component, as a standalone application:
 
 Now if you open in your browser the page http://localhost:8080/tmp/ you can
 observe the content of the #P"/tmp/" directory.
-
-Теперь открыв в браузере страницу http://localhost:8080/tmp/ можно будет наблюдать 
-содержимое директории #P"/tmp/".
 
 
 .. _RESTAS: http://restas.lisper.ru/
