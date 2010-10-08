@@ -27,16 +27,17 @@
       #'identity))
 
 (defmethod routes:route-check-conditions ((route route) bindings)
-  (with-context (slot-value (slot-value route 'submodule)
-                            'context)
-    (with-slots (required-method arbitrary-requirement) route
-      (and (if required-method
-               (eql (hunchentoot:request-method*) required-method)
-               t)
-           (if arbitrary-requirement
-               (let ((*bindings* bindings))
-                 (funcall arbitrary-requirement))
-               t)))))
+  (let ((*route* route)
+        (*submodule* (slot-value route 'submodule)))
+    (with-context (slot-value *submodule* 'context)
+      (with-slots (required-method arbitrary-requirement) route
+        (and (if required-method
+                 (eql (hunchentoot:request-method*) required-method)
+                 t)
+             (if arbitrary-requirement
+                 (let ((*bindings* bindings))
+                   (funcall arbitrary-requirement))
+                 t))))))
 
 (defmethod routes:route-name ((route route))
   (string-downcase (write-to-string (slot-value route 'symbol))))
