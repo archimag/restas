@@ -619,7 +619,7 @@ drawer.tmpl
                                                  (getf data :menu)
                                                  (getf data :content))))
 
-  (restas:define-submodule rulisp-format (#:restas.colorize)
+  (restas:mount-submodule rulisp-format (#:restas.colorize)
     (restas.colorize:*baseurl* '("apps" "format"))
     (restas.colorize:*max-on-page* 15)
     (restas.colorize:*storage* *rulisp-db-storage*)

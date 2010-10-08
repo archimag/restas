@@ -27,7 +27,7 @@
            #:define-finalization
            #:define-default-render-method
            ;; submodules
-           #:define-submodule
+           #:mount-submodule
            #:submodule
            #:submodule-symbol
            #:submodule-module

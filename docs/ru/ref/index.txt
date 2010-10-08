@@ -23,7 +23,7 @@ API Reference
 
   * port - порт на котором будут приниматься запросы
 
-  * context - окружение, аналогичное указываемумо в :macro:`restas:define-submodule`,
+  * context - окружение, аналогичное указываемумо в :macro:`restas:mount-submodule`,
     которое позволяет настроить параметры модуля.
 
   Данная функция может быть вызвана несколько раз с различными параметрами. Если
@@ -36,7 +36,7 @@ API Reference
 
   Реинициализирует диспетчер запросов. Обычно в непосредственном вызове данной
   функции нет необходимости, посольку при выполнении (:execute) макросов
-  :macro:`restas:define-submodule` и :macro:`restas:define-route` она вызывается
+  :macro:`restas:mount-submodule` и :macro:`restas:define-route` она вызывается
   автоматически.
 
 Специальные переменные
@@ -140,10 +140,10 @@ API Reference
   :args: submodule-symbol route-symbol &rest args
 
   Аналогична :fun:`restas:genurl`, но используется для маршрутов из подключаемых
-  с помощью :macro:`restas:define-submodule` модулей.
+  с помощью :macro:`restas:mount-submodule` модулей.
 
   * submodule-symbol - индефикатор субмодуля, указаный при его определении с помощю
-    :macro:`restas:define-submodule`.
+    :macro:`restas:mount-submodule`.
 
 .. defun:: restas:genurl-with-host
   :args: route &rest args
@@ -170,7 +170,7 @@ API Reference
   :args: (context) &body body
 
   Определяет функцию, которая вызывается при подключении модуля с помощью
-  :macro:`restas:define-submodule`. Может использваться, например, для дополнительной
+  :macro:`restas:mount-submodule`. Может использваться, например, для дополнительной
   настройки контекста субмодуля. Должна находиться внутри пакета, определённого
   с помощью :macro:`restas:define-module`.
 
@@ -178,13 +178,13 @@ API Reference
   :args: (context) &body body
 
   Определяет функцию, противоположную определённой с помощью :macro:`restas:define-initialization`.
-  Вызывается при повторном вычислении :macro:`restas:define-submodule` и может использоваться,
+  Вызывается при повторном вычислении :macro:`restas:mount-submodule` и может использоваться,
   например, для освобождении ресрсов, выделенных при инциализации субмодуля.
 
 Субмодули
 =========
 
-.. defmacro:: restas:define-submodule
+.. defmacro:: restas:mount-submodule
   :args: name (module) &rest bindings
 
   Определяет субмодуль, который становится частью модуля, в пакете которого
@@ -202,7 +202,7 @@ API Reference
 
   .. code-block:: common-lisp
 
-    (restas:define-submodule tmp (#:restas.directory-publisher)
+    (restas:mount-submodule tmp (#:restas.directory-publisher)
       (restas.directory-publisher:*baseurl* '("tmp"))
       (restas.directory-publisher:*directory* #P"/tmp/"))
 
@@ -223,7 +223,7 @@ API Reference
   :args: submodule
 
   Возвращает субмодуль, к которому присоединён переданный субмодуль. С помощью
-  макроса :macro:`restas:define-submodule` можно создавать целые иерархии
+  макроса :macro:`restas:mount-submodule` можно создавать целые иерархии
   субмодулей.
 
 .. defmacro:: restas:with-submodule-context

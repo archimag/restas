@@ -135,7 +135,7 @@
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
            *package*)))))
 
-(defmacro define-submodule (name (module) &body bindings)
+(defmacro mount-submodule (name (module) &body bindings)
   (let ((submodules (find-symbol +submodules-symbol+)))
     `(progn
        (setf (gethash ',name ,submodules)
