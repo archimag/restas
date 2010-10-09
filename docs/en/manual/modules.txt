@@ -8,7 +8,7 @@ Module
 
 From the Common Lisp point of view a module is just a :hs:`package`. From the
 RESTAS point of view a module is a set of routes defining web application
-structure. Module is created with macro :macro:`restas:define-module`
+structure. Modules are created with macro :macro:`restas:define-module`
 which creates a package with corresponding name and also makes some
 additional initialization of it. For example:
 
@@ -27,7 +27,7 @@ Now you can create several routes in this module:
     "<h1>Hello world!</h1>")
 
 I should point out the principial importancy of macroexpansion of
-:macro:`restas:define-route` in package (after :hs:`in-package`), bound
+:macro:`restas:define-route` in the package (after :hs:`in-package`), bound
 to certain module.
 
 At last, obtained module can be launched as a site:
@@ -37,10 +37,10 @@ At last, obtained module can be launched as a site:
   (restas:start '#:hello-world :port 8080)
 
 You can also pass the :hostname keyword parameter to the function :fun:`restas:start`
-which lets you serve several virtual hosts within one process.
+and it will let you serve several virtual hosts within one process.
 
 Thus, after placing several routes in a module you can use the module for 
-launching of a web application. But also there is another way of using modules.
+launching of a web application. But, also, there is another way of using modules.
 
 Submodules
 ----------
@@ -48,12 +48,12 @@ Submodules
 Modules propose interesting way of repeated code usage for web application development.
 The difference of a web component from an usual library containing functions, macros,
 classes and other shuff is that web component also must contain information about
-served urls and this information must be used by request dispatch mechanism and
-rightly determine code responsible for processing incoming request. In the terms
+served urls and this information must be used by the request dispatch mechanism and
+rightly identify the code responsible for processing incoming request. In the terms
 of routes every repeatedly used web component is just a list of routes processed
 by it, and this is just what modules are from the RESTAS point of view. For
-repeated use of a module from other module one can use :macro:`restas:define-submodule`
-macro. Example (depens on code above):
+repeated usage of a module from an other module one can use :macro:`restas:define-submodule`
+macro. Example (depens on the code above):
 
 .. code-block:: common-lisp
 
@@ -66,11 +66,11 @@ macro. Example (depens on code above):
 
   (restas:start '#:test :port 8080)
 
-In the given example we defined new module test and attached defined abouve module
-hello-world to it (resulting submodule is assosiated with symbol test-hello-world)
-and module test was started at 8080 port. Inspite of inside the 'test' module itself
-no route is defined, in the end it is able to process requests coming to /hello
-due to inclusion in inself hellow-word module.
+In the given example we have defined new module 'test and attached the abouve-defined module
+'hello-world to it (resulting submodule is assosiated with symbol 'test-hello-world)
+and module 'test was started at 8080 port. Despite of there is no route defined
+inside the 'test module itself, finally it is able to process requests coming to /hello
+because it includes 'hello-world module in itself.
 
 In this state this functionality doesn't look very usable and this a reason to that.
 For successful repeted use of any component you shoud know how to configure it,

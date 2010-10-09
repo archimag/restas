@@ -1,52 +1,52 @@
 .. _overview:
 
 Overview
-=====
+========
 
-`RESTAS`_ is a framework for development of web-application with Common Lisp
+`RESTAS`_ is a framework for development of web-applications with Common Lisp
 language. Its key features are:
 
 * `RESTAS`_ was developed to simplify development of web applications,
-following `REST`_ architecture style.
+  following `REST`_ architecture style.
 
 * RESTAS is based on `Hunchentoot`_. Despite of that web application development
   with RESTAS is in many aspects simplier, than with `Hunchentoot`_,
-  knowledge of `Hunchentoot`_ is required, at least about working with 
+  some knowledge of `Hunchentoot`_ is required, at least about working with 
   :var:`hunchentoot:*request*` and :var:`hunchentoot:*reply*`.
 
-* Request dispatch is based on route system. Route system is key concept of
+* Request dispatch is based on a route system. The route system is the key concept of
   `RESTAS`_ and in this area it provides opportunities having no counterparts
   in other web frameworks.
 
 * Mechanics of reusing code with module system is other key concept. It
-  provides flexible way for design reuse of modules with maximal simplisity
+  provides flexible way for designing reusable modules with maximal simplicity
   of their development.
   
-* Full support of interactive development. Any code concernig RESTAS (such as
-  definition of route, module or submodule) can be recompiled at any time
-  when you work in `SLIME`_ and any changes you made can be immediatly seen in
-  your browser. No webserver restart or other complicated actions are needed.
+* Full support of interactive development. Any code concerning RESTAS (such as
+  definition of a route, a module or a submodule) can be recompiled at any time
+  when you work in `SLIME`_ and any changes you made can be immediately seen in
+  your browser. No web server restart or other complicated actions are needed.
 
 * `SLIME`_ integration. Now it mainly lets investigate inner structure of web
   applications with standard "SLIME Inspector". For example, there is a
-  "site map" and a simple code navigation with it.
+  "site map" and a simple code navigation with this map.
 
-* Easy to use, pure Lisp web application demonization facility based on
+* Easy to use, pure Lisp web application daemonization facility based on
   `RESTAS`_ and `SBCL`_ in Linux without usage of `Screen`_ or `detachtty`_,
-  which are traditional solutions of this problem and create tonns of promlebs
-  when intensively used.
+  which are traditional solutions for this problem and create tonnes of problems
+  when they are intensively used.
 
-* RESTAS is not a MVC famework, though it doesn't contradict the concept.
+* RESTAS is not a MVC framework, though it doesn't contradict the concept.
   From MVC point of view, `RESTAS`_ provides the level of controller. Nevertheless,
-  `RESTAS`_ provides effective and flexible way for separation of logic and
+  `RESTAS`_ provides an effective and flexible way for separation of logic and
   representation, because it doesn't put any constraints on structure of
   developed applications. Separation of model and controller can be effectively
   performed with Common Lisp facilities, and, hence, doesn't need any special
   support from the framework.
 
-* RESTAS doesn't contain a template library. Though, we recomend using one when
-  you develop a real web application. The Author recommends `cl-closure-template`_.
-  Other well-known template libraty is `HTML-TEMPLATE`_.
+* RESTAS doesn't contain a template library. Though, we recommend using one when
+  you develop a real web application. The author recommends `cl-closure-template`_.
+  Other well-known template library is `HTML-TEMPLATE`_.
 
 `RESTAS`_ is distributed under the terms of `Lisp LGPL`_ license.
 

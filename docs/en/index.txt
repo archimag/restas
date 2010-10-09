@@ -11,7 +11,7 @@ First steps
 * **Start from scratch:**
   :ref:`Overview <overview>` | :ref:`Installation <installation>`
 
-* **Tutorial:**
+* **Tutorials:**
   :ref:`Hello, World! <tutorial-hello-world>` | :ref:`tutorial-pastebin`
 
 Details
@@ -23,7 +23,7 @@ Details
 
 * :ref:`Separation of logic and representation <manual-view>`
 
-* :ref:`Demonisation <manual-daemon>`
+* :ref:`Daemonization <manual-daemon>`
 
 * :ref:`SLIME integration <manual-slime>`
 
