@@ -71,19 +71,10 @@
 (defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
   ())
 
-(defun set-restas-dispatcher-and-request (acceptor)
+(defmethod shared-initialize :after ((acceptor restas-acceptor-mixin) slot-names &rest initargs &key)
+  (declare (ignore slot-names initargs))
   (setf (hunchentoot:acceptor-request-dispatcher acceptor) 'restas-dispatcher
         (hunchentoot:acceptor-request-class acceptor) 'restas-request))
-
-(defmethod shared-initialize :after ((acceptor restas-acceptor) slot-names &rest initargs &key)
-  (declare (ignore slot-names initargs))
-  (set-restas-dispatcher-and-request acceptor))
-
-(defmethod shared-initialize :after ((acceptor restas-ssl-acceptor) slot-names &rest initargs &key)  
-  (declare (ignore slot-names initargs))
-  (set-restas-dispatcher-and-request acceptor))
-
-
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatcher
