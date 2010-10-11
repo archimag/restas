@@ -345,9 +345,14 @@
 (loop
    for site in *sites*
    do (if (consp site)
-          (restas:start (first site)
-                        :hostname (second site)
-                        :port (third site))
+          (apply #'restas:start 
+		 (first site)
+		 :hostname (second site)
+		 :port (third site)
+		 (let* ((ssl-files (fourth site)))
+		   (list :ssl-certificate-file (first ssl-files)
+			 :ssl-privatekey-file (second ssl-files)
+			 :ssl-privatekey-password (third ssl-files))))
           (restas:start site)))
 
 (when *as-daemon*
