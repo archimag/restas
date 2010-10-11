@@ -62,14 +62,19 @@
    (mapper :initform (make-instance 'routes:mapper))
    (modules :initform nil)))
 
-(defclass restas-acceptor (hunchentoot:acceptor) 
+(defclass restas-acceptor-mixin ()
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
 
-(defmethod shared-initialize :after ((acceptor restas-acceptor) slot-names &rest initargs &key)
+(defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
+  ())
+
+(defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
+  ())
+
+(defmethod shared-initialize :after ((acceptor restas-acceptor-mixin) slot-names &rest initargs &key)
   (declare (ignore slot-names initargs))
   (setf (hunchentoot:acceptor-request-dispatcher acceptor) 'restas-dispatcher
         (hunchentoot:acceptor-request-class acceptor) 'restas-request))
-
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatcher
@@ -82,10 +87,12 @@
 (defun restas-dispatcher (req &aux (host (header-host req)))
   (let ((vhost (or (find (if (find #\: host)
                              host
-                             (format nil "~A:80" host))
-                         (restas-acceptor-vhosts hunchentoot:*acceptor*)
-                         :key #'vhost-host
-                         :test #'string=)
+                             (format nil "~A:~A"
+				     host 
+				     (hunchentoot:acceptor-port hunchentoot:*acceptor*)))
+			 (restas-acceptor-vhosts hunchentoot:*acceptor*)
+			 :key #'vhost-host
+			 :test #'string=)
                    (find-if #'null
                             (restas-acceptor-vhosts hunchentoot:*acceptor*)
                             :key #'vhost-host)))
@@ -122,16 +129,25 @@
   (values))
 
 
-(defun start (module &key hostname (port 80) (context (make-context))
+(defun start (module &key 
+	      ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
+	      hostname (port (if ssl-certificate-file 443 80)) (context (make-context))
               &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
   (let* ((package (or (find-package module)
                       (error "Package ~A not found" module)))
          (acceptor (or (find port
                             *acceptors*
                             :key #'hunchentoot:acceptor-port)
-                      (car (push (hunchentoot:start (make-instance 'restas-acceptor
-                                                                   :port port))
-                                 *acceptors*))))
+		       (car (push (hunchentoot:start
+				   (if ssl-certificate-file
+				       (make-instance 'restas-ssl-acceptor
+						      :ssl-certificate-file ssl-certificate-file
+						      :ssl-privatekey-file ssl-privatekey-file
+						      :ssl-privatekey-password ssl-privatekey-password
+						      :port port)
+				       (make-instance 'restas-acceptor
+						      :port port)))
+				  *acceptors*))))
          (vhost (or (if hostname/port
                         (find hostname/port
                               (restas-acceptor-vhosts acceptor)
