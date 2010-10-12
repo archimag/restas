@@ -12,6 +12,10 @@
   ((vars :initarg :vars :initform nil :accessor context-vars)
    (values :initarg :values :initform nil :accessor context-values)))
 
+(defun copy-restas-context (rc)
+  (make-instance 'restas-context
+                 :vars (copy-list (context-vars rc))
+                 :values (copy-list (context-values rc))))
 
 (defun context-add-variable (context symbol &optional value)
     (push symbol

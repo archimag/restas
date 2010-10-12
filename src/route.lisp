@@ -27,16 +27,17 @@
       #'identity))
 
 (defmethod routes:route-check-conditions ((route route) bindings)
-  (with-context (slot-value (slot-value route 'submodule)
-                            'context)
-    (with-slots (required-method arbitrary-requirement) route
-      (and (if required-method
-               (eql (hunchentoot:request-method*) required-method)
-               t)
-           (if arbitrary-requirement
-               (let ((*bindings* bindings))
-                 (funcall arbitrary-requirement))
-               t)))))
+  (let ((*route* route)
+        (*submodule* (slot-value route 'submodule)))
+    (with-context (slot-value *submodule* 'context)
+      (with-slots (required-method arbitrary-requirement) route
+        (and (if required-method
+                 (eql (hunchentoot:request-method*) required-method)
+                 t)
+             (if arbitrary-requirement
+                 (let ((*bindings* bindings))
+                   (funcall arbitrary-requirement))
+                 t))))))
 
 (defmethod routes:route-name ((route route))
   (string-downcase (write-to-string (slot-value route 'symbol))))
@@ -77,12 +78,15 @@
        (eval-when (:execute)
          (reconnect-all-routes)))))
 
+(defun route-template-from-symbol (symbol submodule)
+  (concatenate 'list
+               (submodule-full-baseurl submodule)
+               (routes:parse-template (get symbol :template)
+                                      (get symbol :parse-vars))))
+
 (defun create-route-from-symbol (symbol submodule)
   (make-instance 'route
-                 :template (concatenate 'list
-                                        (submodule-full-baseurl submodule)
-                                        (routes:parse-template (get symbol :template)
-                                                               (get symbol :parse-vars)))
+                 :template (route-template-from-symbol symbol submodule)
                  :symbol symbol
                  :content-type (or (get symbol :content-type)
                                    (string-symbol-value +content-type-symbol+
@@ -144,3 +148,19 @@
     (puri:render-uri uri nil)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; parse url for route
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun parse-route-url (url route-symbol &optional submodule-symbol)
+  (let ((mapper (make-instance 'routes:mapper)))
+    (routes:connect mapper
+                    (make-instance 'routes:route
+                                   :template (route-template-from-symbol route-symbol
+                                                                         (if submodule-symbol
+                                                                             (find-submodule  submodule-symbol)
+                                                                             *submodule*))))
+    (multiple-value-bind (route bindings) (routes:match mapper url)
+      (if route
+          (alexandria:alist-plist bindings)))))
+  

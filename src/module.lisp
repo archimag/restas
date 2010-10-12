@@ -44,16 +44,26 @@
    (parent :initarg :parent :initform nil :reader submodule-parent)
    (submodules :initform nil :accessor submodule-submodules)))
 
+(defmethod reinitialize-instance :before ((obj submodule) &rest initargs &key)
+  (declare (ignore initargs))
+  (finalize-module-instance (submodule-module obj)
+                            (slot-value obj 'context))
+  (iter (for thing in (submodule-submodules obj))
+        (finalize-module-instance (submodule-module obj)
+                                  (slot-value obj 'context))))
+
 (defmethod shared-initialize :after ((obj submodule) slot-names &rest initargs &key)
   (declare (ignore initargs))
   (setf (submodule-submodules obj)
-        (iter (for (key sub) in-hashtable (symbol-value (find-symbol +submodules-symbol+
-                                                                     (submodule-module obj))))
+        (iter (for (key thing) in-hashtable (symbol-value (find-symbol +submodules-symbol+
+                                                                       (submodule-module obj))))
               (collect (make-instance 'submodule
                                       :symbol key
-                                      :module  (submodule-module sub)
-                                      :context (slot-value sub 'context)
-                                      :parent obj)))))
+                                      :module (car thing)
+                                      :context (copy-restas-context (cdr thing))
+                                      :parent obj))))
+  (initialize-module-instance (submodule-module obj)
+                              (slot-value obj 'context)))
 
 (defun find-submodule (symbol &optional (parent *submodule*))
   (find symbol
@@ -125,21 +135,12 @@
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
            *package*)))))
 
-(defmacro define-submodule (name (module) &body bindings)
-  (let ((submodules (find-symbol +submodules-symbol+))
-        (submodule (gensym))
-        (context (gensym)))
+(defmacro mount-submodule (name (module) &body bindings)
+  (let ((submodules (find-symbol +submodules-symbol+)))
     `(progn
-       (let ((,submodule (gethash ',name ,submodules)))
-         (when ,submodule
-           (finalize-module-instance ',module
-                                     (slot-value ,submodule 'context))))
-       (let ((,context (make-context ,@bindings)))
-         (setf (gethash ',name ,submodules)
-               (make-instance 'submodule
-                              :module ',module
-                              :context ,context))
-         (initialize-module-instance ',module ,context))
+       (setf (gethash ',name ,submodules)
+             (cons ',module
+                   (make-context ,@bindings)))
        (eval-when (:execute)
          (reconnect-all-routes)))))
 

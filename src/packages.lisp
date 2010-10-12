@@ -20,19 +20,21 @@
            #:genurl-submodule
            #:genurl-with-host
            #:redirect
+           #:parse-route-url
            ;; modules
            #:define-module           
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
            ;; submodules
-           #:define-submodule
+           #:mount-submodule
            #:submodule
            #:submodule-symbol
            #:submodule-module
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
+           #:find-submodule
            ;; render
            #:render-object
            ;; cache
@@ -44,6 +46,7 @@
            #:context-remove-variable
            #:context-symbol-value
            #:with-context
+           #:copy-restas-context
            ;; service
            #:start
            #:reconnect-all-routes

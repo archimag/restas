@@ -11,11 +11,11 @@
 
 (in-package #:restas-system)
 
-(when (find-system 'asdf-system-connections)
+(when (find-system 'asdf-system-connections nil)
   (operate 'load-op 'asdf-system-connections))
 
 (defsystem restas
-    :depends-on (#:hunchentoot #:routes #:garbage-pools #:alexandria #+swank-archimag #:closer-mop )
+    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:garbage-pools #:alexandria #+swank-archimag #:closer-mop )
     :components
     ((:module "src"
               :components
