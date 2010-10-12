@@ -121,14 +121,6 @@
   (values))
 
 
-(defun process-start-handlers (module)
-  (let ((handler (symbol-value (find-symbol +start-handler-symbol+ module)))
-	(submodules (symbol-value (find-symbol +submodules-symbol+ module))))
-    (if handler
-	(funcall handler))
-    (iter (for (nil submodule) in-hashtable submodules)
-	  (process-start-handlers (submodule-module submodule)))))
-
 (defun start (module &key hostname (port 80) (context (make-context))
               &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
   (let* ((package (or (find-package module)
@@ -154,7 +146,6 @@
                          :module package
                          :context context)
           (slot-value vhost 'modules))
-    (process-start-handlers package)
     (reconnect-all-routes)))
     
     

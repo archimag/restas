@@ -29,7 +29,6 @@
 (defparameter +submodules-symbol+ "*SUBMODULES*")
 (defparameter +render-method-symbol+ "*DEFAULT-RENDER-METHOD*")
 (defparameter +content-type-symbol+ "*DEFAULT-CONTENT-TYPE*")
-(defparameter +start-handler-symbol+ "*START-HANDLER*")
 
 (defun string-symbol-value (string &optional (package *package*))
   (symbol-value (find-symbol string package)))
@@ -124,7 +123,6 @@
            (defparam +submodules-symbol+ (make-hash-table))
            (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
-	   (defparam +start-handler-symbol+)
            *package*)))))
 
 (defmacro define-submodule (name (module) &body bindings)
@@ -161,8 +159,3 @@
   `(setf ,(find-symbol +render-method-symbol+ *package*)
          #'(lambda (,data)
              ,@body)))
-
-(defmacro define-start-handler (&body body)
-  `(setf ,(find-symbol +start-handler-symbol+ *package*)
-	 #'(lambda ()
-	     ,@body)))

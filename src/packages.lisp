@@ -25,7 +25,6 @@
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
-	   #:define-start-handler
            ;; submodules
            #:define-submodule
            #:submodule
