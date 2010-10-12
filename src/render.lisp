@@ -58,6 +58,14 @@
   (declare (ignore designer))
   (render-object nil file))
 
+(defmethod render-object ((designer function) (string string))
+  (declare (ignore designer))
+  (render-object nil string))
+
+(defmethod render-object ((designer function) (octets vector))
+  (declare (ignore designer))
+  (render-object nil octets))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; render via symbol as function
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,3 +92,11 @@
 (defmethod render-object ((designer package) (file pathname))
   (declare (ignore designer))
   (render-object nil file))
+
+(defmethod render-object ((designer package) (string string))
+  (declare (ignore designer))
+  (render-object nil string))
+
+(defmethod render-object ((designer package) (octets vector))
+  (declare (ignore designer))
+  (render-object nil octets))
