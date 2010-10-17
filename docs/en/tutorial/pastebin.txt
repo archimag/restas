@@ -135,16 +135,16 @@ Definition of the interface for :var:`*storage*` object to comply with:
 .. code-block:: common-lisp
 
   (defgeneric storage-count-notes (storage)
-    (:documentation "Колличество записей"))
+    (:documentation "Total number of notes"))
 
   (defgeneric storage-list-notes (storage offset limit)
-    (:documenation "Список записей начиная с offset, но колличеством не больше limit"))
+    (:documenation "List of notes starting with offset, but not more than limit"))
 
   (defgeneric storage-get-note (storage id)
-    (:documentation "Получить записть по id"))
+    (:documentation "Get the note by id"))
 
   (defgeneric storage-add-note (storage note)
-    (:documentation "Добавить новую запись"))
+    (:documentation "Add new note"))
 
 Helper class for storing information about one record:
 
@@ -515,27 +515,27 @@ And the file itself has the following content:
   {template main-menu}
       <ul class="colorize-top-menu">
           <li>
-              <a href="{$hrefAll}">Все записи</a>
+              <a href="{$hrefAll}">All notes</a>
           </li>
 
           <li>
-              <a href="{$hrefCreate}">Создать</a>
+              <a href="{$hrefCreate}">Create</a>
           </li>
      </ul>
   {/template}
 
   {template show-note-info}
       <div class="info">
-          Автор: <strong>{$author}</strong> - {$date}
+          Author: <strong>{$author}</strong> - {$date}
       </div>
   {/template}
     
   {template list-notes}
       <div class="colorize-list-nav" >
-          {if $hrefAfter}<a href="{$hrefAfter}">« Позже</a>{/if}
+          {if $hrefAfter}<a href="{$hrefAfter}">« Later</a>{/if}
           {$first} - {min($first + length($notes) - 1, $totalCount)} 
-          из {$totalCount}  
-          {if $hrefBefore}<a href="{$hrefBefore}">Раньше »</a>{/if}
+          of {$totalCount}  
+          {if $hrefBefore}<a href="{$hrefBefore}">Earlier »</a>{/if}
       </div>
 
       {foreach $note in $notes}
@@ -563,7 +563,7 @@ And the file itself has the following content:
               <tbody>
                   {if $preview and $author}
                       <tr>
-                          <th>Описание:</th>
+                          <th>Description:</th>
                           <td>
                               <input size="60" name="title" type="text" {if $title}value="{$title}"{/if}/>
                           </td>
@@ -571,7 +571,7 @@ And the file itself has the following content:
                   {/if}
                     
                   <tr>
-                      <th>Форматировать как:</th>
+                      <th>Format as</th>
                       <td>
                           <select name="lang" >
                               {foreach $l in $langs}
@@ -583,13 +583,13 @@ And the file itself has the following content:
               </tbody>
           </table>
         
-          <input type="submit" value="Форматировать" name="preview" />
+          <input type="submit" value="Format" name="preview" />
           {if $preview and $author}
-              <input type="submit" value="Сохранить" name="save" />
+              <input type="submit" value="Save" name="save" />
           {/if}
 
           {if $preview}
-              <h3>Предварительный просмотр</h3>
+              <h3>Preview</h3>
               <div class="code">
                   {$preview |noAutoescape}
               </div>

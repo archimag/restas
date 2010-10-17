@@ -36,7 +36,6 @@ Or create a symbolic link:
 ::
 
   cd ~/sbcl/.systems   # or any other directory, specified with asdf:*central-registry*
-  cd ~/sbcl/.systems   # Или любая другая директория, указанная в asdf:*central-registry*
   ln -s /path/to/restas/restas.asd .
 
 Using clbuild
@@ -78,7 +77,7 @@ PURI-UNICODE
 
 `RESTAS`_ depends on `puri`_, which is a very good library, but has an
 essential disadvantage of not providing a correct parsing for URLs containing
-non-ASСII characters (those which are coded with UTF-8). To solve this
+non-ASCII characters (those which are coded with UTF-8). To solve this
 problem you can instead of `puri`_ use `puri-unicode`_ which is a fork of 
 `puri`_ and provides correct processing of such symbols with `babel`_ library.
 You can download stable version of this library from the address

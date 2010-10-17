@@ -22,7 +22,7 @@ include the following code:
 
 That is, for made changes to take effect, these macros must be executed,
 and not just loaded or compiled. When using `SLIME`_ it is done by using
-C-M-x command (slime-eval-defun) instead of usual С-с С-с (slime-compile-defun). 
+C-M-x command (slime-eval-defun) instead of usual C-c C-c (slime-compile-defun). 
 However, if only the body of route (defined with macro
 :macro:`restas:define-route`) has changed then for activation of the changes
 just C-c C-c compiling is enough, and it is indeed recommended do it in such way,
