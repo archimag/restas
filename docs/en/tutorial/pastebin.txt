@@ -1,0 +1,643 @@
+.. -*- RST -*-
+
+.. _tutorial-pastebin:
+
+==========
+ Pastebin
+==========
+
+As a demonstration of using `RESTAS`_ for creation of a full featured 
+web application I want to show you how to construct a simplest pastebin service.
+
+.. note:: Note
+
+  From `Wikipedia <http://en.wikipedia.org/wiki/Pastebin>`_:
+  A pastebin is a web application which allows its users to upload snippets
+  of text, usually samples of source code, for public viewing. It is very
+  popular in IRC  channels where pasting large amounts of text is considered
+  bad etiquette. A vast number of pastebins exist on the Internet, suiting
+  a number of different needs and provided features tailored towards
+  the crowd they focus on most.
+  
+Pastebin is a very simple application, however, with this example I can show 
+the basic principles of building `RESTAS`_ applications. Apart from this,
+it is a real application used by `lisper.ru`_ site.
+You can see it in action `here <http://lisper.ru/apps/format/>`_.
+
+This component must have the following abilities:
+
+* A form for creation of a new element.
+
+* List of all registered elements, with a way to view them after clicking
+  on an element.
+
+* View for displaying every element.
+
+* Syntax highlighting.
+
+Apart from this, pastebin is aimed for using in a context of different sites and
+hereby must have flexible means of configuration:
+
+* Use the authentication system used by the site.
+
+* Use the data storage, provided by the site.
+
+* Provide customisation for way of rendering pages.
+
+Logical structure
+=================
+
+This application is built with classical MVC model and has distinct
+separation of model, controller, and view.
+
+Customisation of the module is done with special (dynamic) variables
+(for details about customising modules with dynamic variables
+see section :ref:`manual-modules`).
+
+You can store data of this application in a number of ways, so we define
+needed interface and a special variable :fun:`*storage*`, with aid of which
+an outside application can specify used way of storing data. For development
+and debugging a developer needs to have a functioning model, which is implemented
+by a trivial class :class:`memory-storage` providing a way of storing data
+in the memory, such approach lets you develop the application without
+any accent on the structure of database and introduce such structure only
+if you really need it.
+
+Usually sites have an unified authentication scheme which should be used in
+all their components. Therefore the component under development shouldn't
+know anything about the used authentication scheme. In fact, for proper
+functioning it needs to know only user name. Consequently, it is enough
+to introduce just one special variable :var:`*colorize-user-function*`
+that will store a function for figuring out user's name.
+
+In order to provide flexible customisation of page view for
+separation of logic and view the component uses the special variable
+:var:`*default-render-method*` created by `RESTAS`_ and storing the object
+in charge of representation (you will find it in more details in the section
+:ref:`manual-view`). And for definition of page templates we use
+`cl-closure-template`_ library.
+ 
+Physical structure
+==================
+
+To simplify understanding of the code structure the following division into files is
+used:
+
+* **defmodule.lisp** - contains definition of the module and, also, special variables
+  for controlling the behaviour of the component.
+
+* **storage.lisp** - contains definition of the interface for used data model and 
+  a simple implementation of this model.
+
+* **drawer.lisp** - interface and implementation of the default drawer object 
+  that is used as the value of :var:`*default-render-method*` special variable.
+
+* **drawer.tmpl** - file with templates in `cl-closure-template`_ format
+
+* **routes.lisp** - the central part of the application where URL scheme and 
+  request handlers are defined.
+
+Implementation
+==============
+
+defmodule.lisp
+--------------
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:restas.colorize
+    (:use #:cl #:iter)
+    (:export ..))
+
+  (in-package #:restas.colorize)
+
+  (defvar *max-on-page* 10)
+
+  (defvar *storage* nil)
+
+  (defvar *colorize-user-function* #'(lambda () "anonymous"))
+
+  (defun colorize-user ()
+    (if *colorize-user-function*
+        (funcall *colorize-user-function*)))
+
+Here we define the new module **#:restas.colorize** (for economy of space
+the list of exported symbols is omitted) and introduce several special variables
+for using them in module customisation (variables :var:`*max-on-page*`
+and :var:`*colorize-user-function*` come with default values) and also
+:fun:`colorize-user` helper function is defined for figuring out user name.
+  
+storage.lisp
+------------
+
+Definition of the interface for :var:`*storage*` object to comply with:
+
+.. code-block:: common-lisp
+
+  (defgeneric storage-count-notes (storage)
+    (:documentation "Total number of notes"))
+
+  (defgeneric storage-list-notes (storage offset limit)
+    (:documenation "List of notes starting with offset, but not more than limit"))
+
+  (defgeneric storage-get-note (storage id)
+    (:documentation "Get the note by id"))
+
+  (defgeneric storage-add-note (storage note)
+    (:documentation "Add new note"))
+
+Helper class for storing information about one record:
+
+.. code-block:: common-lisp
+    
+  (defclass note ()
+    ((id :initarg :id :initform nil :accessor note-id)
+     (date :initarg :date :initform nil :accessor note-date)
+     (author :initarg :author :initform nil :accessor note-author)
+     (title :initarg :title :initform nil :accessor note-title)
+     (lang :initarg :lang :initform nil :accessor note-lang)
+     (code :initarg :code :initform nil :accessor note-code)))
+
+Implementation of a memory storage is trivial, so it's enough to site
+just the class definition:
+
+.. code-block:: common-lisp
+
+  (defclass memory-storage ()
+    ((notes :initform nil)
+     (last-id :initform 0)))
+
+Setting default value for :var:`*storage*` variable:
+
+.. code-block:: common-lisp
+
+  (setf *storage* (make-instance 'memory-storage))
+
+routes.lisp
+-----------
+
+In this file, processed URLs and the operation logic are defined.
+Because all view logic is handled by :var:`*default-render-method*`
+object, route handlers should just gather and prepare data for 
+processing them with function :fun:`restas:render-object`.
+The view logic, as I said before, is implemented on the basis of
+`cl-closure-template`_ library which uses *plist* as input data format
+(you can read about using *property list* in more details 
+`here <http://lisper.ru/pcl/practical-a-simple-database>`_), so route handlers
+generate data in this format.
+
+A couple of helper functions translating record information to *plist* format:
+
+.. code-block:: common-lisp
+
+  (defun note-plist/short (note)
+    (list :href (restas:genurl 'view-note :id (note-id note))
+          :date (local-time:format-timestring nil (note-date note))
+          :title (note-title note)
+          :author (note-author note)))
+
+  (defun note-plist (note)
+    (list* :title (note-title note)
+           :code (note-code note)
+           :lang (note-lang note)
+           (note-plist/short note)))
+
+In this code, the following call is of the most interest:
+
+.. code-block:: common-lisp
+
+  (restas:genurl 'view-note :id (note-id note))
+
+It generates URL for viewing record basing on the route name ('view-node) and :id
+parameters.
+
+.. note:: None
+
+  In route-based systems "manual" creation of URLs is not a common practise,
+  because automatic generation considerably increases flexibility of an 
+  application and releaves you from many potential problems. Among other issues,
+  in this case the base URL will be taken in account which is an address where the module
+  is mounted and this base URL is unknown at the module development stage.
+
+Application entry point:
+
+.. code-block:: common-lisp
+
+  (restas:define-route main ("")
+    (restas:redirect 'list-notes))
+
+This route processes a request to the base URL where the module is mounted,
+and simply redirects it to the page with record list. For redirection 
+:fun:`restas:redirect` function is used which, like :fun:`restas:genurl`,
+processes the name of route (and a set of parameters, but 'list-notes route
+doesn't have them) so there is no need in actual specifying the URL.
+
+For displaying record list we use a page-by-page representation with limiting of a number
+of records on a single page which mustn't be more than :var:`*max-on-page*`
+(this variable was introduced in **defmodule.lisp**). So, apart from the record list
+itself you need to gather information about overall number of records,
+and also provide links to previous and next pages:
+
+.. code-block:: common-lisp
+
+  (restas:define-route list-notes ("all")
+    (let* ((total-count (storage-count-notes *storage*))
+           (start (min (max (or (ignore-errors (parse-integer (hunchentoot:get-parameter "start")))
+                                1)
+                            1)
+                       total-count)))
+      (list :title "All notes"
+            :notes (iter (for note in (storage-list-notes *storage*
+                                                          (1- start)
+                                                          *max-on-page*))
+                         (collect (note-plist/short note)))
+            :first start
+            :total-count total-count
+            :href-before (if (< (+ (1- start) *max-on-page*)
+                                total-count)
+                             (format nil
+                                     "~A?start=~A"
+                                     (restas:genurl 'list-notes)
+                                     (+ start *max-on-page*)))
+            :href-after (if (> start 1)
+                            (format nil
+                                    "~A?start=~A"
+                                    (restas:genurl 'list-notes)
+                                    (max (- start *max-on-page*) 1))))))
+
+The given code is kind of more entangled than it should be, by the reason that
+the really processed URL looks like this
+::
+
+  all?start=n
+
+(where n is sequential number of the first record on the page) and `RESTAS`_ 
+route system yet doesn't know hot to take into account GET parameters of a
+request.
+
+The following route responds to viewing a particular record:
+
+.. code-block:: common-lisp
+
+  (restas:define-route view-note (":id"
+                                  :parse-vars (list :id #'parse-integer))
+    (note-plist (storage-get-note *storage* id)))
+
+This handler is very simple, but it contains one interesting moment, the 
+:parse-vars parameter. The identifier of record is ID, which should be
+an integer number. This code lets you ensure that the specified URL contains 
+namely integer number and converts it from the string representation, so
+handler code works with already integer value.
+
+The route for displaying the form of creation of a record is yet more trivial:
+
+.. code-block:: common-lisp
+
+  (restas:define-route create-note ("create")
+    (list :title "Create"))
+
+This form will support each of saving record and previewing it, therefore
+for processing a POST request I used here two routes processing the same
+URL:
+
+.. code-block:: common-lisp
+
+  (restas:define-route preview-note ("create"
+                                     :method :post
+                                     :requirement #'(lambda () (hunchentoot:post-parameter "preview")))
+    (list :title (hunchentoot:post-parameter "title")
+          :author (colorize-user)
+          :code (hunchentoot:post-parameter "code")
+          :lang (hunchentoot:post-parameter "lang")))
+
+
+  (restas:define-route save-note ("create"
+                                  :method :post
+                                  :requirement #'(lambda () (hunchentoot:post-parameter "save")))
+    (let ((author (colorize-user)))
+      (if author
+          (restas:redirect 'view-note
+                           :id (note-id (storage-add-note
+                                          *storage*
+                                          (make-instance 'note
+                                                         :code (hunchentoot:post-parameter "code")
+                                                         :author author
+                                                         :lang (hunchentoot:post-parameter "lang")
+                                                         :title (hunchentoot:post-parameter "title")))))
+          hunchentoot:+http-forbidden+)))
+
+Selection of a route is done by :requirement property that checks which command
+(Save or Preview) was selected by a user. For checking whether the user has
+the right to save the record :fun:`colorize-user` function is used (it was
+defined in **defmodule.lisp**) and if the user doesn't authorised himself
+then after a try to save a record he will get :const:`hunchentoot:+http-forbidden+`
+status.
+
+drawer.lisp
+-----------
+
+All routes defined above return data in the *plist* format, therefore
+in order to select a template for processing passed data, it is necessary
+in addition to use the name of current route, which can be evaluated by
+
+.. code-block:: common-lisp
+
+  (restas:route-symbol restas:*route*)
+
+and for doing it the generic method is defined:
+
+.. code-block:: common-lisp
+
+  (defgeneric render-route-data (drawer data route )
+    (:documentation "Rendering page for the specified route"))
+
+It can be specialized with *eql* qualifier for each particular route.
+
+In order to an outside application could redefine the general theme of site
+there is generic function:
+
+.. code-block:: common-lisp
+
+  (defgeneric finalize-page (drawer data)
+    (:documentation "Shaping the resulting page"))
+
+For syntax highlighting CL has `colorize`_ library, which highlights Common
+Lisp code very well, but, frankly speaking, is far away from been ideal.
+So, for leaving the possibility to use some other instrument, which will probably
+arise in the future, the following interfaces are defined with default 
+implementation on the basis of `colorize`_:
+
+.. code-block:: common-lisp
+
+  (defgeneric colorize (drawer code lang)
+    (:documentation "generation of html with syntax highlight")
+    (:method (drawer code lang)
+      (colorize::html-colorization lang code)))
+
+  (defgeneric colorize-langs (drawer)
+    (:documentation "List of supported languages")
+    (:method (drawer)
+      (iter (for (id . title) in (colorize:coloring-types))
+            (collect (list :id (symbol-name id)
+                           :title title)))))
+
+For specializing the call to :fun:`restas:render-object` and also for 
+an implementation of defined interfaces we need a class:
+
+.. code-block:: common-lisp
+
+  (defclass drawer () ())
+
+The implementation of :fun:`finalize-page` by default just calls the template
+with the same name:
+
+.. code-block:: common-lisp
+
+  (defmethod finalize-page ((drawer drawer) data)
+    (restas.colorize.view:finalize-page data))
+
+Now :fun:`restas:render-object` can be written in the following form:
+
+.. code-block:: common-lisp
+
+  (defmethod restas:render-object ((drawer drawer) (data list))
+    (let ((content (render-route-data drawer
+                                      data
+                                      (restas:route-symbol restas:*route*)))
+          (menu (restas.colorize.view:main-menu
+                 (list :href-all  (restas:genurl 'list-notes)
+                       :href-create (restas:genurl 'create-note)))))
+      (finalize-page drawer
+                     (list :content content
+                           :menu menu
+                           :title (getf data :title)))))
+
+Here takes place a call to :fun:`finalize-page` with the following data
+passed passed to it in *plist* format:
+
+* **content** - the basic content of the page as it was generated by call to
+  :fun:`render-route-data`.
+
+* **menu** - links for viewing records and creating a new record. They are used for
+  displaying the menu identical for all pages.
+
+* **title** - the heading of page extracted from passed data.
+
+The implementation of :fun:`render-route-data` processes passed data with aid
+of template, whose name matches the name of the passed route (here you can
+find usage of well known "Prevailing of agreement over configuration"):
+
+.. code-block:: common-lisp
+
+  (defmethod render-route-data ((drawer drawer) list route)
+    (funcall (find-symbol (symbol-name route)
+                          '#:restas.colorize.view)
+             data))
+
+Several routes need additional processing of passed data that cannot be done
+at the template side and this is done with *eql*-based specializing:
+
+.. code-block:: common-lisp
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'view-note)))
+    (call-next-method drawer
+                      (list* :code (colorize drawer
+                                             (getf data :code)
+                                             (getf data :lang))
+                             data)
+                      route))
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'create-note)))
+    (call-next-method drawer
+                      (list* :langs (colorize-langs drawer)
+                             data)
+                      route))
+
+  (defmethod render-route-data ((drawer drawer) (data list) (route (eql 'preview-note)))
+    (call-next-method drawer
+                      (list* :langs (colorize-langs drawer)
+                             :preview (colorize drawer
+                                                (getf data :code)
+                                                (getf data :lang))
+                             data)
+                      route))
+
+Finally the default value is assigned to :var:`*default-render-method*`:
+
+.. code-block:: common-lisp
+
+  (setf *default-render-method* (make-instance 'drawer))
+
+Thereby for generate a real content we used quite complex system,
+which, on the one hand is fully based on templates and on the other hand
+each its aspect is defined as a generic function, so for changing a way of representation
+it is enough to define a drawer-inherited class and to specialize required functions.
+
+drawer.tmpl
+-----------
+
+Compilation of the templates file is done by this code:
+
+.. code-block:: common-lisp
+
+  (defparameter *colorize-template-path*
+    (merge-pathnames "src/drawer.tmpl"
+                     (asdf:component-pathname (asdf:find-system '#:restas-colorize))))
+
+  (closure-template:compile-template :common-lisp-backend
+                                     *colorize-template-path*)
+
+And the file itself has the following content:
+::
+
+  {namespace restas.colorize.view}
+
+  {template finalizePage}
+      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+      {\n}
+      <html>
+          <head>
+      	      <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" />
+
+              {if $title}
+                  <title>{$title}</title>
+              {/if}
+          </head>
+
+          <body>
+            {$menu |noAutoescape}
+            
+            {$content |noAutoescape}
+          </body>
+      </html>
+  {/template}
+
+  {template main-menu}
+      <ul class="colorize-top-menu">
+          <li>
+              <a href="{$hrefAll}">All notes</a>
+          </li>
+
+          <li>
+              <a href="{$hrefCreate}">Create</a>
+          </li>
+     </ul>
+  {/template}
+
+  {template show-note-info}
+      <div class="info">
+          Author: <strong>{$author}</strong> - {$date}
+      </div>
+  {/template}
+    
+  {template list-notes}
+      <div class="colorize-list-nav" >
+          {if $hrefAfter}<a href="{$hrefAfter}">« Later</a>{/if}
+          {$first} - {min($first + length($notes) - 1, $totalCount)} 
+          of {$totalCount}  
+          {if $hrefBefore}<a href="{$hrefBefore}">Earlier »</a>{/if}
+      </div>
+
+      {foreach $note in $notes}
+          <div class="note">
+              <a href="{$note.href}">{$note.title != '' ? $note.title : '*notitle*'}</a>
+              {call show-note-info data="$note" /}
+          </div>
+      {/foreach}
+  {/template}
+
+  {template view-note}
+      <div class="note-detail">
+          <strong>{$title}</strong>
+          {call show-note-info data="all" /}
+          <div class="code">
+              {$code |noAutoescape}
+          </div>
+      </div>
+  {/template}    
+    
+  {template create-note}
+      <form method="post">
+          <textarea rows="30" name="code" cols="80" style="width: 100%">{$code}</textarea>
+          <table style="text-align: left">
+              <tbody>
+                  {if $preview and $author}
+                      <tr>
+                          <th>Description:</th>
+                          <td>
+                              <input size="60" name="title" type="text" {if $title}value="{$title}"{/if}/>
+                          </td>
+                      </tr>
+                  {/if}
+                    
+                  <tr>
+                      <th>Format as</th>
+                      <td>
+                          <select name="lang" >
+                              {foreach $l in $langs}
+                                  <option {if $l.id == $lang}selected{/if} value="{$l.id}">{$l.title}</option>
+                              {/foreach}
+                          </select>
+                      </td>
+                  </tr>
+              </tbody>
+          </table>
+        
+          <input type="submit" value="Format" name="preview" />
+          {if $preview and $author}
+              <input type="submit" value="Save" name="save" />
+          {/if}
+
+          {if $preview}
+              <h3>Preview</h3>
+              <div class="code">
+                  {$preview |noAutoescape}
+              </div>
+          {/if}
+     </form>    
+  {/template}
+
+  {template preview-note}
+      {call create-note data="all" /}
+  {/template}
+
+Usage
+=====
+
+For using the component described earlier on the `lisper.ru`_ site I use
+the following code:
+
+.. code-block:: common-lisp
+
+  (defclass pastebin-drawer (restas.colorize::drawer) ())
+
+  (defmethod restas.colorize::finalize-page ((drawer pastebin-drawer) data)
+    (rulisp-finalize-page  :title (getf data :title)
+                           :css '("style.css" "colorize.css")
+                           :content (concatenate 'string
+                                                 (getf data :menu)
+                                                 (getf data :content))))
+
+  (restas:mount-submodule rulisp-format (#:restas.colorize)
+    (restas.colorize:*baseurl* '("apps" "format"))
+    (restas.colorize:*max-on-page* 15)
+    (restas.colorize:*storage* *rulisp-db-storage*)
+    (restas.colorize:*colorize-user-function* #'compute-user-login-name)
+    (restas.colorize:*default-render-method* (make-instance 'pastebin-drawer)))
+
+Here variables are specified with dynamic variable binding:
+the base URL where the module is mounted, maximal number of records per page,
+the way of storing the data, authentication mechanism, and also a correct
+way of displaying pages for the component not to stay out of general design style.
+
+Source code
+===========
+
+The source code of described application is almost completely sited above and is
+available at the address http://github.com/archimag/restas-colorize. Not taking in
+account the template file, the size of the source code is about 200 lines.
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _lisper.ru: http://lisper.ru/
+.. _cl-closure-template: http://code.google.com/p/cl-closure-template/
+.. _colorize: http://www.cliki.net/colorize

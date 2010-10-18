@@ -1,0 +1,310 @@
+.. -*- RST -*-
+
+.. _api-reference:
+
+=============
+API Reference
+=============
+
+.. defun:: restas:start
+  :args: module &key hostname (port 80) (context (make-context))
+
+  Sets up (launches) module for processing HTTP requests. `RESTAS`_ supports
+  the concept of `virtual hosts <http://httpd.apache.org/docs/current/vhosts/>`_
+  and lets placing of several sites with different domain names in the context
+  of one process. Aside this, serving several ports is possible.
+
+  **Parameters**:
+
+  * module - `package designator`_, identifying module defined with
+    aid of :macro:`restas:define-module`
+
+  * hostname - the host name for request processing
+
+  * port - port for accepting requests
+
+  * context - environment analogous to specified with :macro:`restas:mount-submodule`
+    lets customise module parameters.
+
+  This function can be called more than once with different parameters. If different
+  modules were launched for one and the same combination of host name and port number
+  then route conflicts are possible, and, when they happen, the way of request dispatch
+  is undefined.
+
+.. defun:: restas:reconnect-all-routes
+  :args:
+
+  Reinitialises request dispatcher. Usually there is no need in calling this
+  function directly, because during execution (:execute) of macros 
+  :macro:`restas:mount-submodule` and :macro:`restas:define-route` it is called
+  automatically.
+
+Special variables
+=================
+
+.. defvar:: restas:*default-host-redirect*
+
+  All requests to unregistered hosts will be redirected to this default host.
+
+.. defvar:: restas:*bindings*
+
+  The set of parsed variables of the route is stored here.
+
+.. defvar:: restas:*submodule*
+
+  Active submodule the route under processing belogns to.
+
+.. defvar:: restas:*request-pool*
+
+  `garbage-pools`_ library resource pool for freeing it after processing
+  request.
+
+.. defvar:: restas:*route*
+   :args: foo bar
+
+  Request under processing.
+
+Routes
+======
+
+.. defmacro:: restas:define-route
+  :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
+
+  Creates new route in the current module
+
+  * name - unique :hs:`symbol`, being route identifier. One and the same
+    :hs:`symbol` cannot be used for different routes.
+
+  * template - URL template for matching a route and a request on its basis.
+    It can contain variables which will be directly available in the body of
+    the route.
+
+  * method - type of HTTP request under processing, possible values are :GET :POST,
+    :PUT, :DELETE.
+
+  * content-type - **Content-Type** of the result of request processing for
+    setting HTTP request header.
+
+  * render-method - object, used by call to :fun:`restas:render-object` for processing of
+    the result of route handler before serving it to client.
+
+  * requirement - arbitrary function called for checking whether a route and a request match
+    each other. If result si :hs:`NIL` then route is regarded as not satisfying the request.
+
+  * parse-vars - *plist* with variables names (as :hs:`keyword`s) and functions
+    for their parsing.
+
+  * body - the body of handler can containing an arbitrary code, its result is returned
+    to the client (after processing it with :fun:`restas:render-object`).
+
+  Example of definition of a trivial route:
+
+  .. code-block:: common-lisp
+
+    (restas:define-route main ("")
+      "<h1>Hello world!</h1>")
+
+  For more details about route definition, see :ref:`manual-routes`
+
+.. defun:: restas:route-symbol
+  :args: route
+
+  Returns :hs:`symbol`, bound to route object (for example, during request
+  processing such object is bound to :var:`restas:*route*`).
+
+.. defun:: restas:genurl
+  :args: route-symbol &rest args
+
+  Computes URL of the route on the basis of identifying :hs:`symbol` and the
+  set of values of variables of its template (see :macro:`restas:define-route`)
+
+  * route-symbol - route identifier
+
+  * args - sequence (in the *plist* format) of route variable names and their values.
+
+  Example:
+
+  .. code-block:: common-lisp
+
+    (restas:genurl 'my-route
+                   :arg1 "foo"
+                   :arg2 "bar")
+
+  **Important**: this functions works right only for routes being in the same 
+  module with processed at the call time route.
+
+.. defun:: restas:genurl-submodule
+  :args: submodule-symbol route-symbol &rest args
+
+  Analogous to :fun:`restas:genurl`, but is used for routes from modules mounted
+  with :macro:`restas:mount-submodule`.
+
+  * submodule-symbol - identifier of submodule, specified at its definition 
+    with :macro:`restas:mount-submodule`.
+
+.. defun:: restas:genurl-with-host
+  :args: route &rest args
+
+  This function is analogous to :fun:`restas:genurl` with exception of generated URL
+  also includes the host name.
+
+.. defun:: restas:redirect
+  :args: route-symbol &rest args
+
+  Redirects the request with :fun:`hunchentoot:redirect` for URL computed with
+  :fun:`restas:genurl`. The parameters are analogous to those of function :fun:`restas:genurl`.
+
+Modules
+=======
+
+.. defmacro:: restas:define-module
+  :args: name &rest options
+
+  Initializes a new module, creates new :hs:`package`, and conducts its initialization.
+  (Adds certain service variables to it.)
+
+.. defmacro:: restas:define-initialization
+  :args: (context) &body body
+
+  Defines a function for calling it when the module is mounted with
+  :macro:`restas:mount-submodule`. It can be called, for example, for additional 
+  adjustment of submodule context. It should be placed in the package, defined with
+  aid of :macro:`restas:define-module`.
+
+.. defmacro:: restas:define-finalization
+  :args: (context) &body body
+
+  Defines a function contrary to those defined with :macro:`restas:define-initialization`.
+  Is called at the repeated evaluation of :macro:`restas:mount-submodule` and can be used
+  e.g. for freeing the resources, allocated at submodule initialization.
+
+Submodules
+==========
+
+.. defmacro:: restas:mount-submodule
+  :args: name (module) &rest bindings
+
+  Defines a submodule which becomes a part of the module it is defined in.
+
+  * name - identifyer (:hs:`symbol`) of a submodule.
+
+  * module - `package designator`_  of the mounted module.
+
+  * bindings - the set of variables and their values defining the context of
+    submodule. The processing of routes from this submodule will be conducted
+    in this context by call to :hs:`progv`.
+
+  Example:
+
+  .. code-block:: common-lisp
+
+    (restas:mount-submodule tmp (#:restas.directory-publisher)
+      (restas.directory-publisher:*baseurl* '("tmp"))
+      (restas.directory-publisher:*directory* #P"/tmp/"))
+
+
+.. defun:: restas:submodule-symbol
+  :args: submodule
+
+  Returns :hs:`symbol`, bound to submodule object (e.g., at the request processing
+  time such object is bound to :var:`restas:*submodule*`).
+
+.. defun:: restas:submodule-module
+  :args: submodule
+
+  Returns the `package designator`_ associated with submodule object.
+
+.. defun:: restas:submodule-parent
+  :args: submodule
+
+  Returns a submoudle to which the passed submodule is mounted. With aid of macro
+  :macro:`restas:mount-submodule` you can create entire hierarchies of submodules.
+
+.. defmacro:: restas:with-submodule-context
+  :args: submodule &body body
+
+  Lets you execute an arbitrary code at the context of the specified submodule.
+
+Representation
+==============
+
+.. defun:: restas:render-object
+  :args: drawer object
+
+  Generic method used for processing the data returned by the route handler
+  (specified in the body of :macro:`restas:define-route`). If you didn't specify
+  :render-method parameter for :macro:`restas:define-route` macro then the value of
+  :var:`*default-render-method*` from the module where the route under processing was
+  defined (It is automatically created at module definition time by macro 
+  :macro:`restas:define-module` and its value is :hs:`NIL`) is used.
+
+  For more detailed description see the section :ref:`manual-view`.
+
+
+Context
+=======
+
+To provide modularity RESTAS uses a mechanism close to Buffer-Local Variables`_
+in `GNU Emacs`_.
+
+.. defmacro:: restas:make-context
+  :args: &body bindings
+
+  Creates dynamic context bindings of dynamic variables to their values.
+  Example:
+
+  .. code-block:: common-lisp
+
+    (restas:make-context (restas.directory-publisher:*baseurl* '("tmp"))
+                         (restas.directory-publisher:*directory* #P"/tmp/")
+                         (restas.directory-publisher:*autoindex* t))
+
+.. defun:: restas:context-add-variable
+  :args: context symbol &optional value
+
+  Adds a new variable to the context.
+
+  * context - contex
+  * symbol - :hs:`symbol`, associated to dynamic variable.
+  * value - value of the variable, if it isn't specified then the result of 
+    call to :hs:`symbol-value` is used.
+
+.. defun:: restas:context-remove-variable
+  :args: context symbol 
+
+  Removes the variable from the context.
+
+.. defun:: restas:context-symbol-value
+  :args: context symbol => value, present-p
+
+  Return the *value* of a dynamic variable, if the variable is missing in the context
+  then for evaluating its value :hs:`symbol-value` is used and present-p is equal to
+  :hs:`NIL`.
+
+.. defmacro:: restas:with-context
+  :args: context &body body
+
+  Executes the code in the given context with :hs:`progv`.
+
+Debugging
+=========
+
+.. defun:: restas:debug-mode-on
+  :args:
+
+  Sets up the debug mode.
+
+.. defun:: restas:debug-mode-off
+  :args:
+
+  Cancels debug mode.
+
+.. defvar:: restas:*max-debugging-threads*
+
+  Maximal number of simultaneously debugged threads.
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator
+.. _Buffer-Local Variables: http://www.gnu.org/software/emacs/elisp/html_node/Intro-to-Buffer_002dLocal.html
+.. _GNU Emacs: http://www.gnu.org/software/emacs/
