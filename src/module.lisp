@@ -40,7 +40,7 @@
 (defclass submodule ()
   ((symbol :initarg :symbol :initform nil :reader submodule-symbol)
    (module :initarg :module :initform nil :reader submodule-module)
-   (context :initarg :context :initform (make-context))
+   (context :initarg :context :initform (make-context) :reader submodule-context)
    (parent :initarg :parent :initform nil :reader submodule-parent)
    (submodules :initform nil :accessor submodule-submodules)))
 

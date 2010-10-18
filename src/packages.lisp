@@ -35,6 +35,7 @@
            #:connect-submodule
            #:with-submodule-context
            #:find-submodule
+           #:submodule-context
            ;; render
            #:render-object
            ;; cache
