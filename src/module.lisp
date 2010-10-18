@@ -46,11 +46,13 @@
 
 (defmethod reinitialize-instance :before ((obj submodule) &rest initargs &key)
   (declare (ignore initargs))
-  (finalize-module-instance (submodule-module obj)
-                            (slot-value obj 'context))
+  (let ((*submodule* obj))
+    (finalize-module-instance (submodule-module obj)
+                              (slot-value obj 'context)))
   (iter (for thing in (submodule-submodules obj))
-        (finalize-module-instance (submodule-module obj)
-                                  (slot-value obj 'context))))
+        (let ((*submodule* thing))
+          (finalize-module-instance (submodule-module obj)
+                                    (slot-value obj 'context)))))
 
 (defmethod shared-initialize :after ((obj submodule) slot-names &rest initargs &key)
   (declare (ignore initargs))
@@ -62,8 +64,9 @@
                                       :module (car thing)
                                       :context (copy-restas-context (cdr thing))
                                       :parent obj))))
-  (initialize-module-instance (submodule-module obj)
-                              (slot-value obj 'context)))
+  (let ((*submodule* obj))
+    (initialize-module-instance (submodule-module obj)
+                                (slot-value obj 'context))))
 
 (defun find-submodule (symbol &optional (parent *submodule*))
   (find symbol
