@@ -46,4 +46,4 @@
   (declare (ignore connection))
   (debug-mode-off t))
 
-#+swank (swank:add-hook swank:*connection-closed-hook* 'after-close-swank-connection)
+#+swank (swank::add-hook swank::*connection-closed-hook* 'after-close-swank-connection)
