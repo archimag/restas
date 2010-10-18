@@ -1,0 +1,117 @@
+.. _installation:
+
+==============
+ Installation
+==============
+
+Manual installation
+===================
+
+`RESTAS`_ is an usual `ASDF`_ system and installing it doesn't differ from
+installing most other packages.
+
+Before installing `RESTAS`_ you should install several dependencies:
+
+* `Hunchentoot`_
+* `alexandria`_
+* `cl-routes`_
+* `garbage-pools`_
+
+After this you should get the source code. The latest version of `RESTAS`_
+can be downloaded at http://code.google.com/p/restas/downloads/list.
+
+Fans of unstable versions also can use the git repository:
+::
+
+  git clone git://github.com/archimag/restas.git
+
+Now you have to unpack the source code and to add it to
+:var:`asdf:*central-registry*`:
+
+.. code-block:: common-lisp
+
+  (push #P"/path/to/restas/" asdf:*central-registry*)
+
+Or create a symbolic link:
+::
+
+  cd ~/sbcl/.systems   # or any other directory, specified with asdf:*central-registry*
+  ln -s /path/to/restas/restas.asd .
+
+Using clbuild
+=============
+
+Other variant of installation is to use a fork of `clbuild`_ whose repository
+is situated at the page http://github.com/archimag/clbuild-archimag. Usage of this
+tool doesn't differ a single bit from usage of original `clbuild`_.
+
+Gentoo Linux
+============
+
+Gentoo Linux users can take advantage of `archimag-lisp-overlay`_, a fork of
+`gentoo-lisp-overlay`_.
+
+Installation of this overlay with `layman`_ is done in the following way:
+::
+
+  emerge layman
+
+Now you just need to add http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+to the overlays parameter of /etc/layman/layman.cfg configuration file:
+::
+
+  overlays  : http://www.gentoo.org/proj/en/overlays/repositories.xml
+              http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+
+And, at last:
+::
+
+  layman -f -a archimag-lisp
+  emerge restas
+
+Optional packages
+=================
+
+PURI-UNICODE
+------------
+
+`RESTAS`_ depends on `puri`_, which is a very good library, but has an
+essential disadvantage of not providing a correct parsing for URLs containing
+non-ASCII characters (those which are coded with UTF-8). To solve this
+problem you can instead of `puri`_ use `puri-unicode`_ which is a fork of 
+`puri`_ and provides correct processing of such symbols with `babel`_ library.
+You can download stable version of this library from the address
+http://github.com/archimag/puri-unicode/downloads. 
+
+SLIME-ARCHIMAG
+--------------
+
+`SLIME`_, undoubtedly, is profound tool for development applications in Common
+Lisp, but sadly it is self-contained and doesn't provide any easy to use
+mechanisms of extending functionality. Meanwhile, it contains outstanding 
+infrastructure which can be used for providing different instrumental facilities.
+`RESTAS`_ supports :ref:`integration <manual-slime>` with `SLIME`_ and provides
+a series of tools simplifying web application development but for using them you need
+to use the `SLIME-ARCHIMAG`_ fork instead of the original `SLIME`_ and do some 
+additional Emacs initialization:
+::
+
+  (add-to-list 'load-path "/path/to/restas/slime/")
+  (require 'restas)
+
+.. _RESTAS: http://restas.lisper.ru/
+.. _ASDF: http://common-lisp.net/projects/asdf/
+.. _Hunchentoot: http://www.weitz.de/hunchentoot/
+.. _alexandria: http://common-lisp.net/project/alexandria/
+.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _cl-routes: http://code.google.com/p/cl-routes/
+.. _git: http://git-scm.com/
+.. _clbuild: http://common-lisp.net/project/clbuild/
+.. _archimag-lisp-overlay: http://github.com/archimag/archimag-lisp-overlay
+.. _layman: http://layman.sourceforge.net/
+.. _gentoo-lisp-overlay: http://repo.or.cz/w/gentoo-lisp-overlay.git
+.. _puri: http://puri.b9.com/
+.. _puri-unicode: http://github.com/archimag/puri-unicode
+.. _babel: http://common-lisp.net/project/babel/
+.. _SLIME-ARCHIMAG: http://github.com/archimag/slime-archimag
+.. _SLIME: http://common-lisp.net/project/slime/
