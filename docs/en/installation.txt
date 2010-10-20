@@ -15,7 +15,6 @@ Before installing `RESTAS`_ you should install several dependencies:
 * `Hunchentoot`_
 * `alexandria`_
 * `cl-routes`_
-* `garbage-pools`_
 
 After this you should get the source code. The latest version of `RESTAS`_
 can be downloaded at http://code.google.com/p/restas/downloads/list.
@@ -103,7 +102,6 @@ additional Emacs initialization:
 .. _ASDF: http://common-lisp.net/projects/asdf/
 .. _Hunchentoot: http://www.weitz.de/hunchentoot/
 .. _alexandria: http://common-lisp.net/project/alexandria/
-.. _garbage-pools: http://code.google.com/p/garbage-pools/
 .. _cl-routes: http://code.google.com/p/cl-routes/
 .. _git: http://git-scm.com/
 .. _clbuild: http://common-lisp.net/project/clbuild/
