@@ -107,9 +107,7 @@
                                                 (hunchentoot:request-uri*))
           (if route
               (handler-bind ((error #'maybe-invoke-debugger))
-                (gp:with-garbage-pool (*request-pool*)
-                  (process-route route
-                                 bindings)))
+                (process-route route bindings))
               (setf (hunchentoot:return-code*)
                     hunchentoot:+HTTP-NOT-FOUND+)))))))
 

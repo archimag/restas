@@ -6,7 +6,7 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defsystem restas
-    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:garbage-pools #:alexandria #+swank-archimag #:closer-mop )
+    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:alexandria #+swank-archimag #:closer-mop )
     :components
     ((:module "src"
               :components

@@ -63,11 +63,6 @@ Special variables
 
   Active submodule the route under processing belogns to.
 
-.. defvar:: restas:*request-pool*
-
-  `garbage-pools`_ library resource pool for freeing it after processing
-  request.
-
 .. defvar:: restas:*route*
    :args: foo bar
 
