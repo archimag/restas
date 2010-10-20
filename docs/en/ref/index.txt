@@ -26,6 +26,15 @@ API Reference
   * context - environment analogous to specified with :macro:`restas:mount-submodule`
     lets customise module parameters.
 
+  * ssl-certificate-file - path to certificate file. Using it for connect by SSL 
+    protocol (in Lispworks could be using one file contains key and certificate, then
+    ssl-privatekey-file not need.
+
+  * ssl-privatekey-file - path to key file in PEM format.
+
+  * ssl-privatekey-password - password (as string) for using key file (or NIL, the 
+    default, for no password).
+
   This function can be called more than once with different parameters. If different
   modules were launched for one and the same combination of host name and port number
   then route conflicts are possible, and, when they happen, the way of request dispatch
