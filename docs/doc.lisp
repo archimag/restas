@@ -47,17 +47,13 @@
   
 (restas:define-route entry ("")
   (let* ((accept-languages (hunchentoot:header-in* :accept-language))
-         (prefer-lang (if accept-languages
-                          (subseq accept-languages
-                                  0
-                                  (position #\, accept-languages)))))
+         (prefer-lang (if (and accept-languages
+                               (> (length accept-languages) 1))
+                          (string-downcase (subseq accept-languages 0 2)))))
     (hunchentoot:redirect
      (restas:genurl-submodule '-publisher-
                               'restas.directory-publisher:route
-                              :path (list
-                                     (if (and prefer-lang
-                                              (string= (subseq (string-downcase prefer-lang) 0 2)
-                                                       "ru"))
-                                         "ru"
-                                         *default-lang*)
-                                     "")))))
+                              :path (list (if (string= prefer-lang "ru")
+                                              "ru"
+                                              *default-lang*)
+                                          "")))))
