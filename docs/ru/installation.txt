@@ -15,7 +15,6 @@
 * `Hunchentoot`_
 * `alexandria`_
 * `cl-routes`_
-* `garbage-pools`_
 
 Далее необходимо получить исходный код. Последнюю версию `RESTAS`_ можно скачать
 на странице http://code.google.com/p/restas/downloads/list.
@@ -102,7 +101,6 @@ SLIME-ARCHIMAG
 .. _ASDF: http://common-lisp.net/projects/asdf/
 .. _Hunchentoot: http://www.weitz.de/hunchentoot/
 .. _alexandria: http://common-lisp.net/project/alexandria/
-.. _garbage-pools: http://code.google.com/p/garbage-pools/
 .. _cl-routes: http://code.google.com/p/cl-routes/
 .. _git: http://git-scm.com/
 .. _clbuild: http://common-lisp.net/project/clbuild/
