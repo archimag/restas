@@ -7,7 +7,7 @@ API Reference
 =============
 
 .. defun:: restas:start
-  :args: module &key hostname (port 80) (context (make-context))
+  :args: module &key hostname (port 80) (context (make-context)) ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
 
   Устанавливает (запускает) модуль для обработки HTTP-запросов. `RESTAS`_
   поддерживает концепцию `виртуальных хостов <http://httpd.apache.org/docs/current/vhosts/>`_,
@@ -23,8 +23,18 @@ API Reference
 
   * port - порт на котором будут приниматься запросы
 
-  * context - окружение, аналогичное указываемумо в :macro:`restas:mount-submodule`,
+  * context - окружение, аналогичное указываемуму в :macro:`restas:mount-submodule`,
     которое позволяет настроить параметры модуля.
+
+  * ssl-certificate-file - путь к файлу-сертификату. Указывается для соединения по
+    протоколу SSL (на Lispworks можно использовать один файл содержащий и сертификат
+    и ключ, в этом случае параметр ssl-privatekey-file задавать не нужно).
+
+  * ssl-privatekey-file - путь к файлу-ключу в PEM формате.
+
+  * ssl-privatekey-password - пароль (как строка) для использования файла-ключа (или
+    NIL, что задано по умолчанию, если пароль не требуется).
+  
 
   Данная функция может быть вызвана несколько раз с различными параметрами. Если
   разные модули были запущены для одной и той же комбинации имени хости и номера
