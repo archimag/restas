@@ -96,7 +96,8 @@ Following parameters are possible:
 
 * :var:`*sites*` - list of sites to be loaded at daemon's startup with function
   :fun:`restas:start`. You can supply just a `RESTAS`_ module or a list containing
-  module name, host name, and port as a site. For example, site 
+  module name, host name, and port as a site (if required SSL connection, must be
+  4th parameter with SSL configurations, about it below). For example, site 
   http://restas.lisper.ru and site `lisper.ru`_ are loaded in one process, and
   variable :var:`*sites*` is defined in daemon config as
   
@@ -105,6 +106,17 @@ Following parameters are possible:
     (defparameter *sites* 
       '((#:rulisp "lisper.ru" 80)
         (#:rulisp.restas "restas.lisper.ru" 80)))
+
+  When using safe connection, for lisper.ru site configs could be such:
+
+  .. code-block:: common-lisp
+
+    (defparameter *sites* 
+      '((#:rulisp "lisper.ru" 443 ("/path/to/ssl_cert.cer" "/path/to/private.key" "your_pass"))
+        (#:rulisp.restas "restas.lisper.ru" 80)))
+
+  When for using key - password not need, then in list with SSL configs 
+  third element "your_pass" not using.
     
 There is special support for Gentoo-based systems. During installation of `RESTAS`_ 
 with `archimag-lisp-overlay`_ the script restas.lo is added to directory /etc/init.d/.
