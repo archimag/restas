@@ -4,7 +4,7 @@
  Routes
 ========
 
-The idea of route originally appeared in `Ruby On Rails`_ and rapidly become
+The idea of route originally appeared in `Ruby On Rails`_ and rapidly became
 popular among other web frameworks. Also, `Django`_'s `URLConf`_ is conceptually
 very close system. Among subsequent developments, http://routes.groovie.org/
 (used by `Pylons`_) is probably the most powerful implementation of this idea.
@@ -50,7 +50,7 @@ only in each template)
   /mydoc/*items
   /*path/rss
 
-The majority of routes implementations (including dispatch systems of 
+The majority of route implementations (including dispatch systems of 
 `Ruby On Rails`_, `Django`_, and `Pylons`_) store routes in a plain list,
 and the search of a matching route is made with brute force up to first match.
 Usually, for matching a request and a route they use regular expressions.
