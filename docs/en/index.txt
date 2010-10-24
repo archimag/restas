@@ -2,8 +2,8 @@
 
 .. _index:
 
-Begining
-========
+Beginning
+=========
 
 First steps
 -----------

@@ -182,7 +182,7 @@ available for handler and specified inside of :macro:`restas:define-route`.
   (restas:start :restas.example-2 :port 8080)
 
 This example demonstrates navigation in some "Book with table of contents" and, besides
-of parametrized routes, shows generation of links from routes' names.
+of parametrized routes, shows generation of links from names of routes.
 
 The code of given examples comes with `RESTAS`_ distribution and can be found in 'example'
 directory.
