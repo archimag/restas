@@ -122,7 +122,7 @@ Presence of "post" ending in 'main/post route name is just a coincidence: routes
 can be named in an arbitrary way, as long as each route has a unique name.
 
 Parameterized routes
--------------------
+--------------------
 
 The URL template specified in :macro:`restas:define-route` isn't required to be as
 simple as in previous examples. It can contain several parameters

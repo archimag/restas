@@ -57,6 +57,6 @@ are:
 .. _detachtty: http://www.cliki.net/detachtty
 .. _HTML-TEMPLATE: http://www.weitz.de/html-template/
 .. _cl-closure-template: http://code.google.com/p/cl-closure-template/
-.. _REST: http://ru.wikipedia.org/wiki/REST
+.. _REST: http://en.wikipedia.org/wiki/Representational_State_Transfer
 .. _Lisp LGPL: http://opensource.franz.com/preamble.html
 
