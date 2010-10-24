@@ -9,10 +9,10 @@ API Reference
 .. defun:: restas:start
   :args: module &key hostname (port 80) (context (make-context))
 
-  Sets up (launches) module for processing HTTP requests. `RESTAS`_ supports
+  Launches a module for processing HTTP requests. `RESTAS`_ supports
   the concept of `virtual hosts <http://httpd.apache.org/docs/current/vhosts/>`_
-  and lets placing of several sites with different domain names in the context
-  of one process. Aside this, serving several ports is possible.
+  and permits placing several sites with different domain names in the context
+  of one process. Serving content on several ports is also possible.
 
   **Parameters**:
 
@@ -23,30 +23,30 @@ API Reference
 
   * port - port for accepting requests
 
-  * context - environment analogous to specified with :macro:`restas:mount-submodule`
-    lets customise module parameters.
+  * context - environment analogous to specified with :macro:`restas:mount-submodule`,
+    permits customizing module parameters.
 
-  * ssl-certificate-file - path to certificate file. Using it for connect by SSL 
-    protocol (in Lispworks could be using one file contains key and certificate, then
-    ssl-privatekey-file not need.
+  * ssl-certificate-file - path to SSL certificate file. Lispworks
+    supports using one file containing the key and certificate, in
+    which case the ssl-privatekey-file is not need.
 
   * ssl-privatekey-file - path to key file in PEM format.
 
-  * ssl-privatekey-password - password (as string) for using key file (or NIL, the 
+  * ssl-privatekey-password - password (as string) for using key file (or NIL, the
     default, for no password).
 
   This function can be called more than once with different parameters. If different
   modules were launched for one and the same combination of host name and port number
-  then route conflicts are possible, and, when they happen, the way of request dispatch
+  then route conflicts are possible, and, when they happen, the way request dispatch happens
   is undefined.
 
 .. defun:: restas:reconnect-all-routes
   :args:
 
-  Reinitialises request dispatcher. Usually there is no need in calling this
-  function directly, because during execution (:execute) of macros 
-  :macro:`restas:mount-submodule` and :macro:`restas:define-route` it is called
-  automatically.
+  Reinitialises request dispatcher. Usually there is no need to call
+  this function directly, because during evaluation of
+  :macro:`restas:mount-submodule` and :macro:`restas:define-route` it
+  is called automatically.
 
 Special variables
 =================
@@ -61,12 +61,12 @@ Special variables
 
 .. defvar:: restas:*submodule*
 
-  Active submodule the route under processing belogns to.
+  Active submodule the current route being handled belongs to.
 
 .. defvar:: restas:*route*
    :args: foo bar
 
-  Request under processing.
+  The current route being handled.
 
 Routes
 ======
@@ -76,29 +76,28 @@ Routes
 
   Creates new route in the current module
 
-  * name - unique :hs:`symbol`, being route identifier. One and the same
+  * name - unique :hs:`symbol`, serving as route identifier. The same
     :hs:`symbol` cannot be used for different routes.
 
   * template - URL template for matching a route and a request on its basis.
     It can contain variables which will be directly available in the body of
     the route.
 
-  * method - type of HTTP request under processing, possible values are :GET :POST,
+  * method - HTTP method to be handled, possible values are :GET :POST,
     :PUT, :DELETE.
 
-  * content-type - **Content-Type** of the result of request processing for
-    setting HTTP request header.
+  * content-type - result **Content-Type** HTTP header
 
   * render-method - object, used by call to :fun:`restas:render-object` for processing of
     the result of route handler before serving it to client.
 
   * requirement - arbitrary function called for checking whether a route and a request match
-    each other. If result si :hs:`NIL` then route is regarded as not satisfying the request.
+    each other. If result is :hs:`NIL` then route is regarded as not satisfying the request.
 
   * parse-vars - *plist* with variables names (as :hs:`keyword`s) and functions
-    for their parsing.
+    for parsing them.
 
-  * body - the body of handler can containing an arbitrary code, its result is returned
+  * body - handler body can contain arbitrary code; its result is returned
     to the client (after processing it with :fun:`restas:render-object`).
 
   Example of definition of a trivial route:
@@ -120,7 +119,7 @@ Routes
   :args: route-symbol &rest args
 
   Computes URL of the route on the basis of identifying :hs:`symbol` and the
-  set of values of variables of its template (see :macro:`restas:define-route`)
+  set of values of variables of its URL template (see :macro:`restas:define-route`)
 
   * route-symbol - route identifier
 
@@ -134,7 +133,7 @@ Routes
                    :arg1 "foo"
                    :arg2 "bar")
 
-  **Important**: this functions works right only for routes being in the same 
+  **Important**: this functions works right only for routes being in the same
   module with processed at the call time route.
 
 .. defun:: restas:genurl-submodule
@@ -149,7 +148,7 @@ Routes
 .. defun:: restas:genurl-with-host
   :args: route &rest args
 
-  This function is analogous to :fun:`restas:genurl` with exception of generated URL
+  This function is analogous to :fun:`restas:genurl` except that the generated URL
   also includes the host name.
 
 .. defun:: restas:redirect
@@ -164,8 +163,7 @@ Modules
 .. defmacro:: restas:define-module
   :args: name &rest options
 
-  Initializes a new module, creates new :hs:`package`, and conducts its initialization.
-  (Adds certain service variables to it.)
+  Initializes a new module, creates new :hs:`package`, adds certain service variables to it, and conducts its initialization.
 
 .. defmacro:: restas:define-initialization
   :args: (context) &body body
@@ -180,7 +178,7 @@ Modules
 
   Defines a function contrary to those defined with :macro:`restas:define-initialization`.
   Is called at the repeated evaluation of :macro:`restas:mount-submodule` and can be used
-  e.g. for freeing the resources, allocated at submodule initialization.
+  e.g. for freeing resources allocated at submodule initialization.
 
 Submodules
 ==========
@@ -188,7 +186,7 @@ Submodules
 .. defmacro:: restas:mount-submodule
   :args: name (module) &rest bindings
 
-  Defines a submodule which becomes a part of the module it is defined in.
+  Defines a submodule.
 
   * name - identifyer (:hs:`symbol`) of a submodule.
 
@@ -196,7 +194,7 @@ Submodules
 
   * bindings - the set of variables and their values defining the context of
     submodule. The processing of routes from this submodule will be conducted
-    in this context by call to :hs:`progv`.
+    in this context by using :hs:`progv`.
 
   Example:
 
@@ -210,7 +208,7 @@ Submodules
 .. defun:: restas:submodule-symbol
   :args: submodule
 
-  Returns :hs:`symbol`, bound to submodule object (e.g., at the request processing
+  Returns the :hs:`symbol` bound to the submodule object (e.g., at request processing
   time such object is bound to :var:`restas:*submodule*`).
 
 .. defun:: restas:submodule-module
@@ -238,7 +236,7 @@ Representation
   Generic method used for processing the data returned by the route handler
   (specified in the body of :macro:`restas:define-route`). If you didn't specify
   :render-method parameter for :macro:`restas:define-route` macro then the value of
-  :var:`*default-render-method*` from the module where the route under processing was
+  :var:`*default-render-method*` from the module where the current route being handled was
   defined (It is automatically created at module definition time by macro 
   :macro:`restas:define-module` and its value is :hs:`NIL`) is used.
 
@@ -248,7 +246,7 @@ Representation
 Context
 =======
 
-To provide modularity RESTAS uses a mechanism close to Buffer-Local Variables`_
+To provide modularity RESTAS uses a mechanism similar to Buffer-Local Variables`_
 in `GNU Emacs`_.
 
 .. defmacro:: restas:make-context
@@ -270,18 +268,18 @@ in `GNU Emacs`_.
 
   * context - contex
   * symbol - :hs:`symbol`, associated to dynamic variable.
-  * value - value of the variable, if it isn't specified then the result of 
+  * value - value of the variable. If unspecified, then the result of a
     call to :hs:`symbol-value` is used.
 
 .. defun:: restas:context-remove-variable
-  :args: context symbol 
+  :args: context symbol
 
   Removes the variable from the context.
 
 .. defun:: restas:context-symbol-value
   :args: context symbol => value, present-p
 
-  Return the *value* of a dynamic variable, if the variable is missing in the context
+  Return the *value* of a dynamic variable. If the variable is undefined in the context,
   then for evaluating its value :hs:`symbol-value` is used and present-p is equal to
   :hs:`NIL`.
 

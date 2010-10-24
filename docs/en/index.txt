@@ -8,7 +8,7 @@ Beginning
 First steps
 -----------
 
-* **Start from scratch:**
+* **Starting from scratch:**
   :ref:`Overview <overview>` | :ref:`Installation <installation>`
 
 * **Tutorials:**

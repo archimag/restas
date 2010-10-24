@@ -9,8 +9,8 @@ Module
 From the Common Lisp point of view a module is just a :hs:`package`. From the
 RESTAS point of view a module is a set of routes defining web application
 structure. Modules are created with macro :macro:`restas:define-module`
-which creates a package with corresponding name and also makes some
-additional initialization of it. For example:
+which creates a package with corresponding name and performs some
+additional initialization. For example:
 
 .. code-block:: common-lisp
 
@@ -20,7 +20,7 @@ additional initialization of it. For example:
 Now you can create several routes in this module:
 
 .. code-block:: common-lisp
- 
+
   (in-package #:hello-world)
 
   (restas:define-route main ("hello")
@@ -39,21 +39,21 @@ Finally, obtained module can be launched as a site:
 You can also pass the :hostname keyword parameter to the function :fun:`restas:start`
 and it will let you serve several virtual hosts within one process.
 
-Thus, after placing several routes in a module you can use the module for 
+Thus, after placing several routes in a module you can use the module for
 launching of a web application. But, also, there is another way of using modules.
 
 Submodules
 ----------
 
-Modules propose interesting way of repeated code usage for web application development.
+Modules propose interesting way of code reuse for web application development.
 The difference of a web component from an usual library containing functions, macros,
-classes and other stuff is that web component also must contain information about
+classes and other stuff is that the web component must also contain information about
 served URLs and this information must be used by the request dispatch mechanism and
-rightly identify the code responsible for processing incoming request. In the terms
-of routes every repeatedly used web component is just a list of routes processed
+correctly identify the code responsible for processing the incoming request. In the terms
+of routes every reused web component is just a list of routes processed
 by it, and this is just what modules are from the RESTAS point of view. For
-repeated usage of a module from an other module one can use :macro:`restas:mount-submodule`
-macro. Example (depends on the code above):
+using a module from another module one can use :macro:`restas:mount-submodule`
+. Example (depends on the code above):
 
 .. code-block:: common-lisp
 
@@ -66,26 +66,14 @@ macro. Example (depends on the code above):
 
   (restas:start '#:test :port 8080)
 
-In the given example we have defined new module 'test and attached the abouve-defined module
+In the given example we have defined new module 'test and attached the above-defined module
 'hello-world to it (resulting submodule is associated with symbol 'test-hello-world)
-and module 'test was started at 8080 port. Despite of no route is defined
-inside the 'test module itself, finally it is able to process requests coming to /hello
-because it includes 'hello-world module in itself.
+and module 'test was started at port 8080. Despite no route being defined
+inside the 'test module, it is able to process requests coming to /hello
+because it includes 'hello-world module.
 
-In this state this functionality doesn't look very usable and there is a reason for that.
-For successful repeated usage of any component you should know how to configure it,
-adjust its parameters, without this possibility repeated usage will boil down to
-copy/paste technique with editing code after it, this looks depressing in itself
-and in the context of CL also has many technical limitations (this is concerned with
-that the notion of package is in no way connected with physical code placement in file
-system). In OOP the traditional way of solving configuration problems is usage
-of classes, but, despite of Common Lisp has superpower support for OOP (CLOS +
-MOP), however, I decided to reject this approach: appearing problems of design,
-drafting, numberless interfaces and inheritance always essentially raise
-system difficulty, and this looks for me completely excessive for such
-simple domain as web application development. For solution of this problem Common
-Lisp has one more tremendous mechanism: dynamic variables. Here is an example of the code
-used by `lisper.ru`_ for publishing of static files:
+Module configuration is done via dynamic variables. Here is an example of the code
+used by `lisper.ru`_ for publishing static files:
 
 .. code-block:: common-lisp
 
@@ -93,26 +81,27 @@ used by `lisper.ru`_ for publishing of static files:
     (restas.directory-publisher:*directory* (merge-pathnames "static/" *resources-dir*))
     (restas.directory-publisher:*autoindex* nil))
 
-In this example we use `restas-directory-publisher`_ module.
+In this example we use the `restas-directory-publisher`_ module.
 
-In the module :package:`restas.directory-publisher` several global dynamic
-variables are defined (with :hs:`defparameter` or :hs:`defvar`) which can
-later be used for customization of module work. In the macro 
-:marcro:`restas:mount-submodule` some of these variables are bound to new 
-values but this bindings are not applied directly but are saved as a context 
-for future usage. At request processing time the dispatcher finds the route, identifies
-the module related to it, adjusts environment on the basis of the saved context
-and makes further processing of the request inside this environment (using special
-operator :hs:`progv`). This mechanism resembles Buffer-Local Variables in
-Emacs.
+The :package:`restas.directory-publisher` module defines several
+dynamic variables which can later be used for
+configuration. In :macro:`restas:mount-submodule` some of these variables
+are bound to new values - these bindings are not applied directly but
+are saved as a context for future use. At request processing time
+the dispatcher finds the route, identifies the module related to it,
+adjusts environment on the basis of the saved context and makes
+further processing of the request inside this environment (using
+special operator :hs:`progv`). This mechanism resembles Buffer-Local
+Variables in Emacs.
 
 When defining a new module with :macro:`restas:define-module` the
-:var:`*baseurl*` variable is added to it (to its :hs:`package`), this variable should
-be a list of strings and define a base URL where the module is mounted, and it is set to
-:hs:`nil` by default. This variable can be used in the :macro:`restas:mount-submodule`
-macro for specifying where the submodule will be plugged. Here is a more complex example of 
-the module `restas-directory-publisher`_ of `lisper.ru`_ site (you can see it in
-action at address http://lisper.ru/files/).
+:var:`*baseurl*` variable is added to it (to its :hs:`package`). This
+variable should be a list of strings that defines a base URL where the
+module is mounted. It is set to :hs:`nil` by default. This variable
+can be used in :macro:`restas:mount-submodule` for specifying where
+the submodule will be plugged in. Here is a more complex example of
+the module `restas-directory-publisher`_ of `lisper.ru`_ (you can
+see it in action at address http://lisper.ru/files/).
 
 .. code-block:: common-lisp
 
@@ -132,14 +121,15 @@ without any conflicts between them.
 Internal dispatching
 --------------------
 
-The macro :macro:`restas:mount-submodule` lets you control module customization
-"from outside", but sometimes you need the possibility to control created context
-inside the module. E.g. module `restas-planet`_ used for organizing of
-`Russian Lisp Planet`_ requires a mechanism to save robot object (which, 
-according to schedule, reads feeds and merges them to a single one), which
-should be computed on the basis of variables which can be placed in submodule's
-context. For such cases a macro :macro:`restas:define-initialization` is
-provided, and here is the real code from planet.lisp:
+The macro :macro:`restas:mount-submodule` lets you control module
+customization "from outside", but sometimes you need the possibility
+to control created context inside the module. E.g. module
+`restas-planet`_ used for organizing `Russian Lisp Planet`_ requires a
+mechanism to save a robot object (which periodically reads feeds and
+merges them into a single one), which should be computed on the basis of
+variables which can be placed in submodule's context. For such cases a
+macro :macro:`restas:define-initialization` is provided. Here is
+the real code from planet.lisp:
 
 .. code-block:: common-lisp
 
@@ -156,11 +146,11 @@ provided, and here is the real code from planet.lisp:
                                         (ensure-directories-exist
                                           (merge-pathnames "spider/" *cache-dir*))))))))
 
-Here the computation of 'spider' object is made and the object is associated 
+Here the computation of 'spider' object is made and the object is associated
 with variable :var:`*spider*` and is placed in the context of created submodule.
 The present code will be evaluated during evaluation of the :macro:`restas:mount-submodule`
 form. Considering creation of a spider object leads to launching a scheduler
-(in particular, a timer is created) we need to know how to stop it when evaluating 
+(in particular, a timer is created) we need to know how to stop it when evaluating
 :macro:`restas:mount-submodule` in the second time. The macro
 :macro:`restas:define-finalization` is provided for this.
 
@@ -174,25 +164,25 @@ form. Considering creation of a spider object leads to launching a scheduler
 Dualism
 -------
 
-Described scheme implies a dualism: a module as a standalone application and 
-the same module as a component for repeated usage, this lets you to develop
-a module not taking in the account any possibility of repeated usage, and 
-after that you can turn it into repeatedly usable component at minimal cost (just
-by bringing it to the "right" design). Such approach, as I think, lets
-in many cases escape from problems immanent to traditional OOP design.
+The described scheme implies a dualism: a module as a standalone
+application and the same module as a reusable component. This lets you
+to develop a module without planning for reuse, and later make it into
+a reusable component at minimal cost (just by bringing it to the
+"right" design). This approach bypasses many of the problems of
+traditional OO design.
 
 As a demonstration, here is the code for launching `restas-directory-publisher`_,
-which I used above as a repeatedly used component, as a standalone application:
+which I used above as a reusable component, as a standalone application:
 
 .. code-block:: common-lisp
 
-  (restas:start '#:restas.directory-publisher 
-                :port 8080 
+  (restas:start '#:restas.directory-publisher
+                :port 8080
                 :context (restas:make-context (restas.directory-publisher:*baseurl* '("tmp"))
                                               (restas.directory-publisher:*directory* #P"/tmp/")
                                               (restas.directory-publisher:*autoindex* t)))
 
-Now if you open in your browser the page http://localhost:8080/tmp/ you can
+Now if you open http://localhost:8080/tmp/ in your browser you can
 observe the content of the #P"/tmp/" directory.
 
 .. _RESTAS: http://restas.lisper.ru/

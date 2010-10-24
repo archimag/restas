@@ -6,8 +6,8 @@
  Pastebin
 ==========
 
-As a demonstration of using `RESTAS`_ for creation of a full featured 
-web application I want to show you how to construct a simplest pastebin service.
+As a demonstration of using `RESTAS`_ for creation of a full-featured
+web application I want to show you how to construct a simple pastebin service.
 
 .. note:: Note
 
@@ -18,20 +18,20 @@ web application I want to show you how to construct a simplest pastebin service.
   bad etiquette. A vast number of pastebins exist on the Internet, suiting
   a number of different needs and provided features tailored towards
   the crowd they focus on most.
-  
-Pastebin is a very simple application, however, with this example I can show 
-the basic principles of building `RESTAS`_ applications. Apart from this,
-it is a real application used by `lisper.ru`_ site.
-You can see it in action `here <http://lisper.ru/apps/format/>`_.
 
-This component must have the following abilities:
+Pastebin is a simple idea that demonstrates the basic
+principles of building `RESTAS`_ applications. Apart from this, it is
+a real application used by the `lisper.ru`_ site.  You can see it in
+action `here <http://lisper.ru/apps/format/>`_.
 
-* A form for creation of a new element.
+The app must have the following abilities:
 
-* List of all registered elements, with a way to view them after clicking
+* A form for creating a new element.
+
+* A list of all registered elements, with a way to view them after clicking
   on an element.
 
-* View for displaying every element.
+* A view for displaying every element.
 
 * Syntax highlighting.
 
@@ -40,9 +40,9 @@ hereby must have flexible means of configuration:
 
 * Use the authentication system used by the site.
 
-* Use the data storage, provided by the site.
+* Use the data storage mechanism provided by the site.
 
-* Provide customisation for way of rendering pages.
+* Provide customisation for rendering pages.
 
 Logical structure
 =================
@@ -54,21 +54,21 @@ Customisation of the module is done with special (dynamic) variables
 (for details about customising modules with dynamic variables
 see section :ref:`manual-modules`).
 
-You can store data of this application in a number of ways, so we define
-needed interface and a special variable :fun:`*storage*`, with aid of which
-an outside application can specify used way of storing data. For development
-and debugging a developer needs to have a functioning model, which is implemented
-by a trivial class :class:`memory-storage` providing a way of storing data
-in the memory, such approach lets you develop the application without
-any accent on the structure of database and introduce such structure only
-if you really need it.
+Pastebin data can be stored in a number of ways. We define aninterface
+and a special variable :fun:`*storage*`, with which an outside
+application can specify an implementation for storing data. For
+development and debugging a developer needs to have a functioning
+model, which is implemented by a trivial class :class:`memory-storage`
+providing a way of storing data in the memory. Such an approach lets
+you develop the application without worrying about the structure of a
+database until you need it.
 
 Usually sites have an unified authentication scheme which should be used in
 all their components. Therefore the component under development shouldn't
 know anything about the used authentication scheme. In fact, for proper
-functioning it needs to know only user name. Consequently, it is enough
+functioning it needs to know only the username. Consequently, it is enough
 to introduce just one special variable :var:`*colorize-user-function*`
-that will store a function for figuring out user's name.
+that will store a function for figuring out the username.
 
 In order to provide flexible customisation of page view for
 separation of logic and view the component uses the special variable
@@ -86,15 +86,15 @@ used:
 * **defmodule.lisp** - contains definition of the module and, also, special variables
   for controlling the behaviour of the component.
 
-* **storage.lisp** - contains definition of the interface for used data model and 
+* **storage.lisp** - contains definition of the interface for used data model and
   a simple implementation of this model.
 
-* **drawer.lisp** - interface and implementation of the default drawer object 
+* **drawer.lisp** - interface and implementation of the default drawer object
   that is used as the value of :var:`*default-render-method*` special variable.
 
 * **drawer.tmpl** - file with templates in `cl-closure-template`_ format
 
-* **routes.lisp** - the central part of the application where URL scheme and 
+* **routes.lisp** - the central part of the application where URL scheme and
   request handlers are defined.
 
 Implementation
@@ -124,13 +124,13 @@ defmodule.lisp
 Here we define the new module **#:restas.colorize** (for economy of space
 the list of exported symbols is omitted) and introduce several special variables
 for using them in module customisation (variables :var:`*max-on-page*`
-and :var:`*colorize-user-function*` come with default values) and also
-:fun:`colorize-user` helper function is defined for figuring out user name.
-  
+and :var:`*colorize-user-function*` come with default values) and also the
+:fun:`colorize-user` helper function is defined for figuring out the username.
+
 storage.lisp
 ------------
 
-Definition of the interface for :var:`*storage*` object to comply with:
+Definition of the :var:`*storage*` object interface:
 
 .. code-block:: common-lisp
 
@@ -146,10 +146,10 @@ Definition of the interface for :var:`*storage*` object to comply with:
   (defgeneric storage-add-note (storage note)
     (:documentation "Add new note"))
 
-Helper class for storing information about one record:
+Helper class for storing information about a record:
 
 .. code-block:: common-lisp
-    
+
   (defclass note ()
     ((id :initarg :id :initform nil :accessor note-id)
      (date :initarg :date :initform nil :accessor note-date)
@@ -158,8 +158,8 @@ Helper class for storing information about one record:
      (lang :initarg :lang :initform nil :accessor note-lang)
      (code :initarg :code :initform nil :accessor note-code)))
 
-Implementation of a memory storage is trivial, so it's enough to site
-just the class definition:
+To implement an in-memory storage engine it's enough to just cite the class
+definition:
 
 .. code-block:: common-lisp
 
@@ -178,15 +178,15 @@ routes.lisp
 
 In this file, processed URLs and the operation logic are defined.
 Because all view logic is handled by :var:`*default-render-method*`
-object, route handlers should just gather and prepare data for 
+object, route handlers should just gather and prepare data for
 processing them with function :fun:`restas:render-object`.
 The view logic, as I said before, is implemented on the basis of
 `cl-closure-template`_ library which uses *plist* as input data format
-(you can read about using *property list* in more details 
+(you can read about using *property list* in more detail at
 `here <http://lisper.ru/pcl/practical-a-simple-database>`_), so route handlers
 generate data in this format.
 
-A couple of helper functions translating record information to *plist* format:
+A couple of helper functions for translating record information to *plist* format:
 
 .. code-block:: common-lisp
 
@@ -208,16 +208,16 @@ In this code, the following call is of the most interest:
 
   (restas:genurl 'view-note :id (note-id note))
 
-It generates URL for viewing record basing on the route name ('view-node) and :id
+It generates a URL for viewing a record basing on the route name ('view-node) and :id
 parameters.
 
 .. note:: None
 
-  In route-based systems "manual" creation of URLs is not a common practise,
-  because automatic generation considerably increases flexibility of an 
-  application and releaves you from many potential problems. Among other issues,
-  in this case the base URL will be taken in account which is an address where the module
-  is mounted and this base URL is unknown at the module development stage.
+  In route-based systems "manual" creation of URLs is not a common practice,
+  because automatic generation considerably increases flexibility of an
+  application and prevents many potential problems. Among other issues,
+  in this case the base URL, which is an address where the module
+  is mounted, is unknown at the module development stage.
 
 Application entry point:
 
@@ -227,16 +227,17 @@ Application entry point:
     (restas:redirect 'list-notes))
 
 This route processes a request to the base URL where the module is mounted,
-and simply redirects it to the page with record list. For redirection 
+and simply redirects it to the page with the record list. For redirection
 :fun:`restas:redirect` function is used which, like :fun:`restas:genurl`,
-processes the name of route (and a set of parameters, but 'list-notes route
-doesn't have them) so there is no need in actual specifying the URL.
+processes the name of a route (and a set of parameters, but 'list-notes route
+doesn't have them) so there is no need to actually specify the URL.
 
-For displaying record list we use a page-by-page representation with limiting of a number
-of records on a single page which mustn't be more than :var:`*max-on-page*`
-(this variable was introduced in **defmodule.lisp**). So, apart from the record list
-itself you need to gather information about overall number of records,
-and also provide links to previous and next pages:
+For displaying the record list we use a paginated representation, with
+the number of records on a single page specified by
+:var:`*max-on-page*` (this variable was introduced in
+**defmodule.lisp**). So, apart from the record list itself you need to
+gather information about overall number of records, and also provide
+links to previous and next pages:
 
 .. code-block:: common-lisp
 
@@ -265,14 +266,13 @@ and also provide links to previous and next pages:
                                     (restas:genurl 'list-notes)
                                     (max (- start *max-on-page*) 1))))))
 
-The given code is kind of more entangled than it should be, by the reason that
-the really processed URL looks like this
-::
+The given code is more entangled than it should be, because the real
+URL looks like this ::
 
   all?start=n
 
-(where n is sequential number of the first record on the page) and `RESTAS`_ 
-route system yet doesn't know hot to take into account GET parameters of a
+(where n is the number of the first record on the page) and the `RESTAS`_
+route system doesn't yet know how to handle the GET parameters of a
 request.
 
 The following route responds to viewing a particular record:
@@ -283,11 +283,10 @@ The following route responds to viewing a particular record:
                                   :parse-vars (list :id #'parse-integer))
     (note-plist (storage-get-note *storage* id)))
 
-This handler is very simple, but it contains one interesting moment, the 
+This handler is very simple, but it contains one interesting moment, the
 :parse-vars parameter. The identifier of record is ID, which should be
-an integer number. This code lets you ensure that the specified URL contains 
-namely integer number and converts it from the string representation, so
-handler code works with already integer value.
+an integer. This code ensures that the specified URL contains
+an integer, and parses it.
 
 The route for displaying the form of creation of a record is yet more trivial:
 
@@ -296,7 +295,7 @@ The route for displaying the form of creation of a record is yet more trivial:
   (restas:define-route create-note ("create")
     (list :title "Create"))
 
-This form will support each of saving record and previewing it, therefore
+This form will support saving and previewing each record, therefore
 for processing a POST request I used here two routes processing the same
 URL:
 
@@ -326,46 +325,45 @@ URL:
                                                          :title (hunchentoot:post-parameter "title")))))
           hunchentoot:+http-forbidden+)))
 
-Selection of a route is done by :requirement property that checks which command
-(Save or Preview) was selected by a user. For checking whether the user has
-the right to save the record :fun:`colorize-user` function is used (it was
-defined in **defmodule.lisp**) and if the user doesn't authorised himself
-then after a try to save a record he will get :const:`hunchentoot:+http-forbidden+`
-status.
+Selection of a route is done by the :requirement property that checks
+which command (Save or Preview) was selected by a user. For checking
+whether the user has the right to save the record the
+:fun:`colorize-user` function (defined in **defmodule.lisp**). If the
+user is unauthorised she will receive the
+:const:`hunchentoot:+http-forbidden+` status code.
 
 drawer.lisp
 -----------
 
-All routes defined above return data in the *plist* format, therefore
-in order to select a template for processing passed data, it is necessary
-in addition to use the name of current route, which can be evaluated by
+All routes defined above return data in *plist* format, so in order to
+select a template for processing passed data, the name of current
+route must be used, which can be evaluated by
 
 .. code-block:: common-lisp
 
   (restas:route-symbol restas:*route*)
 
-and for doing it the generic method is defined:
+A generic function is provided for doing this:
 
 .. code-block:: common-lisp
 
   (defgeneric render-route-data (drawer data route )
     (:documentation "Rendering page for the specified route"))
 
-It can be specialized with *eql* qualifier for each particular route.
+:fun:`render-route-data` can be specialized with *eql* specializer for each particular route.
 
-In order to an outside application could redefine the general theme of site
-there is generic function:
+Outside applications could redefine the theme of the site
+with a generic function:
 
 .. code-block:: common-lisp
 
   (defgeneric finalize-page (drawer data)
     (:documentation "Shaping the resulting page"))
 
-For syntax highlighting CL has `colorize`_ library, which highlights Common
-Lisp code very well, but, frankly speaking, is far away from been ideal.
-So, for leaving the possibility to use some other instrument, which will probably
-arise in the future, the following interfaces are defined with default 
-implementation on the basis of `colorize`_:
+The `colorize`_ library highlights Common Lisp code very well. To
+leave open the possibility of using some other highlighting library
+the following interfaces are defined with default implementation on
+the basis of `colorize`_:
 
 .. code-block:: common-lisp
 
@@ -381,8 +379,8 @@ implementation on the basis of `colorize`_:
             (collect (list :id (symbol-name id)
                            :title title)))))
 
-For specializing the call to :fun:`restas:render-object` and also for 
-an implementation of defined interfaces we need a class:
+To specialize the call to :fun:`restas:render-object` and also for
+implementing the defined interfaces we need a class:
 
 .. code-block:: common-lisp
 
@@ -423,8 +421,8 @@ passed passed to it in *plist* format:
 
 * **title** - the heading of page extracted from passed data.
 
-The implementation of :fun:`render-route-data` processes passed data with aid
-of template, whose name matches the name of the passed route (here you can
+The implementation of :fun:`render-route-data` processes passed data with the aid
+of a template, whose name matches the name of the passed route (here you can
 find usage of well known "Prevailing of agreement over configuration"):
 
 .. code-block:: common-lisp
@@ -468,10 +466,11 @@ Finally the default value is assigned to :var:`*default-render-method*`:
 
   (setf *default-render-method* (make-instance 'drawer))
 
-Thereby for generate a real content we used quite complex system,
-which, on the one hand is fully based on templates and on the other hand
-each its aspect is defined as a generic function, so for changing a way of representation
-it is enough to define a drawer-inherited class and to specialize required functions.
+We used a quite complex system for generating content, which on the
+one hand is fully based on templates, and on the other hand each of
+its aspect is defined as a generic function, so to change the
+representation it is enough to define a drawer-inherited class and to
+specialize the required generic functions.
 
 drawer.tmpl
 -----------
@@ -604,8 +603,8 @@ And the file itself has the following content:
 Usage
 =====
 
-For using the component described earlier on the `lisper.ru`_ site I use
-the following code:
+For using the pastebin component on `lisper.ru`_ I use the following
+code:
 
 .. code-block:: common-lisp
 
@@ -625,16 +624,16 @@ the following code:
     (restas.colorize:*colorize-user-function* #'compute-user-login-name)
     (restas.colorize:*default-render-method* (make-instance 'pastebin-drawer)))
 
-Here variables are specified with dynamic variable binding:
-the base URL where the module is mounted, maximal number of records per page,
-the way of storing the data, authentication mechanism, and also a correct
-way of displaying pages for the component not to stay out of general design style.
+Here variables are specified with dynamic variable binding: the base
+URL where the module is mounted, maximum number of records per page,
+data storage mechanism, authentication mechanism, and also a way of
+displaying pages for the component in the same design
+style.
 
 Source code
 ===========
 
-The source code of described application is almost completely sited above and is
-available at the address http://github.com/archimag/restas-colorize. Not taking in
+The source code of described application is available at the address http://github.com/archimag/restas-colorize. Not taking in
 account the template file, the size of the source code is about 200 lines.
 
 .. _RESTAS: http://restas.lisper.ru/

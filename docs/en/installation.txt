@@ -7,10 +7,10 @@
 Manual installation
 ===================
 
-`RESTAS`_ is an usual `ASDF`_ system and installing it doesn't differ from
-installing most other packages.
+`RESTAS`_ is a typical `ASDF`_ system and installing it does not differ from
+installing most other Common Lisp packages.
 
-Before installing `RESTAS`_ you should install several dependencies:
+Before installing `RESTAS`_ the following dependencies need to be installed:
 
 * `Hunchentoot`_
 * `alexandria`_
@@ -42,7 +42,7 @@ Using clbuild
 
 Other variant of installation is to use a fork of `clbuild`_ whose repository
 is situated at the page http://github.com/archimag/clbuild-archimag. Usage of this
-tool doesn't differ a single bit from usage of original `clbuild`_.
+tool is the same as that of the original `clbuild`_.
 
 Gentoo Linux
 ============
@@ -62,7 +62,7 @@ to the overlays parameter of /etc/layman/layman.cfg configuration file:
   overlays  : http://www.gentoo.org/proj/en/overlays/repositories.xml
               http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
 
-And, at last:
+Then:
 ::
 
   layman -f -a archimag-lisp
@@ -74,13 +74,10 @@ Optional packages
 PURI-UNICODE
 ------------
 
-`RESTAS`_ depends on `puri`_, which is a very good library, but has an
-essential disadvantage of not providing a correct parsing for URLs containing
-non-ASCII characters (those which are coded with UTF-8). To solve this
-problem you can instead of `puri`_ use `puri-unicode`_ which is a fork of 
-`puri`_ and provides correct processing of such symbols with `babel`_ library.
-You can download stable version of this library from the address
-http://github.com/archimag/puri-unicode/downloads. 
+`RESTAS`_ depends on `puri`_, which does not handle non-ASCII UTF-8
+URLs correctly. To solve this problem you can use the `puri-unicode`_
+fork of `puri`_. The stable version of `puri-unicode`_ can be
+downloaded from http://github.com/archimag/puri-unicode/downloads.
 
 SLIME-ARCHIMAG
 --------------

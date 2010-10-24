@@ -5,10 +5,10 @@
 Hello World
 ===========
 
-Simplest example
+A simple example
 ----------------
 
-Here is a classical "Hello world":
+Here is a classic "Hello world":
 
 .. code-block:: common-lisp
 
@@ -24,7 +24,7 @@ Here is a classical "Hello world":
 
   (restas:start '#:restas.hello-world :port 8080)
 
-If you execute this code and open in you browser http://localhost:8080/,
+If you execute this code and open http://localhost:8080/ in your browser,
 you will see "Hello world" heading. That's nice. :)
 
 Now, one after another, line by line:
@@ -42,20 +42,20 @@ Then we define a new module:
   (restas:define-module #:restas.hello-world
     (:use :cl))
 
-Actually, this code only creates a :hs:`package` and initializes it, adding several
-variables to it. A module is not an object or a symbol, but it is associated with a package, and
-this is quite interesting. Why is it done in a such way? I want a process of creation of
-a web application to be of maximal simplicity and shortness. And using a package as
-a module lets in many cases not to specify the module explicitly, but just to place the code
-concerning the module into the package associated with it.
+Actually, this code only creates a :hs:`package` and initializes it,
+adding several variables to it. A module is not an object or a symbol,
+but is associated with a package. Why is it done in a such way? Using
+a package as a module lets us, in most cases, not to specify the
+module explicitly, but just to place the module's code
+into the package associated with it.
 
-Now we change current package, as it follows from the previous paragraph, this is important.
+Now we change current package.
 
 .. code-block:: common-lisp
 
   (in-package #:restas.hello-world)
 
-Then we create a route for processing GET request to the site root.
+Then we create a route for processing GET requests to the site root.
 
 .. code-block:: common-lisp
 
@@ -111,7 +111,7 @@ This example shows different treatment of GET and POST requests:
 
 When you execute it and open the page http://localhost:8080/, you will see
 an elementary form, in which you are offered to type an arbitrary message.
-After that you can Send it and get a new page, containing typed message
+After that you can Send it and get a new page, containing a typed message
 and a link with an offer to repeat your input. Just a little bit to improve
 and you can start selling it. :)
 
@@ -119,16 +119,14 @@ This example is different from previous in that it now contains two routes, one 
 processing GET requests and the other one for POST ones. As you see, you can specify
 the type of request the route concerns, with key :method, which is :get by default.
 Presence of "post" ending in 'main/post route name is just a coincidence: routes
-can be named in an arbitrary way, while each route has a unique name. Also,
-for html generation this tutorial uses `cl-who`_ library, but I completely can't recommend
-using it for real applications, in spite of it is just you need for small demonstrations.
+can be named in an arbitrary way, as long as each route has a unique name.
 
-Parametrized routes
+Parameterized routes
 -------------------
 
-Url template specified in the macro :macro:`restas:define-route` isn't required to be such
-simple as in previous examples, and it can contain several parameters
-available for handler and specified inside of :macro:`restas:define-route`.
+The URL template specified in :macro:`restas:define-route` isn't required to be as
+simple as in previous examples. It can contain several parameters
+available for the handler and specified inside of :macro:`restas:define-route`.
 
 .. code-block:: common-lisp
 
@@ -181,10 +179,11 @@ available for handler and specified inside of :macro:`restas:define-route`.
 
   (restas:start :restas.example-2 :port 8080)
 
-This example demonstrates navigation in some "Book with table of contents" and, besides
-of parametrized routes, shows generation of links from names of routes.
+This example demonstrates navigation in some "Book with table of
+contents", parametrized routes, and generation of links from names
+of routes.
 
-The code of given examples comes with `RESTAS`_ distribution and can be found in 'example'
+The code of the above examples comes with `RESTAS`_ in the 'example'
 directory.
 
 .. _RESTAS: http://restas.lisper.ru/

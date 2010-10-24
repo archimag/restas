@@ -4,30 +4,29 @@
  Routes
 ========
 
-The idea of route originally appeared in `Ruby On Rails`_ and rapidly became
-popular among other web frameworks. Also, `Django`_'s `URLConf`_ is conceptually
-very close system. Among subsequent developments, http://routes.groovie.org/
+The idea of routes originally appeared in `Ruby On Rails`_ and rapidly became
+popular among other web frameworks. Also, `Django`_'s `URLConf`_ is a conceptually
+very similar system. Among subsequent developments, http://routes.groovie.org/
 (used by `Pylons`_) is probably the most powerful implementation of this idea.
 
-Routes deal with the key problem of web development: matching a code to URL.
-For example, which code should respond to processing request to
-"/blog/2008/01/08" or "/login" address? Many frameworks use fixed dispatch
-system, e.g. "/A/B/C" means read file "C" in directory "B", or call method "C"
-of class "B" in module "A". This works fine unless you need
-a code reorganization, and it clears up that user bookmarks
-will become invalid. Apart of this, if you want to change addresses
-(for example, create a subtopic in a topic) then you need to change already
-debugged logic of link generation inside the site.
+Routes deal with the key problem of web development: matching code to
+URL.  For example, which code should respond to processing request to
+"/blog/2008/01/08" or "/login" path? Many frameworks use a fixed
+dispatch system, e.g. "/A/B/C" means read file "C" in directory "B",
+or call method "C" of class "B" in module "A". This works fine until
+you decide to reorganize the code, in which case it breaks bookmarks,
+and forces you to change the already debugged logic of link generation
+inside the site.
 
-Routes propose other approach. You define URL template and bind it to your code.
+Routes offer another approach. You define a URL template and bind it to your code.
 If you change your decision about a particular URL, you will just change the
-URL template - code will work fine just as before and you won't have to change
+URL template - your code will continue to work fine without having to change
 any logic.
 
 cl-routes
 =========
 
-Routes are the key concept of `RESTAS`_, and their implementation is based on 
+Routes are the key concept of `RESTAS`_, and their implementation is based on
 `cl-routes`_ library.
 
 Here are several URL templates for `cl-routes`_ library.
@@ -50,23 +49,23 @@ only in each template)
   /mydoc/*items
   /*path/rss
 
-The majority of route implementations (including dispatch systems of 
+The majority of route implementations (including dispatch systems of
 `Ruby On Rails`_, `Django`_, and `Pylons`_) store routes in a plain list,
-and the search of a matching route is made with brute force up to first match.
+and the search for a matching route is made with brute force up to first match.
 Usually, for matching a request and a route they use regular expressions.
 So for big sites having hundreds (or even thousands) of routes,
-the dispatch system can become bottleneck, notably lowering overall 
+the dispatch system can become a bottleneck, notably lowering overall
 performance. `cl-routes`_ compiles all routes in one tree, because
-searching in a tree for majority of real sites will be noticeably more 
-effective, and instead of regular expressions it uses a lightweight
+searching in a tree for majority of real sites will be noticeably more
+efficient, and instead of regular expressions it uses a lightweight
 unification mechanism.
 
 Apart from this, in contrast to above mentioned systems, `cl-routes`_'s
 route isn't a string, but an object of class :class:`routes:route`,
-for which one can specialize `generic`_ method 
-:fun:`routes:routes:route-check-conditions`, that allows making arbitrary 
+for which one can specialize `generic`_ method
+:fun:`routes:routes:route-check-conditions`, that allows making arbitrary
 checks and comparisons between a route and a request. This possibility
-is used by `RESTAS`_ for implementation of a more flexible dispatching.
+is used by `RESTAS`_ for implementing more flexible dispatching.
 
 During specifying routes conflicts are possible when one and the same URL
 matches several templates. In systems with sequential search of matching route
@@ -88,7 +87,7 @@ e.g.:
                                 :method :get
                                 :content-type "text/plain")
     (format nil "Author: ~A~Article: ~A" author item))
-  
+
 
 In other words, we define an URL template and its handler, meanwhile the handler
 body have immediate access to the variables defined in the URL template. Embedded handler
@@ -96,11 +95,11 @@ by default may return :hs:`string`  or "octets :hs:`array`", or integer number
 (which will be interpreted as a code of request status), or :hs:`pathname`
 (in this case :fun:`hunchentoot:handle-static-file` is called, which, contrary
 to Ruby- and Python-based systems, works fast enough and usually there is
-no need for additional servers for static content, such as `nginx`_ server.
+no need for additional servers for static content, such as the `nginx`_ server.
 
-When you define a route with :fun:`restas:define-route` you need to specify 
-:hs:`symbol` (in sited example it is 'article), which will became the route name.
-Firstly, it gives you the possibility to redefine the route (including the URL template, 
+When you define a route with :fun:`restas:define-route` you need to specify
+:hs:`symbol` (in cited example it is 'article), which will became the route name.
+Firstly, it gives you the possibility to redefine the route (including the URL template,
 just keep the same name for it) at any moment you want, just send the code
 to REPL (for example, with M-C-x in `SLIME`_). Secondly, it lets you use
 this :hs:`symbol` for URL generation:
@@ -119,11 +118,11 @@ or for a redirect:
                    :author "archimag"
                    :item "introduction-to-routes")
 
-For one and the same URL template you can create several routes by setting 
+For one and the same URL template you can create several routes by setting
 additional requirements to them.
 
-HTTP request type requirement
------------------------------
+HTTP method type requirement
+----------------------------
 
 This requirement is specified with :method parameter (:get by default) of
 macro :macro:`restas:define-route`, for example:
@@ -132,12 +131,12 @@ macro :macro:`restas:define-route`, for example:
 
   (restas:define-route view-page (":page")
      ...)
-     
+
   (restas:define-route change-page (":page" :method :post)
      ...)
 
 Here routes view-page and change-page serve one and the same URL,
-but view-page is in charge of GET requests, and change-page 
+but view-page is in charge of GET requests, and change-page
 processes POST requests.
 
 URL parameter control
@@ -156,11 +155,11 @@ some objects. For this you can use :parse-vars parameter of macro
                                                   :id #'parse-integer))
     ...)
 
-Here id parameter is parsed as integer, bar is checked with aid of 
+Here id parameter is parsed as integer, bar is checked with aid of
 #'check-bar function, and page parameter is left as is. If a parse function
 returns :hs:`NIL` or generates an error, then the route is considered
 as not meeting the condition and is skipped. In the case of success
-route body has the access to already parsed parameter value, 
+route body has the access to already parsed parameter value,
 as returned by specified function.
 
 .. _manual-routes-requirement:
@@ -168,8 +167,8 @@ as returned by specified function.
 Arbitrary restriction
 ---------------------
 
-With :requirement parameter of macro :macro:`restas:define-route` 
-you can specify an arbitrary function to be called when the route is 
+With :requirement parameter of macro :macro:`restas:define-route`
+you can specify an arbitrary function to be called when the route is
 checked. If it returns :hs:`NIL` then the route is treated as inappropriate.
 
 For example, `restas-wiki`_ for processing of editing form of wiki page
@@ -181,7 +180,7 @@ uses the following code:
                                         :method :post
                                         :requirement (lambda () (hunchentoot:post-parameter "preview")))
     ...)
-                                        
+
   (define-route edit-wiki-page/cancel ("edit/:page"
                                        :method :post
                                        :requirement (lambda () (hunchentoot:post-parameter "cancel")))
@@ -196,7 +195,7 @@ Here the routes edit-wiki-page/preview, edit-wiki-page/cancel, and edit-wiki-pag
 reply for pressing form buttons Preview, Cancel, and Save accordingly.
 
 .. _RESTAS: http://restas.lisper.ru/
-.. _SLIME: http://common-lisp.net/project/slime/    
+.. _SLIME: http://common-lisp.net/project/slime/
 .. _cl-routes: http://github.com/archimag/cl-routes
 .. _restas-wiki: http://github.com/archimag/restas-wiki
 .. _generic: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_g.htm#generic_function
