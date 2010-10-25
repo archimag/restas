@@ -118,8 +118,8 @@ By the way this example coupled to preceding ones shows double usage of the same
 module with different operation modes within the bounds of the same site
 without any conflicts between them.
 
-Internal dispatching
---------------------
+Internal initialization
+-----------------------
 
 The macro :macro:`restas:mount-submodule` lets you control module
 customization "from outside", but sometimes you need the possibility
