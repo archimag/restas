@@ -30,4 +30,6 @@ Details
 Support
 -------
 
-* `Forum <http://lisper.ru/forum/restas>`_
+* `RESTAS discussion group`_
+
+.. _RESTAS discussion group: http://groups.google.com/group/restas/
