@@ -37,13 +37,6 @@ Or create a symbolic link:
   cd ~/sbcl/.systems   # or any other directory, specified with asdf:*central-registry*
   ln -s /path/to/restas/restas.asd .
 
-Using clbuild
-=============
-
-Other variant of installation is to use a fork of `clbuild`_ whose repository
-is situated at the page http://github.com/archimag/clbuild-archimag. Usage of this
-tool is the same as that of the original `clbuild`_.
-
 Gentoo Linux
 ============
 

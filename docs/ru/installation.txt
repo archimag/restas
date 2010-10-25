@@ -36,13 +36,6 @@
   cd ~/sbcl/.systems   # Или любая другая директория, указанная в asdf:*central-registry*
   ln -s /path/to/restas/restas.asd .
 
-Использование clbuild
-=====================
-
-Другой вариант установки - использовать форк `clbuild`_, репозиторий которого
-находится на странице http://github.com/archimag/clbuild-archimag. Использование
-этого инструмента ничем не отличается от использования оригинального `clbuild`_.
-
 Gentoo Linux
 ============
 
