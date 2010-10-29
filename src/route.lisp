@@ -50,7 +50,16 @@
           (*bindings* bindings)
           (*submodule* (slot-value route 'submodule)))
     (render-object (route-render-method route)
-                   (funcall (slot-value route 'symbol))))))
+                   (catch 'route-done
+                     (funcall (slot-value route 'symbol)))))))
+
+(defun abort-route-handler (obj &key return-code content-type)
+  (when return-code
+    (setf (hunchentoot:return-code*) return-code
+          hunchentoot:*handle-http-errors-p* nil))
+  (when content-type
+    (setf (hunchentoot:content-type*) content-type))
+  (throw 'route-done obj))
 
 (defmacro define-route (name (template &key
                                        (method :get)

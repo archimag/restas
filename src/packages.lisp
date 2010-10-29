@@ -21,6 +21,7 @@
            #:genurl-with-host
            #:redirect
            #:parse-route-url
+           #:abort-route-handler
            ;; modules
            #:define-module           
            #:define-initialization
