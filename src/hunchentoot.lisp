@@ -65,6 +65,10 @@
 (defclass restas-acceptor-mixin ()
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
 
+(defmethod hunchentoot:process-request  ((request restas-request))
+  (let ((hunchentoot:*handle-http-errors-p* hunchentoot:*handle-http-errors-p*))
+    (call-next-method)))
+    
 (defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
   ())
 

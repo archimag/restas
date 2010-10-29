@@ -21,11 +21,14 @@
                                   (or (hunchentoot:mime-type file)
                                       (hunchentoot:content-type hunchentoot:*reply*))))
 
+(defmethod render-object :before (designer (code integer))
+  (setf hunchentoot:*handle-http-errors-p* nil
+        (hunchentoot:return-code*) code))
+
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
   (declare (ignore designer))
-  (setf (hunchentoot:return-code*)
-        code))
+  (setf hunchentoot:*handle-http-errors-p* t))
 
 (defmethod render-object (designer (string string))
   "Default handler for string"
