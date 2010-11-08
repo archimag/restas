@@ -113,7 +113,7 @@
 
 ;;;; quit if COMMAND is unknown
 
-(ensure-directories-exist (pathname-directory *pidfile*))
+(ensure-directories-exist *pidfile*)
 
 (unless (find *daemon-command* '("start" "stop" "zap" "kill" "restart" "nodaemon") :test #'string-equal)
   (with-exit-on-error
