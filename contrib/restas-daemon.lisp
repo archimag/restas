@@ -105,6 +105,21 @@
 
 (delete-package '#:sbcl.daemon.preferences)
 
+;;;; create necessary directories
+
+(with-silence
+  (require 'sb-posix))
+
+(ensure-directories-exist *fasldir*)
+(ensure-directories-exist *pidfile*)
+
+(let ((uid (sb-posix:passwd-uid (sb-posix:getpwnam *user*)))
+      (gid (if *group*
+               (sb-posix:group-gid (sb-posix:getgrnam *group*))
+               (sb-posix:passwd-gid (sb-posix:getpwnam *user*)))))
+  (sb-posix:chown *fasldir* uid gid)
+  (sb-posix:chown (directory-namestring *pidfile*) uid gid))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Processing command line arguments
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -112,8 +127,6 @@
 ;;;; command-line COMMAND
 
 ;;;; quit if COMMAND is unknown
-
-(ensure-directories-exist *pidfile*)
 
 (unless (find *daemon-command* '("start" "stop" "zap" "kill" "restart" "nodaemon") :test #'string-equal)
   (with-exit-on-error
@@ -127,9 +140,6 @@
     (sb-ext:quit :unix-status 0)))
 
 ;;;; stop - send to daemon sigusr1 signal, wait and remove pid file
-
-(with-silence
-  (require 'sb-posix))
 
 (defun read-pid ()
   (with-open-file (in *pidfile*)
@@ -318,7 +328,6 @@
 
 (setf asdf:*centralize-lisp-binaries* t)
 
-(ensure-directories-exist *fasldir*)
 (setf asdf:*default-toplevel-directory* *fasldir*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
