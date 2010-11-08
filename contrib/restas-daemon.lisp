@@ -113,6 +113,8 @@
 
 ;;;; quit if COMMAND is unknown
 
+(ensure-directories-exist (pathname-directory *pidfile))
+
 (unless (find *daemon-command* '("start" "stop" "zap" "kill" "restart" "nodaemon") :test #'string-equal)
   (with-exit-on-error
     (error "Bad command-line options")))
@@ -316,6 +318,7 @@
 
 (setf asdf:*centralize-lisp-binaries* t)
 
+(ensure-directories-exist *fasldir*)
 (setf asdf:*default-toplevel-directory* *fasldir*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
