@@ -235,8 +235,10 @@
 (change-user *user* *group*)
 
 ;;;; required for start hunchentoot on port 80
-(load-shared-object (find-if #'probe-file
-                             '("/lib/libcap.so.2" "/lib/libcap.so")))
+(load-shared-object (or 
+		     (find-if #'probe-file
+			      '("/lib/libcap.so.2" "/lib/libcap.so" "/lib/libcap.so.1"))
+		     (error "No supported libcap found")))
 
 (sb-posix::define-call "cap_from_text" (* char) null-alien (text c-string))
 (sb-posix::define-call "cap_set_proc" int minusp (cap_p (* char)))
