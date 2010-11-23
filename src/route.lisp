@@ -13,10 +13,10 @@
 (defclass route (routes:route)
   ((symbol :initarg :symbol :reader route-symbol)
    (submodule :initarg :submodule :initform nil)
-   (content-type :initarg :content-type :initform nil :reader route-content-type)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
-   (render-method :initarg :render-method :initform #'identity)))
+   (render-method :initarg :render-method :initform #'identity)
+   (headers :initarg :headers :initform nil :reader route-headers)))
 
 (defun route-render-method (route)
   (or (slot-value route 'render-method)
@@ -43,8 +43,8 @@
   (string-downcase (write-to-string (slot-value route 'symbol))))
 
 (defmethod process-route ((route route) bindings)
-  (setf (hunchentoot:content-type*)
-        (route-content-type route))
+  (iter (for (name . value) in (route-headers route))
+	(setf (hunchentoot:header-out name) value))
   (with-context (slot-value (slot-value route 'submodule) 'context)
     (let ((*route* route)
           (*bindings* bindings)
@@ -66,7 +66,8 @@
                                        content-type
                                        render-method
                                        requirement
-                                       parse-vars)
+                                       parse-vars
+				       headers)
                         &body body)
   (let* ((variables (iter (for var in (routes:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
@@ -80,7 +81,8 @@
                    :content-type ,content-type
                    :parse-vars ,parse-vars
                    :requirement ,requirement
-                   :render-method ,render-method))
+                   :render-method ,render-method
+		   :headers ,headers))
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
@@ -94,17 +96,24 @@
                                       (get symbol :parse-vars))))
 
 (defun create-route-from-symbol (symbol submodule)
-  (make-instance 'route
-                 :template (route-template-from-symbol symbol submodule)
-                 :symbol symbol
-                 :content-type (or (get symbol :content-type)
-                                   (string-symbol-value +content-type-symbol+
-                                                        (symbol-package symbol))
-                                   "text/html")
-                 :required-method (get symbol :method)
-                 :arbitrary-requirement (get symbol :requirement)
-                 :render-method (get symbol :render-method)
-                 :submodule submodule))
+  (let* ((headers (get symbol :headers))
+	 (content-type (get symbol :content-type)))
+    (cond
+      (content-type 
+       (setf (getf headers :content-type) content-type))
+      ((not (getf headers :content-type))
+       (setf (getf headers :content-type)
+	     (or (string-symbol-value +content-type-symbol+
+				      (symbol-package symbol))
+		 "text/html"))))
+	 (make-instance 'route
+		   :template (route-template-from-symbol symbol submodule)
+		   :symbol symbol
+		   :required-method (get symbol :method)
+		   :arbitrary-requirement (get symbol :requirement)
+		   :render-method (get symbol :render-method)
+		   :submodule submodule
+		   :headers (alexandria:plist-alist headers))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; generate url by route
