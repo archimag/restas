@@ -29,6 +29,7 @@
 (defparameter +submodules-symbol+ "*SUBMODULES*")
 (defparameter +render-method-symbol+ "*DEFAULT-RENDER-METHOD*")
 (defparameter +content-type-symbol+ "*DEFAULT-CONTENT-TYPE*")
+(defparameter +headers-symbol+ "*DEFAULT-HEADERS*")
 
 (defun string-symbol-value (string &optional (package *package*))
   (symbol-value (find-symbol string package)))
@@ -135,7 +136,8 @@
            (defparam +baseurl-symbol+)
            (defparam +submodules-symbol+ (make-hash-table))
            (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
-           (defparam +content-type-symbol+ ',(second (assoc :default-content-type options )))
+           (defparam +content-type-symbol+ ',(second (assoc :default-content-type options)))
+	   (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
            *package*)))))
 
 (defmacro mount-submodule (name (module) &body bindings)

@@ -43,8 +43,8 @@
   (string-downcase (write-to-string (slot-value route 'symbol))))
 
 (defmethod process-route ((route route) bindings)
-  (iter (for (name . value) in (route-headers route))
-	(setf (hunchentoot:header-out name) value))
+  (alexandria:doplist (name value (route-headers route))
+    (setf (hunchentoot:header-out name) value))
   (with-context (slot-value (slot-value route 'submodule) 'context)
     (let ((*route* route)
           (*bindings* bindings)
@@ -96,7 +96,9 @@
                                       (get symbol :parse-vars))))
 
 (defun create-route-from-symbol (symbol submodule)
-  (let* ((headers (get symbol :headers))
+  (let* ((headers (append (string-symbol-value +headers-symbol+ 
+					       (symbol-package symbol))
+			  (get symbol :headers)))
 	 (content-type (get symbol :content-type)))
     (cond
       (content-type 
@@ -113,7 +115,7 @@
 		   :arbitrary-requirement (get symbol :requirement)
 		   :render-method (get symbol :render-method)
 		   :submodule submodule
-		   :headers (alexandria:plist-alist headers))))
+		   :headers headers)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; generate url by route
