@@ -86,7 +86,9 @@ Routes
   * method - HTTP method to be handled, possible values are :GET :POST,
     :PUT, :DELETE.
 
-  * content-type - result **Content-Type** HTTP header
+  * content-type - result **Content-Type** HTTP header.
+
+  * headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
 
   * render-method - object, used by call to :fun:`restas:render-object` for processing of
     the result of route handler before serving it to client.
