@@ -137,7 +137,7 @@
            (defparam +submodules-symbol+ (make-hash-table))
            (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options)))
-	   (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
+           (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
            *package*)))))
 
 (defmacro mount-submodule (name (module) &body bindings)
