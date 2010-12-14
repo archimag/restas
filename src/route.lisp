@@ -44,7 +44,10 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (hunchentoot:header-out name) value))
+    (setf (hunchentoot:header-out name)
+          (if (functionp value)
+              (funcall value)
+              value)))
   (with-context (slot-value (slot-value route 'submodule) 'context)
     (let ((*route* route)
           (*bindings* bindings)
