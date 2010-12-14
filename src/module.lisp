@@ -128,8 +128,7 @@
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((*package* (defpackage ,name
                           ,@defpackage-options
-                          (:export #:*baseurl* #:*default-render-method* ,@export)
-                          (:import-from #:restas #:*request-pool* #:*bindings* #:genurl #:define-route))))
+                          (:export #:*baseurl* #:*default-render-method* #:*default-headers* ,@export))))
          (flet ((defparam (name &optional value)
                   (eval `(defparameter ,(intern name) ,value))))
            (defparam +routes-symbol+ (defpackage ,impl-package-name (:use)))
