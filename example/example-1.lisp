@@ -13,7 +13,7 @@
 
 (in-package :restas.example-1)
 
-(define-route main ("" :method :get)
+(restas:define-route main ("" :method :get)
   (who:with-html-output-to-string (out)
     (:html
      (:body
@@ -21,7 +21,7 @@
        ((:input :name "message"))
        ((:input :type "submit" :value "Send")))))))
 
-(define-route main/post ("" :method :post)
+(restas:define-route main/post ("" :method :post)
   (who:with-html-output-to-string (out)
     (:html
      (:body

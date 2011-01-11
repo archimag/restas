@@ -7,6 +7,11 @@
 
 (in-package :restas)
 
+(defmethod request-method ((request hunchentoot:request))
+  (hunchentoot:request-method request))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
 
 (defun request-full-uri (&optional (request hunchentoot:*request*))
@@ -100,7 +105,8 @@
                    (find-if #'null
                             (restas-acceptor-vhosts hunchentoot:*acceptor*)
                             :key #'vhost-host)))
-        (hunchentoot:*request* req))
+        (hunchentoot:*request* req)
+        (*request* req))
     (when (and (not vhost)
                *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)

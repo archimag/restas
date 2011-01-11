@@ -32,7 +32,7 @@
     (with-context (slot-value *submodule* 'context)
       (with-slots (required-method arbitrary-requirement) route
         (and (if required-method
-                 (eql (hunchentoot:request-method*) required-method)
+                 (eql (restas:request-method*) required-method)
                  t)
              (if arbitrary-requirement
                  (let ((*bindings* bindings))
@@ -43,11 +43,11 @@
   (string-downcase (write-to-string (slot-value route 'symbol))))
 
 (defmethod process-route ((route route) bindings)
-  (alexandria:doplist (name value (route-headers route))
-    (setf (hunchentoot:header-out name)
-          (if (functionp value)
-              (funcall value)
-              value)))
+  ;; (alexandria:doplist (name value (route-headers route))
+  ;;   (setf (hunchentoot:header-out name)
+  ;;         (if (functionp value)
+  ;;             (funcall value)
+  ;;             value)))
   (with-context (slot-value (slot-value route 'submodule) 'context)
     (let ((*route* route)
           (*bindings* bindings)
