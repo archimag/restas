@@ -35,6 +35,7 @@
            #:submodule-parent
            #:connect-submodule
            #:with-submodule-context
+           #:with-submodule
            #:find-submodule
            #:submodule-context
            #:find-upper-submodule

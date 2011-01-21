@@ -27,9 +27,8 @@
       #'identity))
 
 (defmethod routes:route-check-conditions ((route route) bindings)
-  (let ((*route* route)
-        (*submodule* (slot-value route 'submodule)))
-    (with-context (slot-value *submodule* 'context)
+  (let ((*route* route))
+    (with-submodule (slot-value route 'submodule)
       (with-slots (required-method arbitrary-requirement) route
         (and (if required-method
                  (eql (hunchentoot:request-method*) required-method)
@@ -48,13 +47,12 @@
           (if (functionp value)
               (funcall value)
               value)))
-  (with-context (slot-value (slot-value route 'submodule) 'context)
+  (with-submodule (slot-value route 'submodule)
     (let ((*route* route)
-          (*bindings* bindings)
-          (*submodule* (slot-value route 'submodule)))
-    (render-object (route-render-method route)
-                   (catch 'route-done
-                     (funcall (slot-value route 'symbol)))))))
+          (*bindings* bindings))
+      (render-object (route-render-method route)
+                     (catch 'route-done
+                       (funcall (slot-value route 'symbol)))))))
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code

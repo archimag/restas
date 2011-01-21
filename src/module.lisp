@@ -78,6 +78,11 @@
   `(with-context (slot-value ,submodule 'context)
      ,@body))
 
+(defmacro with-submodule (submodule &body body)
+  `(let ((*submodule* ,submodule))
+     (with-submodule-context ,submodule
+       ,@body)))
+
 (defun submodule-baseurl (submodule)
   (with-submodule-context submodule
     (symbol-value (find-symbol +baseurl-symbol+
