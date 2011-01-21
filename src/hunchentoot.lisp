@@ -10,6 +10,12 @@
 (defmethod request-method ((request hunchentoot:request))
   (hunchentoot:request-method request))
 
+(defmethod post-parameters ((request hunchentoot:request))
+  (hunchentoot:post-parameters request))
+
+(defmethod (setf header-out) (new-value name (reply hunchentoot:reply))
+  (setf (hunchentoot:header-out name reply) new-value))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
@@ -106,7 +112,8 @@
                             (restas-acceptor-vhosts hunchentoot:*acceptor*)
                             :key #'vhost-host)))
         (hunchentoot:*request* req)
-        (*request* req))
+        (*request* req)
+        (*reply* hunchentoot:*reply*))
     (when (and (not vhost)
                *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)

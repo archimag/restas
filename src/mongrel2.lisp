@@ -6,29 +6,30 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defpackage #:restas.mongrel2
-  (:use #:cl #:iter))
+  (:use #:cl #:iter)
+  (:export #:start))
 
 (in-package #:restas.mongrel2)
 
-(defmethod restas:headers-in ((request mongrel2::request))
-  (mongrel2::request-headers request))
+(defmethod restas:headers-in ((request mongrel2:request))
+  (mongrel2:headers-in request))
 
 ;; (defgeneric headers-in (request)
 ;;   (:documentation "An alist of the incoming headers."))
 
-(defmethod restas:request-method ((request mongrel2::request))
+(defmethod restas:request-method ((request mongrel2:request))
   (intern (restas:header-in :method request) :keyword))
 
 ;; (defgeneric request-method (request)
 ;;   (:documentation "The request method as a keyword."))
 
-(defmethod restas:request-uri ((request mongrel2::request))
+(defmethod restas:request-uri ((request mongrel2:request))
   (restas:header-in :uri request))
 
 ;; (defgeneric request-uri (request)
 ;;   (:documentation "The request URI as a string."))
 
-(defmethod restas:server-protocol ((request mongrel2::request))
+(defmethod restas:server-protocol ((request mongrel2:request))
   :http)
 
 ;; (defgeneric server-protocol (request)
@@ -37,7 +38,7 @@
 ;; (defgeneric remote-address (request)
 ;;   (:documentation "The IP address of the client that initiated this request."))
 
-(defmethod restas:remote-port ((request mongrel2::request))
+(defmethod restas:remote-port ((request mongrel2:request))
   6767)
 
 ;; (defgeneric remote-port (request)
@@ -50,28 +51,41 @@
 ;; (defgeneric get-parameters (request)
 ;;   (:documentation "An alist of the GET parameters sent by the client."))
 
+(defmethod restas:post-parameters ((request mongrel2:request))
+  (hunchentoot::form-url-encoded-list-to-alist (ppcre:split "&" (restas:raw-post-data request))))
+
 ;; (defgeneric post-parameters (request)
 ;;   (:documentation "An alist of the POST parameters sent by the client."))
 
-(defmethod restas:script-name ((request mongrel2::request))
+(defmethod restas:script-name ((request mongrel2:request))
   (restas:header-in :path request))
 
 ;; (defgeneric script-name (request)
 ;;   (:documentation "The URI requested by the client without the query string."))
 
-(defmethod restas:query-string ((request mongrel2::request))
+(defmethod restas:query-string ((request mongrel2:request))
   (restas:header-in :query request))
 
 ;; (defgeneric query-string (request)
 ;;   (:documentation "The query string of this request."))
 
-(defmethod restas:raw-post-data ((request mongrel2::request))
-  (mongrel2::request-data request))
+(defmethod restas:raw-post-data ((request mongrel2:request) &key (encoding :utf-8))
+  (mongrel2:raw-post-data request :encoding encoding))
 
-;; (defgeneric raw-post-data (request)
-;;   (:documentation "The raw string sent as the body of a
-;; POST request, populated only if not a multipart/form-data request."))
+(defmethod restas:headers-out ((reply mongrel2:reply))
+  (mongrel2:headers-out reply))
 
+(defmethod (setf restas:headers-out) (new-value (reply mongrel2:reply))
+  nil)
+  ;;(setf (mongrel2:headers-out reply) new-value))
+
+(defmethod (setf restas:header-out) (new-value name (reply mongrel2:reply))
+   (let ((entry (assoc name (restas:headers-out reply))))
+     (if entry
+       (setf (cdr entry) new-value)
+       (setf (restas:headers-out reply)
+             (acons name new-value (restas:headers-out reply))))
+     new-value))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -99,28 +113,33 @@
                    (find-if #'null
                             *vhosts*
                             :key #'vhost-host)))
-        (restas:*request* req))
+        (restas:*request* req)
+        (restas:*reply* (make-instance 'mongrel2:reply)))
     ;;(break "~A" req)
     (when vhost
-        (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                                (restas:request-uri req))
-          (if route
-              (mongrel2::reply *connection*
-                               req
-                               (mongrel2::format-http-response 
-                                (handler-bind ((error #'restas::maybe-invoke-debugger))
-                                  (restas::process-route route bindings))
-                                200
-                                "Ok"
-                                (list :content-type "text/html")))
-              (mongrel2::reply *connection*
-                               req
-                               (mongrel2::format-http-response "Not Found" 404 "Not Found" nil)))))))
+      (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
+                                              (restas:request-uri req))
+        (cond
+          (route
+           (mongrel2:reply *connection*
+                            req
+                            restas:*reply*
+                            (handler-bind ((error #'restas::maybe-invoke-debugger))
+                              (restas::process-route route bindings))))
+          (t (mongrel2:reply *connection*
+                              req
+                              restas:*reply*
+                              "Not Found")))))))
 
 
 
-(defun start (sender-uuid sub-addr pub-addr module &key (context (restas:make-context)) )
-  (let* ((package (or (find-package module)
+(defun start (module &key
+              (port 8080)
+              (sub-addr "tcp://127.0.0.1:9997")
+              (pub-addr "tcp://127.0.0.1:9996")
+              (context (restas:make-context)))
+  (let* ((sender-uuid (write-to-string (uuid:make-v4-uuid)))
+         (package (or (find-package module)
                       (error "Package ~A not found" module)))
          (vhost (make-instance 'vhost
                                :host nil
@@ -132,10 +151,9 @@
     (routes:reset-mapper mapper)
     (iter (for module in (slot-value vhost 'modules))
           (restas:connect-submodule module mapper))
-    
-    (loop
-         (mongrel2::with-connection (*connection* :sender-uuid sender-uuid
-                                                  :sub-addr sub-addr
-                                                  :pub-addr pub-addr)
-           (restas-dispatcher (mongrel2::recv *connection*))))))
-    
+    (mongrel2::with-trivial-server (sender-uuid sub-addr pub-addr :port port)
+      (loop
+         (mongrel2:with-connection (*connection* :sender-uuid sender-uuid
+                                                 :sub-addr sub-addr
+                                                 :pub-addr pub-addr)
+           (restas-dispatcher (mongrel2:recv *connection*)))))))

@@ -21,6 +21,15 @@
 http header which defaults NIL.  If this is NIL, RESTAS will
 compute the content length."))
 
+(defgeneric headers-out (reply)
+  (:documentation "An alist of the outgoing http headers
+not including the 'Set-Cookie', 'Content-Length', and 'Content-Type'
+headers.  Use the functions HEADER-OUT and \(SETF HEADER-OUT) to
+modify this slot."))
+
+(defgeneric (setf headers-out) (new-value reply)
+  )
+
 (defgeneric (setf header-out) (new-value name reply)
     (:documentation "Changes the current value of the outgoing http
 header named NAME \(a keyword or a string).  If a header with this
@@ -54,4 +63,3 @@ name doesn't exist, it is created."))
 
 
 ;;(defgeneric set-cookie (reply name &key (value "") expires path domain secure http-only)
-

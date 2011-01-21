@@ -18,6 +18,8 @@
 
            ;; http
            #:headers-in
+           #:header-out
+           #:headers-out
            #:request-method
            #:request-uri
            #:server-protocol

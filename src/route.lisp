@@ -44,7 +44,7 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (hunchentoot:header-out name)
+    (setf (header-out name *reply*)
           (if (functionp value)
               (funcall value)
               value)))

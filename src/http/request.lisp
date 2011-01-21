@@ -46,10 +46,9 @@
 (defgeneric query-string (request)
   (:documentation "The query string of this request."))
 
-(defgeneric raw-post-data (request)
+(defgeneric raw-post-data (request &key encoding)
   (:documentation "The raw string sent as the body of a
 POST request, populated only if not a multipart/form-data request."))
-
 
 (defgeneric header-in (name request)
   (:documentation "Returns the incoming header with name NAME.  NAME
@@ -96,7 +95,7 @@ REQUEST."
 
 (defun remote-addr* (&optional (request *request*))
   "Returns the address the current request originated from."
-  (remote-addr request))
+  (remote-address request))
 
 (defun remote-port* (&optional (request *request*))
   "Returns the port the current request originated from."
@@ -108,9 +107,9 @@ second value in the form of a list of IP addresses and the first
 element of this list as the first value if this header exists.
 Otherwise returns the value of REMOTE-ADDR as the only value."
   (let ((x-forwarded-for (header-in :x-forwarded-for request)))
-    (cond (x-forwarded-for (let ((addresses (split "\\s*,\\s*" x-forwarded-for)))
+    (cond (x-forwarded-for (let ((addresses (ppcre:split "\\s*,\\s*" x-forwarded-for)))
                              (values (first addresses) addresses)))
-          (t (remote-addr request)))))
+          (t (remote-address request)))))
 
 (defun host (&optional (request *request*))
   "Returns the 'Host' incoming http header value."
@@ -159,15 +158,15 @@ case-sensitive."
   (or (get-parameter name request)
       (post-parameter name request)))
 
-(defun handle-if-modified-since (time &optional (request *request*))
-  "Handles the 'If-Modified-Since' header of REQUEST.  The date string
-is compared to the one generated from the supplied universal time
-TIME."
-  (let ((if-modified-since (header-in :if-modified-since request))
-        (time-string (rfc-1123-date time)))
-    ;; simple string comparison is sufficient; see RFC 2616 14.25
-    (when (and if-modified-since
-               (equal if-modified-since time-string))
-      (setf (return-code*) +http-not-modified+)
-      (abort-request-handler))
-    (values)))
+;; (defun handle-if-modified-since (time &optional (request *request*))
+;;   "Handles the 'If-Modified-Since' header of REQUEST.  The date string
+;; is compared to the one generated from the supplied universal time
+;; TIME."
+;;   (let ((if-modified-since (header-in :if-modified-since request))
+;;         (time-string (rfc-1123-date time)))
+;;     ;; simple string comparison is sufficient; see RFC 2616 14.25
+;;     (when (and if-modified-since
+;;                (equal if-modified-since time-string))
+;;       (setf (return-code*) +http-not-modified+)
+;;       (abort-request-handler))
+;;     (values)))
