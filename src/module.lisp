@@ -92,6 +92,13 @@
                      prefix)
         prefix)))
 
+(defun find-upper-submodule (module &optional (current-submodule *submodule*))
+  (unless current-submodule
+    (error "Can not find a submodule: ~A" (package-name module)))
+  (if (eql (submodule-module current-submodule) module)
+      current-submodule
+      (find-upper-submodule module (submodule-parent current-submodule))))
+
 (defun submodule-toplevel (submodule)
   (let ((parent (submodule-parent submodule)))
     (if parent

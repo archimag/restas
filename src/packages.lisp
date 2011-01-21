@@ -37,6 +37,7 @@
            #:with-submodule-context
            #:find-submodule
            #:submodule-context
+           #:find-upper-submodule
            ;; render
            #:render-object
            ;; cache
