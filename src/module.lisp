@@ -80,7 +80,7 @@
 
 (defmacro with-submodule (submodule &body body)
   `(let ((*submodule* ,submodule))
-     (with-submodule-context ,submodule
+     (with-submodule-context *submodule*
        ,@body)))
 
 (defun submodule-baseurl (submodule)
