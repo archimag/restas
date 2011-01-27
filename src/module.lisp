@@ -62,7 +62,7 @@
                                                                        (submodule-module obj))))
               (collect (make-instance 'submodule
                                       :symbol key
-                                      :module (car thing)
+                                      :module (find-package (car thing))
                                       :context (copy-restas-context (cdr thing))
                                       :parent obj))))
   (let ((*submodule* obj))
@@ -79,9 +79,12 @@
      ,@body))
 
 (defmacro with-submodule (submodule &body body)
-  `(let ((*submodule* ,submodule))
-     (with-submodule-context *submodule*
-       ,@body)))
+  (alexandria:once-only (submodule)
+    `(if (eq *submodule* ,submodule)
+         (progn ,@body)
+         (let ((*submodule* ,submodule))
+           (with-submodule-context *submodule*
+             ,@body)))))
 
 (defun submodule-baseurl (submodule)
   (with-submodule-context submodule
@@ -97,10 +100,11 @@
                      prefix)
         prefix)))
 
-(defun find-upper-submodule (module &optional (current-submodule *submodule*))
+(defun find-upper-submodule (module &optional (current-submodule *submodule*)
+                             &aux (package (find-package module)))
   (unless current-submodule
-    (error "Can not find a submodule: ~A" (package-name module)))
-  (if (eql (submodule-module current-submodule) module)
+    (error "Can not find a submodule: ~A" package))
+  (if (eql (submodule-module current-submodule) package)
       current-submodule
       (find-upper-submodule module (submodule-parent current-submodule))))
 
