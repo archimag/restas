@@ -1,6 +1,3 @@
-Overview
-========
-
 `RESTAS`_ is a Common Lisp web application framework. Its key features
 are:
 
@@ -10,8 +7,8 @@ are:
 * RESTAS is based on the `Hunchentoot`_ HTTP server. Web application
   development with RESTAS is in many ways simpler than with
   `Hunchentoot`_, but some knowledge of `Hunchentoot`_ is required, at
-  least about working with :var:`hunchentoot:*request*` and
-  :var:`hunchentoot:*reply*`.
+  least about working with hunchentoot:*request* and
+  hunchentoot:*reply*.
 
 * Request dispatch is based on a route system. The route system is the
   key concept of `RESTAS`_ and provides unique features not found in
