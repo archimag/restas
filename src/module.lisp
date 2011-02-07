@@ -7,6 +7,13 @@
 
 (in-package #:restas)
 
+(defgeneric make-submodule (module &key context)
+  (:documentation "Make submodule from module"))
+
+(defgeneric submodule-routes (submodule)
+  (:documentation "List routes for the submodule"))
+
+
 (defgeneric initialize-module-instance (module context)
   (:documentation "Call for module initialization")
   (:method (module context)
@@ -33,6 +40,7 @@
 
 (defun string-symbol-value (string &optional (package *package*))
   (symbol-value (find-symbol string package)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; submodule
@@ -114,7 +122,7 @@
         (submodule-toplevel parent)
         submodule)))
 
-(defun submodule-routes (submodule)
+(defmethod submodule-routes ((submodule submodule))
   (let ((module (submodule-module submodule)))
     (with-submodule-context submodule
       (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
@@ -127,6 +135,17 @@
 (defun connect-submodule (submodule mapper)
   (iter (for route in (submodule-routes submodule))
         (routes:connect mapper route)))
+
+
+(defmethod make-submodule ((module symbol) &key (context (make-context)))
+  (make-submodule (or (find-package module)
+                      (error "Package ~A not found" module))
+                  :context context))
+
+(defmethod make-submodule ((package package) &key (context (make-context)))
+  (make-instance 'submodule
+                 :moudle package
+                 :context context))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; package as module

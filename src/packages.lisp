@@ -22,6 +22,8 @@
            #:redirect
            #:parse-route-url
            #:abort-route-handler
+
+           #:process-route
            ;; modules
            #:define-module           
            #:define-initialization
@@ -39,6 +41,9 @@
            #:find-submodule
            #:submodule-context
            #:find-upper-submodule
+
+           #:make-submodule
+           #:submodule-routes
            ;; render
            #:render-object
            ;; cache

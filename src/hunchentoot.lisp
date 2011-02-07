@@ -130,14 +130,11 @@
                       (connect-submodule module mapper)))))
   (values))
 
-
 (defun start (module &key 
               ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
               hostname (port (if ssl-certificate-file 443 80)) (context (make-context))
               &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
-  (let* ((package (or (find-package module)
-                      (error "Package ~A not found" module)))
-         (acceptor (or (find port
+  (let* ((acceptor (or (find port
                              *acceptors*
                              :key #'hunchentoot:acceptor-port)
                        (car (push (hunchentoot:start
@@ -161,9 +158,7 @@
                     (car (push (make-instance 'vhost
                                               :host hostname/port)
                                (restas-acceptor-vhosts acceptor))))))
-    (push (make-instance 'submodule
-                         :module package
-                         :context context)
+    (push (make-submodule module :context context)
           (slot-value vhost 'modules))
     (reconnect-all-routes :reinitialize nil)))
     
