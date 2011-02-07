@@ -144,7 +144,7 @@
 
 (defmethod make-submodule ((package package) &key (context (make-context)))
   (make-instance 'submodule
-                 :moudle package
+                 :module package
                  :context context))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
