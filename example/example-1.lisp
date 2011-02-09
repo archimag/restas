@@ -5,15 +5,15 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(asdf:operate 'asdf:load-op :cl-who)
-(asdf:operate 'asdf:load-op :restas)
+(asdf:operate 'asdf:load-op '#:cl-who)
+(asdf:operate 'asdf:load-op '#:restas)
 
-(restas:define-module :restas.example-1
-  (:use :cl))
+(restas:define-module #:restas.example-1
+  (:use #:cl))
 
-(in-package :restas.example-1)
+(in-package #:restas.example-1)
 
-(define-route main ("" :method :get)
+(restas:define-route main ("" :method :get)
   (who:with-html-output-to-string (out)
     (:html
      (:body
@@ -21,7 +21,7 @@
        ((:input :name "message"))
        ((:input :type "submit" :value "Send")))))))
 
-(define-route main/post ("" :method :post)
+(restas:define-route main/post ("" :method :post)
   (who:with-html-output-to-string (out)
     (:html
      (:body
@@ -30,4 +30,4 @@
                     (hunchentoot:post-parameter "message"))))
       ((:a :href (restas:genurl 'main)) "Try again")))))
 
-(restas:start :restas.example-1 :port 8080)
+(restas:start '#:restas.example-1 :port 8080)
