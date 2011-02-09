@@ -22,11 +22,6 @@
   (merge-pathnames "example/rst/"
                    (make-pathname :directory (pathname-directory
                                               (asdf:component-pathname (asdf:find-system '#:restas))))))
-(defun directory-url (submodule-symbol)
-  (restas:genurl-submodule submodule-symbol
-                           'restas.directory-publisher:route
-                           :path '("")))
-
 (restas:define-route entry ("")
   (flet ((durl (submodule-symbol)
            (restas:genurl-submodule submodule-symbol
