@@ -1,0 +1,11 @@
+.. -*- RST -*-
+
+* `RESTAS overview`_
+
+* `reStructuredText exmaple`_
+
+* `reStructuredText primer`_
+
+.. _RESTAS overview: restas.txt
+.. _reStructuredText exmaple: rst.txt
+.. _reStructuredText primer: quickstart.txt
