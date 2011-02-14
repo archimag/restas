@@ -17,7 +17,8 @@
                (:file "render" :depends-on ("special"))
                (:file "context" :depends-on ("special"))
                (:file "module" :depends-on ("context"))
-               (:file "route" :depends-on ("module" "render"))
+               (:file "pkg-module" :depends-on ("module"))
+               (:file "route" :depends-on ("pkg-module" "render"))
                (:file "hunchentoot" :depends-on ("module" "memoize" "errors"))))
      #+swank-archimag
      (:module "slime" 

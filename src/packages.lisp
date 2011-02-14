@@ -30,11 +30,13 @@
            #:define-finalization
            #:define-default-render-method
            ;; submodules
+           #:submodule
            #:mount-submodule
            #:submodule
            #:submodule-symbol
            #:submodule-module
            #:submodule-parent
+           #:submodule-baseurl
            #:connect-submodule
            #:with-submodule-context
            #:with-submodule
@@ -44,6 +46,7 @@
 
            #:make-submodule
            #:submodule-routes
+           #:module-routes
            ;; render
            #:render-object
            ;; cache

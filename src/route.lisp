@@ -18,6 +18,9 @@
    (render-method :initarg :render-method :initform #'identity)
    (headers :initarg :headers :initform nil :reader route-headers)))
 
+(defun string-symbol-value (string &optional (package *package*))
+  (symbol-value (find-symbol string package)))
+
 (defun route-render-method (route)
   (or (slot-value route 'render-method)
       (string-symbol-value +render-method-symbol+
