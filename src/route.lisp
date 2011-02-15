@@ -60,7 +60,7 @@
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
     (setf (hunchentoot:return-code*) return-code
-          hunchentoot:*handle-http-errors-p* nil))
+          *handle-http-errors-p* nil))
   (when content-type
     (setf (hunchentoot:content-type*) content-type))
   (throw 'route-done obj))

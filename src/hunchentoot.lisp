@@ -64,10 +64,6 @@
 
 (defclass restas-acceptor-mixin ()
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
-
-(defmethod hunchentoot:process-request  ((request restas-request))
-  (let ((hunchentoot:*handle-http-errors-p* hunchentoot:*handle-http-errors-p*))
-    (call-next-method)))
     
 (defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
   ())
@@ -77,16 +73,30 @@
 
 (defmethod shared-initialize :after ((acceptor restas-acceptor-mixin) slot-names &rest initargs &key)
   (declare (ignore slot-names initargs))
-  (setf (hunchentoot:acceptor-request-dispatcher acceptor) 'restas-dispatcher
-        (hunchentoot:acceptor-request-class acceptor) 'restas-request))
-  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; dispatcher
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (setf (hunchentoot:acceptor-request-class acceptor) 'restas-request))
 
+(defvar *handle-http-errors-p* t)
 
-(defun header-host (request)
-  (cdr (assoc :host (hunchentoot:headers-in request))))
+(defmethod hunchentoot:process-request  ((request restas-request))
+  (let ((*handle-http-errors-p* *handle-http-errors-p*))
+    (call-next-method)))
+
+(defmethod hunchentoot::acceptor-status-message ((acceptor restas-acceptor) http-status-code &key &allow-other-keys)
+  (if *handle-http-errors-p*
+      (call-next-method)))
+
+(defun find-vhost (acceptor request &aux (host (header-host request)))
+  (or (find (if (find #\: host)
+                host
+                (format nil "~A:~A"
+                        host 
+                        (hunchentoot:acceptor-port acceptor)))
+            (restas-acceptor-vhosts acceptor)
+            :key #'vhost-host
+            :test #'string=)
+      (find-if #'null
+               (restas-acceptor-vhosts acceptor)
+               :key #'vhost-host)))
 
 (defvar *before-dispatch-request-hook* '()
   "Hook run before dispatch request")
@@ -94,21 +104,9 @@
 (defvar *after-dispatch-request-hook* '()
   "Hook run after dispatch request")
 
-(defun find-vhost (request &aux (host (header-host request)))
-  (or (find (if (find #\: host)
-                host
-                (format nil "~A:~A"
-                        host 
-                        (hunchentoot:acceptor-port hunchentoot:*acceptor*)))
-            (restas-acceptor-vhosts hunchentoot:*acceptor*)
-            :key #'vhost-host
-            :test #'string=)
-      (find-if #'null
-               (restas-acceptor-vhosts hunchentoot:*acceptor*)
-               :key #'vhost-host)))
 
-(defun restas-dispatcher (request)
-  (let ((vhost (find-vhost request))
+(defmethod hunchentoot::acceptor-dispatch-request ((acceptor restas-acceptor) request)
+  (let ((vhost (find-vhost acceptor request))
         (hunchentoot:*request* request))
     (dolist (function *before-dispatch-request-hook*)
       (funcall function))
@@ -127,6 +125,20 @@
                           hunchentoot:+HTTP-NOT-FOUND+)))))
         (dolist (function *after-dispatch-request-hook*)
           (funcall function)))))
+  
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; dispatcher
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defun header-host (request)
+  (cdr (assoc :host (hunchentoot:headers-in request))))
+
+
+
+
+;;(defun restas-dispatcher (request)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
