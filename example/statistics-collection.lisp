@@ -16,12 +16,11 @@
 
 (defparameter *urlstats* (make-hash-table :test 'equal))
 
-(defun before-dispatch-request-handler ()
+(defun after-dispatch-request-handler ()
   (incf (gethash (hunchentoot:request-uri*) *urlstats* 0)))
 
 (defmethod restas:initialize-module-instance ((module (eql #.*package*)) context)
-  (pushnew 'before-dispatch-request-handler restas:*before-dispatch-request-hook*))
-
+  (pushnew 'after-dispatch-request-handler restas:*before-dispatch-request-hook*))
 
 (restas:define-route show-statistic ("")
   (who:with-html-output-to-string (out)
