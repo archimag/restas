@@ -26,36 +26,23 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; redirect
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun apply-format-aux (format args)
-  (if (symbolp format)
-      (apply #'restas:genurl format args)
-      (if args
-          (apply #'format nil (cons format args))
-          format)))
-
-(defun redirect (route-symbol &rest args)
-  (hunchentoot:redirect 
-   (hunchentoot:url-decode
-    (apply-format-aux route-symbol
-                      (mapcar #'(lambda (s)
-                                  (if (stringp s)
-                                      (hunchentoot:url-encode s)
-                                      s))
-                              args)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; restas-acceptor
+;; restas-request
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass restas-request (hunchentoot:request)
   ((substitutions :initarg substitutions :initform routes:+no-bindings+ :accessor restas-request-bindings)))
 
+(defmethod hunchentoot:process-request :around ((request restas-request))
+  (let ((*handle-http-errors-p* *handle-http-errors-p*))
+    (call-next-method)))
+
 (defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
   (or (hunchentoot:header-in :x-forwarded-host request)
       (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; restas-acceptor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass vhost ()
   ((host :initarg :host :reader vhost-host)
@@ -75,21 +62,17 @@
   (declare (ignore slot-names initargs))
   (setf (hunchentoot:acceptor-request-class acceptor) 'restas-request))
 
-(defvar *handle-http-errors-p* t)
-
-(defmethod hunchentoot:process-request  ((request restas-request))
-  (let ((*handle-http-errors-p* *handle-http-errors-p*))
-    (call-next-method)))
-
-(defmethod hunchentoot::acceptor-status-message ((acceptor restas-acceptor) http-status-code &key &allow-other-keys)
+(defmethod hunchentoot::acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
   (if *handle-http-errors-p*
       (call-next-method)))
 
-(defun find-vhost (acceptor request &aux (host (header-host request)))
+(defun find-vhost (acceptor request 
+                   &aux (host (cdr (assoc :host (hunchentoot:headers-in request)))))
   (or (find (if (find #\: host)
                 host
-                (format nil "~A:~A"
-                        host 
+                (format nil
+                        "~A:~A"
+                        host
                         (hunchentoot:acceptor-port acceptor)))
             (restas-acceptor-vhosts acceptor)
             :key #'vhost-host
@@ -98,48 +81,30 @@
                (restas-acceptor-vhosts acceptor)
                :key #'vhost-host)))
 
-(defvar *before-dispatch-request-hook* '()
-  "Hook run before dispatch request")
+(defmethod hunchentoot:acceptor-dispatch-request :before ((acceptor restas-acceptor-mixin) request)
+  (dolist (function *before-dispatch-request-hook*)
+      (funcall function)))
 
-(defvar *after-dispatch-request-hook* '()
-  "Hook run after dispatch request")
+(defmethod hunchentoot:acceptor-dispatch-request :after ((acceptor restas-acceptor-mixin) request)
+  (dolist (function *after-dispatch-request-hook*)
+      (funcall function)))
 
-
-(defmethod hunchentoot::acceptor-dispatch-request ((acceptor restas-acceptor) request)
+(defmethod hunchentoot:acceptor-dispatch-request :around ((acceptor restas-acceptor-mixin) request)
   (let ((vhost (find-vhost acceptor request))
         (hunchentoot:*request* request))
-    (dolist (function *before-dispatch-request-hook*)
-      (funcall function))
     (when (and (not vhost) *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
-    (prog1
-        (if vhost
-            (with-memoization 
-              (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                                      (hunchentoot:request-uri*))
-                (if route
-                    (handler-bind ((error #'maybe-invoke-debugger))
-                      (process-route route bindings))
-                    (setf (hunchentoot:return-code*)
-                          hunchentoot:+HTTP-NOT-FOUND+)))))
-        (dolist (function *after-dispatch-request-hook*)
-          (funcall function)))))
+    (if vhost
+        (with-memoization 
+          (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
+                                                  (hunchentoot:request-uri*))
+            (if route
+                (handler-bind ((error #'maybe-invoke-debugger))
+                  (process-route route bindings))
+                (setf (hunchentoot:return-code*)
+                      hunchentoot:+HTTP-NOT-FOUND+)))))))
   
-  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; dispatcher
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defun header-host (request)
-  (cdr (assoc :host (hunchentoot:headers-in request))))
-
-
-
-
-;;(defun restas-dispatcher (request)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -9,7 +9,6 @@
 (defpackage :restas
   (:use :cl :iter :split-sequence)
   (:export #:*default-host-redirect*
-           #:*request-pool*
            #:*bindings*
            #:*route*
            #:*submodule*

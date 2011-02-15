@@ -171,6 +171,26 @@
                       "localhost"))
     (puri:render-uri uri nil)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; redirect
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun apply-format-aux (format args)
+  (if (symbolp format)
+      (apply #'restas:genurl format args)
+      (if args
+          (apply #'format nil (cons format args))
+          format)))
+
+(defun redirect (route-symbol &rest args)
+  (hunchentoot:redirect 
+   (hunchentoot:url-decode
+    (apply-format-aux route-symbol
+                      (mapcar #'(lambda (s)
+                                  (if (stringp s)
+                                      (hunchentoot:url-encode s)
+                                      s))
+                              args)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; parse url for route
