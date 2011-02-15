@@ -88,32 +88,45 @@
 (defun header-host (request)
   (cdr (assoc :host (hunchentoot:headers-in request))))
 
-(defun restas-dispatcher (req &aux (host (header-host req)))
-  (let ((vhost (or (find (if (find #\: host)
-                             host
-                             (format nil "~A:~A"
-				     host 
-				     (hunchentoot:acceptor-port hunchentoot:*acceptor*)))
-			 (restas-acceptor-vhosts hunchentoot:*acceptor*)
-			 :key #'vhost-host
-			 :test #'string=)
-                   (find-if #'null
-                            (restas-acceptor-vhosts hunchentoot:*acceptor*)
-                            :key #'vhost-host)))
-        (hunchentoot:*request* req))
-    (when (and (not vhost)
-               *default-host-redirect*)
+(defvar *before-dispatch-request-hook* '()
+  "Hook run before dispatch request")
+
+(defvar *after-dispatch-request-hook* '()
+  "Hook run after dispatch request")
+
+(defun find-vhost (request &aux (host (header-host request)))
+  (or (find (if (find #\: host)
+                host
+                (format nil "~A:~A"
+                        host 
+                        (hunchentoot:acceptor-port hunchentoot:*acceptor*)))
+            (restas-acceptor-vhosts hunchentoot:*acceptor*)
+            :key #'vhost-host
+            :test #'string=)
+      (find-if #'null
+               (restas-acceptor-vhosts hunchentoot:*acceptor*)
+               :key #'vhost-host)))
+
+(defun restas-dispatcher (request)
+  (let ((vhost (find-vhost request))
+        (hunchentoot:*request* request))
+    (dolist (function *before-dispatch-request-hook*)
+      (funcall function))
+    (when (and (not vhost) *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
-    (when vhost
-      (with-memoization 
-        (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                                (hunchentoot:request-uri*))
-          (if route
-              (handler-bind ((error #'maybe-invoke-debugger))
-                (process-route route bindings))
-              (setf (hunchentoot:return-code*)
-                    hunchentoot:+HTTP-NOT-FOUND+)))))))
+    (prog1
+        (if vhost
+            (with-memoization 
+              (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
+                                                      (hunchentoot:request-uri*))
+                (if route
+                    (handler-bind ((error #'maybe-invoke-debugger))
+                      (process-route route bindings))
+                    (setf (hunchentoot:return-code*)
+                          hunchentoot:+HTTP-NOT-FOUND+)))))
+        (dolist (function *after-dispatch-request-hook*)
+          (funcall function)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start

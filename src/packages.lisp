@@ -14,6 +14,7 @@
            #:*route*
            #:*submodule*
            ;; routes
+           #:route
            #:define-route
            #:route-symbol
            #:genurl
@@ -25,7 +26,9 @@
 
            #:process-route
            ;; modules
-           #:define-module           
+           #:define-module
+           #:initialize-module-instance
+           #:finalize-module-instance
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
@@ -68,4 +71,6 @@
            #:debug-mode-off
            ;; misc
            #:request-full-uri
-           ))
+           ;; hooks
+           #:*after-dispatch-request-hook*
+           #:*before-dispatch-request-hook*))

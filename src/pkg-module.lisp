@@ -21,11 +21,12 @@
 (defclass pkg-submodule (submodule)
   ((submodules :accessor submodule-submodules)))
 
-(defmethod shared-initialize :before ((obj pkg-submodule) slot-names &rest initargs &key module &allow-other-keys)
+(defmethod shared-initialize ((obj pkg-submodule) slot-names &rest initargs &key )
   (declare (ignore initargs))
+  (call-next-method)
   (setf (submodule-submodules obj)
         (iter (for (key thing) in-hashtable (symbol-value (find-symbol +submodules-symbol+
-                                                                       module)))
+                                                                       (submodule-module obj))))
               (collect (make-instance 'pkg-submodule
                                       :symbol key
                                       :module (find-package (car thing))
