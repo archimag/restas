@@ -69,14 +69,17 @@
   (dolist (function *after-dispatch-request-hook*)
       (funcall function)))
 
-(defun format-host (acceptor request)
+(defun request-hostname-port (acceptor request)
   (let ((host (cdr (assoc :host (hunchentoot:headers-in request)))))
     (if (find #\: host)
-        host
-        (format nil "~A:~A" host (hunchentoot:acceptor-port acceptor)))))
+        (destructuring-bind (hostname port) (ppcre:split ":" host)
+          (cons hostname
+                (parse-integer port)))
+        (cons host (hunchentoot:acceptor-port acceptor)))))
+
 
 (defun restas-dispatch-request (acceptor request)
-  (let ((vhost (find-vhost (format-host acceptor request)))
+  (let ((vhost (find-vhost (request-hostname-port acceptor request)))
         (hunchentoot:*request* request))
     (when (and (not vhost) *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
@@ -106,8 +109,7 @@
 
 (defun start (module &key 
               ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
-              hostname (port (if ssl-certificate-file 443 80)) (context (make-context))
-              &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
+              hostname (port (if ssl-certificate-file 443 80)) (context (make-context)))
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start
            (if ssl-certificate-file
@@ -119,8 +121,9 @@
                (make-instance 'restas-acceptor
                               :port port)))
           *acceptors*))
-  (add-toplevel-submodule hostname/port
-                        (make-submodule module :context context))
+  (add-toplevel-submodule (make-submodule module :context context)
+                          hostname
+                          port)
   (reconnect-all-routes :reinitialize nil))
     
     

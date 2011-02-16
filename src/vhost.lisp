@@ -10,30 +10,33 @@
 (defvar *vhosts* nil)
 
 (defclass vhost ()
-  ((host :initarg :host :reader vhost-host)
+  ((hostname :initarg :hostname :reader vhost-hostname)
+   (port :initarg :port :reader vhost-port)
    (mapper :initform (make-instance 'routes:mapper))
    (modules :initform nil)))
 
-(defun find-vhost (host)
-  (or (find host
-            *vhosts*
-            :key #'vhost-host
-            :test #'string=)
-      (find-if #'null
-               *vhosts*
-               :key #'vhost-host)))
+(defun vhost-hostname-port (vhost)
+  (cons (vhost-hostname vhost)
+        (vhost-port vhost)))
 
-(defun add-toplevel-submodule (host submodule)
-  (let ((vhost (or (if host
-                       (find host
-                             *vhosts*
-                             :key #'vhost-host
-                             :test #'string=)
-                       (find-if #'null
-                                *vhosts*
-                                :key #'vhost-host))
+(defun find-vhost (hostname.port)
+  (or (find hostname.port
+            *vhosts*
+            :key #'vhost-hostname-port
+            :test #'equal)
+      (find (cons nil (cdr hostname.port))
+            *vhosts*
+            :key #'vhost-hostname-port
+            :test #'equal)))
+
+(defun add-toplevel-submodule (submodule hostname port)
+  (let ((vhost (or (find (cons hostname port)
+                         *vhosts*
+                         :key #'vhost-hostname-port
+                         :test #'equal)
                    (car (push (make-instance 'vhost
-                                             :host host)
+                                             :hostname hostname
+                                             :port port)
                               *vhosts*)))))
     (push submodule
           (slot-value vhost 'modules)))
