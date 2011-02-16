@@ -22,13 +22,13 @@
                                       (hunchentoot:content-type hunchentoot:*reply*))))
 
 (defmethod render-object :before (designer (code integer))
-  (setf *handle-http-errors-p* nil
+  (setf *standard-special-page-p* nil
         (hunchentoot:return-code*) code))
 
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
   (declare (ignore designer))
-  (setf *handle-http-errors-p* t))
+  (setf *standard-special-page-p* t))
 
 (defmethod render-object (designer (string string))
   "Default handler for string"

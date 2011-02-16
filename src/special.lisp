@@ -21,7 +21,7 @@
 
 (defvar *catch-errors-p* t)
 
-(defvar *handle-http-errors-p* t)
+(defvar *standard-special-page-p*)
 
 (defparameter *max-debugging-threads* 5
   "Maximum number of simultaneous active calls invoke-debuger")

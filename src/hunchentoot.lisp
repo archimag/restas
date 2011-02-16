@@ -33,7 +33,7 @@
   ((substitutions :initarg substitutions :initform routes:+no-bindings+ :accessor restas-request-bindings)))
 
 (defmethod hunchentoot:process-request :around ((request restas-request))
-  (let ((*handle-http-errors-p* *handle-http-errors-p*))
+  (let ((*standard-special-page-p* t))
     (call-next-method)))
 
 (defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
@@ -46,19 +46,21 @@
 
 (defclass restas-acceptor-mixin ()
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
-    
+   
 (defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
-  ())
+  ()
+  (:default-initargs :error-template-directory nil))
 
 (defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
-  ())
+  ()
+  (:default-initargs :error-template-directory nil))
 
 (defmethod shared-initialize :after ((acceptor restas-acceptor-mixin) slot-names &rest initargs &key)
   (declare (ignore slot-names initargs))
   (setf (hunchentoot:acceptor-request-class acceptor) 'restas-request))
 
-(defmethod hunchentoot::acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
-  (if *handle-http-errors-p*
+(defmethod hunchentoot:acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
+  (if *standard-special-page-p*
       (call-next-method)))
 
 (defmethod hunchentoot:acceptor-dispatch-request :before ((acceptor restas-acceptor-mixin) request)
