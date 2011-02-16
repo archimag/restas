@@ -47,15 +47,15 @@
    
 (defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
   ()
-  (:default-initargs :error-template-directory nil))
+  (:default-initargs
+   :request-class 'restas-request
+   :error-template-directory nil))
 
 (defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
   ()
-  (:default-initargs :error-template-directory nil))
-
-(defmethod shared-initialize :after ((acceptor restas-acceptor-mixin) slot-names &rest initargs &key)
-  (declare (ignore slot-names initargs))
-  (setf (hunchentoot:acceptor-request-class acceptor) 'restas-request))
+  (:default-initargs
+   :request-class 'restas-request
+   :error-template-directory nil))
 
 (defmethod hunchentoot:acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
   (if *standard-special-page-p*
