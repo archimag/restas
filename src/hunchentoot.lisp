@@ -42,8 +42,7 @@
 ;; restas-acceptor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass restas-acceptor-mixin ()
-  ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
+(defclass restas-acceptor-mixin () ())
    
 (defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
   ()
