@@ -7,8 +7,6 @@
 
 (in-package :restas)
 
-(setf hunchentoot:*hunchentoot-default-external-format* hunchentoot::+utf-8+)
-
 (defun request-full-uri (&optional (request hunchentoot:*request*))
   (let ((uri (puri:parse-uri (hunchentoot:request-uri request))))
     (setf (puri:uri-scheme uri)
