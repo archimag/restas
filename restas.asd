@@ -19,7 +19,8 @@
                (:file "module" :depends-on ("context"))
                (:file "pkg-module" :depends-on ("module"))
                (:file "route" :depends-on ("pkg-module" "render"))
-               (:file "hunchentoot" :depends-on ("module" "memoize" "errors"))))
+               (:file "vhost" :depends-on ("special"))
+               (:file "hunchentoot" :depends-on ("vhost" "module" "memoize" "errors"))))
      #+swank-archimag
      (:module "slime" 
               :components ((:file "restas-swank"))

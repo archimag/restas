@@ -44,11 +44,6 @@
 ;; restas-acceptor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass vhost ()
-  ((host :initarg :host :reader vhost-host)
-   (mapper :initform (make-instance 'routes:mapper))
-   (modules :initform nil)))
-
 (defclass restas-acceptor-mixin ()
   ((vhosts :initform nil :accessor restas-acceptor-vhosts)))
     
@@ -66,21 +61,6 @@
   (if *handle-http-errors-p*
       (call-next-method)))
 
-(defun find-vhost (acceptor request 
-                   &aux (host (cdr (assoc :host (hunchentoot:headers-in request)))))
-  (or (find (if (find #\: host)
-                host
-                (format nil
-                        "~A:~A"
-                        host
-                        (hunchentoot:acceptor-port acceptor)))
-            (restas-acceptor-vhosts acceptor)
-            :key #'vhost-host
-            :test #'string=)
-      (find-if #'null
-               (restas-acceptor-vhosts acceptor)
-               :key #'vhost-host)))
-
 (defmethod hunchentoot:acceptor-dispatch-request :before ((acceptor restas-acceptor-mixin) request)
   (dolist (function *before-dispatch-request-hook*)
       (funcall function)))
@@ -89,67 +69,58 @@
   (dolist (function *after-dispatch-request-hook*)
       (funcall function)))
 
-(defmethod hunchentoot:acceptor-dispatch-request :around ((acceptor restas-acceptor-mixin) request)
-  (let ((vhost (find-vhost acceptor request))
+(defun format-host (acceptor request)
+  (let ((host (cdr (assoc :host (hunchentoot:headers-in request)))))
+    (if (find #\: host)
+        host
+        (format nil "~A:~A" host (hunchentoot:acceptor-port acceptor)))))
+
+(defun restas-dispatch-request (acceptor request)
+  (let ((vhost (find-vhost (format-host acceptor request)))
         (hunchentoot:*request* request))
     (when (and (not vhost) *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
-    (if vhost
-        (with-memoization 
-          (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                                  (hunchentoot:request-uri*))
-            (if route
-                (handler-bind ((error #'maybe-invoke-debugger))
-                  (process-route route bindings))
-                (setf (hunchentoot:return-code*)
-                      hunchentoot:+HTTP-NOT-FOUND+)))))))
-  
+    (flet ((not-found-if-null (thing)
+             (unless thing
+               (setf (hunchentoot:return-code*)
+                     hunchentoot:+HTTP-NOT-FOUND+)
+               (hunchentoot:abort-request-handler))))
+      (not-found-if-null vhost)
+      (with-memoization 
+        (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
+                                                (hunchentoot:request-uri*))
+          (not-found-if-null route)
+          (handler-bind ((error #'maybe-invoke-debugger))
+            (process-route route bindings)))))))
+
+(defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-acceptor) request)
+  (restas-dispatch-request acceptor request))
+
+(defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-ssl-acceptor) request)
+  (restas-dispatch-request acceptor request))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun reconnect-all-routes (&key (reinitialize t))
-  (iter (for acceptor in *acceptors*)
-        (iter (for vhost in (restas-acceptor-vhosts acceptor))
-              (let ((mapper (slot-value vhost 'mapper)))
-                (routes:reset-mapper mapper)
-                (iter (for module in (slot-value vhost 'modules))
-                      (when reinitialize
-                        (reinitialize-instance module))
-                      (connect-submodule module mapper)))))
-  (values))
 
 (defun start (module &key 
               ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
               hostname (port (if ssl-certificate-file 443 80)) (context (make-context))
               &aux (hostname/port (if hostname (format nil "~A:~A" hostname port))))
-  (let* ((acceptor (or (find port
-                             *acceptors*
-                             :key #'hunchentoot:acceptor-port)
-                       (car (push (hunchentoot:start
-                                   (if ssl-certificate-file
-                                       (make-instance 'restas-ssl-acceptor
-                                                      :ssl-certificate-file ssl-certificate-file
-                                                      :ssl-privatekey-file ssl-privatekey-file
-                                                      :ssl-privatekey-password ssl-privatekey-password
-                                                      :port port)
-                                       (make-instance 'restas-acceptor
-                                                      :port port)))
-                                  *acceptors*))))
-         (vhost (or (if hostname/port
-                        (find hostname/port
-                              (restas-acceptor-vhosts acceptor)
-                              :key #'vhost-host
-                              :test #'string=)
-                        (find-if #'null
-                                 (restas-acceptor-vhosts acceptor)
-                                 :key #'vhost-host))
-                    (car (push (make-instance 'vhost
-                                              :host hostname/port)
-                               (restas-acceptor-vhosts acceptor))))))
-    (push (make-submodule module :context context)
-          (slot-value vhost 'modules))
-    (reconnect-all-routes :reinitialize nil)))
+  (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
+    (push (hunchentoot:start
+           (if ssl-certificate-file
+               (make-instance 'restas-ssl-acceptor
+                              :ssl-certificate-file ssl-certificate-file
+                              :ssl-privatekey-file ssl-privatekey-file
+                              :ssl-privatekey-password ssl-privatekey-password
+                              :port port)
+               (make-instance 'restas-acceptor
+                              :port port)))
+          *acceptors*))
+  (add-toplevel-submodule hostname/port
+                        (make-submodule module :context context))
+  (reconnect-all-routes :reinitialize nil))
     
     
