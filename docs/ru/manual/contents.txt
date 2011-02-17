@@ -9,5 +9,6 @@
    routes
    modules
    view
+   special-pages
    daemon
    slime

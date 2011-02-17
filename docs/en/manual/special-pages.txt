@@ -1,0 +1,47 @@
+.. -*- RST -*-
+
+.. _manual-special-pages:
+
+Special pages
+=============
+
+If the handler of route, returns an integer, then it is interpreted as a HTTP
+status code and to the user sends corresponding special page. For making of
+special pages by default uses the standard tools of `Hunchentoot`_. This behavior
+can be changed by defining a specialization for :fun:`restas:render-object`.
+For example:
+ 
+.. code-block:: common-lisp
+
+  (defmethod restas:render-object ((designer mydrawer) (code (eql hunchentoot:+http-internal-server-error+)))
+    (setf (hunchentoot:content-type*)
+          "text/plain")
+    "Oh, all very bad")
+
+In this case, it may happen that if the handler of route returns
+:var:`hunchentoot:+http-not-found+` then to client will sends a "beautiful" message
+that resource "Not Found", but if RESTAS simply will not find a suitable route
+then will sends standard `Hunchentoot`_ page. To solve this problem you can define
+a "universal" route, which will be checked later all.
+
+.. code-block:: common-lisp
+
+  (restas:define-route not-found ("*any")
+    hunchentoot:+http-not-found+)
+
+The described approach is well suited for handling specific pages on module level.
+But sometimes you need a particular solution. For example, the Web server can
+interact with code on JavaScript and in case of error should return
+:var:`hunchentoot:+http-internal-server-error+` with describing the type of error in the
+body of response. To implement this  can be used :fun:`restas:abort-route-handler`.
+For example, call
+
+.. code-block:: common-lisp
+
+  (restas:abort-route-handler "data invalid"
+                              :return-code hunchentoot:+http-internal-server-error+
+                              :content-type "text/plain")
+
+sends to client response with HTTP status 500 and message "data invalid".
+
+.. _Hunchentoot: http://www.weitz.de/hunchentoot/

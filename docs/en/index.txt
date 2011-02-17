@@ -2,8 +2,8 @@
 
 .. _index:
 
-Beginning
-=========
+Home
+====
 
 First steps
 -----------
@@ -21,7 +21,7 @@ Details
 
 * :ref:`Modules <manual-modules>`
 
-* :ref:`Separation of logic and representation <manual-view>`
+* :ref:`Separation of logic and representation <manual-view>` | :ref:`Special pages <manual-special-pages>`
 
 * :ref:`Daemonization <manual-daemon>`
 

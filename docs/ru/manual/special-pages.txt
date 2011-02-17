@@ -1,0 +1,48 @@
+.. -*- RST -*-
+
+.. _manual-special-pages:
+
+Специальные страницы
+====================
+
+Если обработчик маршрута возвращает целое число, то оно интерпретируется как код
+возврата и пользователю отправляется соответствующая специальная старница. Для
+генерации специальных страниц по-умолчанию используются стандартные средства
+`Hunchentoot`_. Это поведение можно изменить определив специализацию для
+:fun:`restas:render-object`. Например:
+
+.. code-block:: common-lisp
+
+  (defmethod restas:render-object ((designer mydrawer) (code (eql hunchentoot:+http-internal-server-error+)))
+    (setf (hunchentoot:content-type*)
+          "text/plain")
+    "Oh, all very bad")
+
+При этом, может случить так, что если маршрут возвращает hunchentoot:+http-not-found+,
+то будет формироваться "красивое" сообщение о том, что на данном ресурсе такой
+страницы нет, но если RESTAS просто не найдёт подходящего маршрута, то будет
+отдаваться стандартная страница Hunchentoot. Для решение данной проблемы проще
+всего определить "универсальный" маршрут, который будет проверяться в последнюю
+очередь:
+
+.. code-block:: common-lisp
+
+  (restas:define-route not-found ("*any")
+    hunchentoot:+http-not-found+)
+
+Описанный подход  хорошо подходит для обработки специальных страниц общим для
+всего модуля образом. Но иногда нужно более частное решение. Например, веб-сервер
+может взаимодействовать с JavaScript-кодом и в случае ошибки должен возвращать
+hunchentoot:+http-internal-server-error+, а в теле ответа должно быть сообщение,
+описывающее тип ошибки. Для реализации подобного функционала можно использовать
+:fun:`restas:abort-route-handler`. Например, вызов
+
+.. code-block:: common-lisp
+
+  (restas:abort-route-handler "data invalid"
+                              :return-code hunchentoot:+http-internal-server-error+
+                              :content-type "text/plain")
+
+отправит клиенту ответ с кодом 500 и сообщение "data invalid".
+
+.. _Hunchentoot: http://www.weitz.de/hunchentoot/
