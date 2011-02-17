@@ -5,15 +5,15 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(asdf:operate 'asdf:load-op :cl-who)
-(asdf:operate 'asdf:load-op :restas)
+(asdf:operate 'asdf:load-op '#:cl-who)
+(asdf:operate 'asdf:load-op '#:restas)
 
-(restas:define-module :restas.example-3
-  (:use :cl))
+(restas:define-module #:restas.example-3
+  (:use #:cl))
 
-(in-package :restas.example-3)
+(in-package #:restas.example-3)
 
-(define-route main ("" :method :get)
+(restas:define-route main ("" :method :get)
   (who:with-html-output-to-string (out)
     (:html
      (:body
@@ -25,7 +25,7 @@
        ((:input :type "submit"
                 :value "Send")))))))
 
-(define-route main/post ("" :method :post)
+(restas:define-route main/post ("" :method :post)
   (let ((file-info (hunchentoot:post-parameter "file")))
     (if file-info
         (who:with-html-output-to-string (out)
@@ -44,4 +44,4 @@
             ((:a :href (restas:genurl 'main)) "Try again"))))
         (restas:redirect 'main))))
 
-(restas:start :restas.example-3 :port 8080)
+(restas:start '#:restas.example-3 :port 8080)

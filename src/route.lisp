@@ -18,6 +18,9 @@
    (render-method :initarg :render-method :initform #'identity)
    (headers :initarg :headers :initform nil :reader route-headers)))
 
+(defun string-symbol-value (string &optional (package *package*))
+  (symbol-value (find-symbol string package)))
+
 (defun route-render-method (route)
   (or (slot-value route 'render-method)
       (string-symbol-value +render-method-symbol+
@@ -57,7 +60,7 @@
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
     (setf (hunchentoot:return-code*) return-code
-          hunchentoot:*handle-http-errors-p* nil))
+          *standard-special-page-p* nil))
   (when content-type
     (setf (hunchentoot:content-type*) content-type))
   (throw 'route-done obj))
@@ -168,6 +171,26 @@
                       "localhost"))
     (puri:render-uri uri nil)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; redirect
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun apply-format-aux (format args)
+  (if (symbolp format)
+      (apply #'restas:genurl format args)
+      (if args
+          (apply #'format nil (cons format args))
+          format)))
+
+(defun redirect (route-symbol &rest args)
+  (hunchentoot:redirect 
+   (hunchentoot:url-decode
+    (apply-format-aux route-symbol
+                      (mapcar #'(lambda (s)
+                                  (if (stringp s)
+                                      (hunchentoot:url-encode s)
+                                      s))
+                              args)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; parse url for route

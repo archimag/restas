@@ -159,6 +159,15 @@ Routes
   Redirects the request with :fun:`hunchentoot:redirect` for URL computed with
   :fun:`restas:genurl`. The parameters are analogous to those of function :fun:`restas:genurl`.
 
+.. defun:: restas:abort-route-handler
+   :args: obj &key return-code content-typе
+
+   Immediately abort handling the route and pass *OBJ* in :fun:`restas:render-object`
+   for the formation of a response. If specified the keyword argument *RETURN-CODE*
+   then it used to set the HTTP response status that allows you to return a special
+   page (500, 404, etc.) with arbitrary content (by default these pages formed in
+   a standard way, regardless of the result returned by the handler).
+
 Modules
 =======
 
@@ -229,8 +238,8 @@ Submodules
 
   Lets you execute an arbitrary code at the context of the specified submodule.
 
-Representation
-==============
+View
+====
 
 .. defun:: restas:render-object
   :args: drawer object

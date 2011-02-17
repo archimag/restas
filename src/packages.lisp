@@ -9,7 +9,6 @@
 (defpackage #:restas
   (:use #:cl #:iter #:split-sequence)
   (:export #:*default-host-redirect*
-           #:*request-pool*
            #:*bindings*
            #:*route*
            #:*submodule*
@@ -55,6 +54,7 @@
            #:handle-if-modified-since
 
            ;; routes
+           #:route
            #:define-route
            #:route-symbol
            #:genurl
@@ -64,18 +64,23 @@
            #:parse-route-url
            #:abort-route-handler
 
+           #:process-route
            ;; modules
-           #:define-module           
+           #:define-module
+           #:initialize-module-instance
+           #:finalize-module-instance
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
 
            ;; submodules
+           #:submodule
            #:mount-submodule
            #:submodule
            #:submodule-symbol
            #:submodule-module
            #:submodule-parent
+           #:submodule-baseurl
            #:connect-submodule
            #:with-submodule-context
            #:with-submodule
@@ -83,6 +88,9 @@
            #:submodule-context
            #:find-upper-submodule
 
+           #:make-submodule
+           #:submodule-routes
+           #:module-routes
            ;; render
            #:render-object
 
@@ -109,5 +117,7 @@
 
            ;; misc
            #:request-full-uri
+           ;; hooks
+           #:*after-dispatch-request-hook*
+           #:*before-dispatch-request-hook*))
 
-           ))

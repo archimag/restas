@@ -6,8 +6,8 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 
-(asdf:operate 'asdf:load-op :cl-who)
-(asdf:operate 'asdf:load-op :restas)
+(asdf:operate 'asdf:load-op '#:cl-who)
+(asdf:operate 'asdf:load-op '#:restas)
 
 (restas:define-module #:restas.example-2
   (:use #:cl #:iter))
@@ -53,4 +53,4 @@
       ((:a :href (restas:genurl 'chapter-?.html :id id1))
        (who:fmt "Back to Chapter ~A" id1))))))
   
-(restas:start :restas.example-2 :port 8080)
+(restas:start '#:restas.example-2 :port 8080)

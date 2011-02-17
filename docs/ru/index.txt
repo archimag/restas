@@ -21,7 +21,7 @@
 
 * :ref:`Модули <manual-modules>`
 
-* :ref:`Разделение логики и представления <manual-view>`
+* :ref:`Разделение логики и представления <manual-view>` | :ref:`Специальные страницы <manual-special-pages>`
 
 * :ref:`Демонизация <manual-daemon>`
 

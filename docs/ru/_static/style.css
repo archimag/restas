@@ -1,6 +1,6 @@
 /* style.css */
 
-body { margin: 0 4em; background-color: /*#cbd7d9*/#d6d9d9; color: #333333; text-align: justify; }
+body { margin: 1em 4em 0 4em; background-color: #a9a9a9; color: #333333; text-align: justify; }
 
 a { color: #ca7900; }
 a:hover { color: #2491CF; }
