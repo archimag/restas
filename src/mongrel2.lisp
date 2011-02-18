@@ -92,65 +92,48 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass vhost ()
-  ((host :initarg :host :reader vhost-host)
-   (mapper :initform (make-instance 'routes:mapper))
-   (modules :initarg :modules :initform nil)))
-
-(defparameter *vhosts* nil)
-
 (defvar *connection* nil)
 
-(defun restas-dispatcher (req &aux (host (restas:header-in :host req)))
-  (let ((vhost (or (find (if (find #\: host)
-                             host
-                             (format nil "~A:~A"
-                                     host 
-                                     (restas:remote-port req)))
-                         *vhosts*
-                         :key #'vhost-host
-                         :test #'string=)
-                   (find-if #'null
-                            *vhosts*
-                            :key #'vhost-host)))
+(defun request-hostname-port (request &aux (host (restas:header-in :host request)))
+  (let* ((tmp (ppcre:split ":" host))
+         (port (second tmp)))
+    (cons (first tmp)
+          (if port
+              (parse-integer port)
+              80))))
+
+(defun restas-dispatcher (req)
+  (let ((vhost (restas::find-vhost (request-hostname-port req)))
         (restas:*request* req)
         (restas:*reply* (make-instance 'mongrel2:reply)))
-    ;;(break "~A" req)
-    (when vhost
-      (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                              (restas:request-uri req))
-        (cond
-          (route
-           (mongrel2:reply *connection*
-                            req
-                            restas:*reply*
-                            (handler-bind ((error #'restas::maybe-invoke-debugger))
-                              (restas::process-route route bindings))))
-          (t (mongrel2:reply *connection*
-                              req
-                              restas:*reply*
-                              "Not Found")))))))
+    (if vhost
+        (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'restas::mapper)
+                                                (restas:request-uri req))
+          (cond
+            (route
+             (mongrel2:reply *connection*
+                             req
+                             restas:*reply*
+                             (handler-bind ((error #'restas::maybe-invoke-debugger))
+                               (restas::process-route route bindings))))
+            (t (mongrel2:reply *connection*
+                               req
+                               restas:*reply*
+                               "Not Found")))))))
 
 
 
 (defun start (module &key
+              hostname
               (port 8080)
               (sub-addr "tcp://127.0.0.1:9997")
               (pub-addr "tcp://127.0.0.1:9996")
               (context (restas:make-context)))
-  (let* ((sender-uuid (write-to-string (uuid:make-v4-uuid)))
-         (package (or (find-package module)
-                      (error "Package ~A not found" module)))
-         (vhost (make-instance 'vhost
-                               :host nil
-                               :modules (list (make-instance 'restas:submodule
-                                                             :module package
-                                                             :context context))))
-         (mapper (slot-value vhost 'mapper))
-         (*vhosts* (list vhost)))
-    (routes:reset-mapper mapper)
-    (iter (for module in (slot-value vhost 'modules))
-          (restas:connect-submodule module mapper))
+  (restas::add-toplevel-submodule (restas::make-submodule module :context context)
+                          hostname
+                          port)
+  (restas:reconnect-all-routes :reinitialize nil)
+  (let* ((sender-uuid (write-to-string (uuid:make-v4-uuid))))
     (mongrel2::with-trivial-server (sender-uuid sub-addr pub-addr :port port)
       (loop
          (mongrel2:with-connection (*connection* :sender-uuid sender-uuid

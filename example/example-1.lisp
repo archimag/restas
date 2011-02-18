@@ -27,7 +27,9 @@
      (:body
       (:div
        (:b (who:fmt "test message: ~A"
-                    (hunchentoot:post-parameter "message"))))
+                    (restas:post-parameter "message"))))
       ((:a :href (restas:genurl 'main)) "Try again")))))
 
-(restas:start '#:restas.example-1 :port 8080)
+;;(restas:start '#:restas.example-1 :port 8080)
+
+;;(restas.mongrel2:start '#:restas.example-1 :port 8080)
