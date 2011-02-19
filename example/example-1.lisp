@@ -27,7 +27,7 @@
      (:body
       (:div
        (:b (who:fmt "test message: ~A"
-                    (restas:post-parameter "message"))))
+                    (wsal:post-parameter "message"))))
       ((:a :href (restas:genurl 'main)) "Try again")))))
 
 ;;(restas:start '#:restas.example-1 :port 8080)

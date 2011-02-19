@@ -23,7 +23,7 @@
 
 (defmethod render-object :before (designer (code integer))
   (setf *standard-special-page-p* nil
-        (hunchentoot:return-code*) code))
+        (wsal:return-code*) code))
 
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
@@ -40,7 +40,7 @@
   octets)
 
 (defmethod render-object (designer (obj (eql nil)))
-  (render-object designer hunchentoot:+http-not-found+))
+  (render-object designer wsal:+http-not-found+))
 
 (defmethod render-object (designer object)
   (error "Unknown as render ~A via ~A" object designer))

@@ -34,7 +34,7 @@
     (with-submodule (slot-value route 'submodule)
       (with-slots (required-method arbitrary-requirement) route
         (and (if required-method
-                 (eql (restas:request-method*) required-method)
+                 (eql (wsal:request-method*) required-method)
                  t)
              (if arbitrary-requirement
                  (let ((*bindings* bindings))
@@ -46,7 +46,7 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (header-out name *reply*)
+    (setf (wsal:header-out  name)
           (if (functionp value)
               (funcall value)
               value)))
@@ -59,10 +59,10 @@
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
-    (setf (hunchentoot:return-code*) return-code
+    (setf (wsal:return-code*) return-code
           *standard-special-page-p* nil))
   (when content-type
-    (setf (hunchentoot:content-type*) content-type))
+    (setf (wsal:content-type*) content-type))
   (throw 'route-done obj))
 
 (defmacro define-route (name (template &key
@@ -166,8 +166,8 @@
     (setf (puri:uri-scheme uri)
           :http)
     (setf (puri:uri-host uri)
-          (if (boundp 'hunchentoot:*request*)
-                      (hunchentoot:host)
+          (if (boundp 'wsal:*request*)
+                      (wsal:host)
                       "localhost"))
     (puri:render-uri uri nil)))
 

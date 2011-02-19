@@ -7,18 +7,6 @@
 
 (in-package :restas)
 
-
-(defmethod request-method ((request hunchentoot:request))
-  (hunchentoot:request-method request))
-
-(defmethod post-parameters ((request hunchentoot:request))
-  (hunchentoot:post-parameters request))
-
-(defmethod (setf header-out) (new-value name (reply hunchentoot:reply))
-  (setf (hunchentoot:header-out name reply) new-value))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defun request-full-uri (&optional (request hunchentoot:*request*))
   (let ((uri (puri:parse-uri (hunchentoot:request-uri request))))
     (setf (puri:uri-scheme uri)

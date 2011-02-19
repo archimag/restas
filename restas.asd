@@ -11,11 +11,7 @@
     ((:module "src"
               :components
               ((:file "packages")
-               (:module "http"
-                        :components ((:file "request")
-                                     (:file "reply"))
-                        :depends-on ("packages"))
-               (:file "special" :depends-on ("http"))
+               (:file "special" :depends-on ("packages"))
                (:file "memoize" :depends-on ("special"))
                (:file "errors" :depends-on ("special"))
                (:file "render" :depends-on ("special"))
