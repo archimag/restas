@@ -22,6 +22,28 @@
               port)))
     uri))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; WSAL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod wsal:request-method ((request hunchentoot:request))
+  (hunchentoot:request-method request))
+
+(defmethod wsal:post-parameters ((request hunchentoot:request))
+  (hunchentoot:post-parameters request))
+
+(defmethod wsal:headers-out ((reply hunchentoot:reply))
+  (hunchentoot:headers-out reply))
+
+(defmethod (setf wsal:headers-out) (new-value (reply hunchentoot:reply))
+  (setf (slot-value reply 'headers-out)
+        new-value))
+
+(defmethod wsal:server-protocol ((request hunchentoot:request))
+  (hunchentoot:server-protocol request))
+
+(defmethod wsal:remote-port ((request hunchentoot:request))
+  (hunchentoot:remote-port request))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-request
@@ -79,7 +101,8 @@
 
 (defun restas-dispatch-request (acceptor request)
   (let ((vhost (find-vhost (request-hostname-port acceptor request)))
-        (hunchentoot:*request* request))
+        (wsal:*request* request)
+        (wsal:*reply* hunchentoot:*reply*))
     (when (and (not vhost) *default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host *default-host-redirect*))
@@ -94,7 +117,13 @@
                                                 (hunchentoot:request-uri*))
           (not-found-if-null route)
           (handler-bind ((error #'maybe-invoke-debugger))
-            (process-route route bindings)))))))
+            (let ((result (process-route route bindings)))
+              (cond
+                ((pathnamep result)
+                 (hunchentoot:handle-static-file result
+                                                 (or (wsal:mime-type result)
+                                                     (wsal:content-type wsal:*reply*))))
+                (t result)))))))))
 
 (defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-acceptor) request)
   (restas-dispatch-request acceptor request))

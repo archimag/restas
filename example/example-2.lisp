@@ -15,6 +15,8 @@
 (in-package #:restas.example-2)
 
 (restas:define-route root ("")
+  (break "~A" wsal:*request*)
+   ;;(break "~A" (wsal:remote-port*))
   (who:with-html-output-to-string (out)
     (:html
      (:head
@@ -53,6 +55,6 @@
       ((:a :href (restas:genurl 'chapter-?.html :id id1))
        (who:fmt "Back to Chapter ~A" id1))))))
   
-;;(restas:start '#:restas.example-2 :port 8080)
+(restas:start '#:restas.example-2 :port 9999)
 
 (restas.mongrel2:start '#:restas.example-2 :port 8080)

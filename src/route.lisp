@@ -184,11 +184,11 @@
 
 (defun redirect (route-symbol &rest args)
   (hunchentoot:redirect 
-   (hunchentoot:url-decode
+   (wsal:url-decode
     (apply-format-aux route-symbol
                       (mapcar #'(lambda (s)
                                   (if (stringp s)
-                                      (hunchentoot:url-encode s)
+                                      (wsal:url-encode s)
                                       s))
                               args)))))
 

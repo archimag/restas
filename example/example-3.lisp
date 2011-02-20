@@ -26,7 +26,8 @@
                 :value "Send")))))))
 
 (restas:define-route main/post ("" :method :post)
-  (let ((file-info (hunchentoot:post-parameter "file")))
+  (let ((file-info (wsal:post-parameter "file")))
+    (break "~A" file-info)
     (if file-info
         (who:with-html-output-to-string (out)
           (:html
@@ -39,9 +40,13 @@
              (who:str (third file-info)))
             (:div
              (:b "Content")
-             (:br)
-             (who:str (hunchentoot:escape-for-html (alexandria:read-file-into-string (first file-info)))))
+             (:pre
+              (who:str (wsal:escape-for-html (alexandria:read-file-into-string (first file-info))))))
             ((:a :href (restas:genurl 'main)) "Try again"))))
-        (restas:redirect 'main))))
+        (who:with-html-output-to-string (out)
+          (:html
+           (:body
+            (:a :href (restas:genurl 'main)) "Try again"))))))
 
-(restas:start '#:restas.example-3 :port 8080)
+;;(restas:start '#:restas.example-3 :port 8080)
+;;(restas.mongrel2:start '#:restas.example-3 :port 8080)

@@ -17,9 +17,7 @@
 (defmethod render-object (designer (file pathname))
   "Default handler for pathname"
   (declare (ignore designer))
-  (hunchentoot:handle-static-file file
-                                  (or (hunchentoot:mime-type file)
-                                      (hunchentoot:content-type hunchentoot:*reply*))))
+  file)
 
 (defmethod render-object :before (designer (code integer))
   (setf *standard-special-page-p* nil
