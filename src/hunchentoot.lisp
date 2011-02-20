@@ -45,6 +45,12 @@
 (defmethod wsal:remote-port ((request hunchentoot:request))
   (hunchentoot:remote-port request))
 
+(defmethod wsal:cookies-in ((request hunchentoot:request))
+  (hunchentoot:cookies-in request))
+
+(defmethod wsal:request-uri ((request hunchentoot:request))
+  (hunchentoot:request-uri request))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-request
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

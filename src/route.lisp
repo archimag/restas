@@ -182,8 +182,38 @@
           (apply #'format nil (cons format args))
           format)))
 
-(defun redirect (route-symbol &rest args)
-  (hunchentoot:redirect 
+(defgeneric redirect (target &key &allow-other-keys)
+  (:documentation "Redirects the browser to TARGET"))
+
+(defmethod redirect ((target string) &key
+                     (host (wsal:host wsal:*request*))
+                     port
+                     (protocol :http)
+                     (code wsal:+http-moved-temporarily+))
+  "Redirects the browser to TARGET which should be a string.  If
+TARGET is a full URL starting with a scheme, HOST, PORT and PROTOCOL
+are ignored.  Otherwise, TARGET should denote the path part of a URL,
+PROTOCOL must be one of the keywords :HTTP or :HTTPS, and the URL to
+redirect to will be constructed from HOST, PORT, PROTOCOL, and TARGET.
+Adds a session ID if ADD-SESSION-ID is true.  If CODE is a 3xx
+redirection code, it will be sent as status code."
+  (check-type code (integer 300 399))
+  (let ((url (if (wsal:starts-with-scheme-p target)
+               target
+               (format nil "~A://~A~@[:~A~]~A"
+                       (ecase protocol
+                         ((:http) "http")
+                         ((:https) "https"))
+                       (if port                         
+                         (first (ppcre:split ":" (or host "")))
+                         host)
+                       port target))))
+    (setf (wsal:header-out :location)
+          url)
+    (abort-route-handler code)))
+
+(defmethod redirect ((route-symbol symbol) &rest args &key &allow-other-keys)
+  (redirect 
    (wsal:url-decode
     (apply-format-aux route-symbol
                       (mapcar #'(lambda (s)

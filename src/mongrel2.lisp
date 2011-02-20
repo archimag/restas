@@ -53,9 +53,11 @@
   (labels ((impl ()
              (let* ((sender-uuid (write-to-string (uuid:make-v4-uuid))))
                (mongrel2::with-trivial-server (sender-uuid sub-addr pub-addr :port port)
-                 (loop
                     (mongrel2:with-connection (*connection* :sender-uuid sender-uuid
                                                             :sub-addr sub-addr
                                                             :pub-addr pub-addr)
-                      (restas-dispatcher (mongrel2:recv *connection*))))))))
-    (bordeaux-threads:make-thread  #'impl :name "Mongrel2 handler")))
+                      (loop
+                         (let ((req (mongrel2:recv *connection*)))
+                           (unless (string= (wsal:header-in :method req) "JSON")
+                             (restas-dispatcher req)))))))))
+    (bordeaux-threads:make-thread  #'impl :name "Mongrel2 acceptor")))
