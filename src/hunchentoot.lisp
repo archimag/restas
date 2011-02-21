@@ -26,30 +26,98 @@
 ;;;; WSAL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod wsal:request-method ((request hunchentoot:request))
-  (hunchentoot:request-method request))
+(defun encoding-hunchentoot-external-format (encoding)
+  (case encoding
+    (:utf-8 hunchentoot::+utf-8+)
+    (:latin1 hunchentoot::+latin-1+)
+    (otherwise encoding)))
+
+(defun hunchentoot-external-format-encoding (external-format)
+  (cond
+    ((eql external-format hunchentoot::+utf-8+ ) :utf-8)
+    ((eql external-format hunchentoot::+latin-1+ ) :latin1)
+    (t external-format)))
+
+;;; request
+
+(defmethod wsal:get-parameters ((request hunchentoot:request))
+  (hunchentoot:get-parameters request))
 
 (defmethod wsal:post-parameters ((request hunchentoot:request))
   (hunchentoot:post-parameters request))
 
-(defmethod wsal:headers-out ((reply hunchentoot:reply))
-  (hunchentoot:headers-out reply))
+(defmethod wsal:cookies-in ((request hunchentoot:request))
+  (hunchentoot:cookies-in request))
 
-(defmethod (setf wsal:headers-out) (new-value (reply hunchentoot:reply))
-  (setf (slot-value reply 'headers-out)
-        new-value))
+(defmethod wsal:query-string ((request hunchentoot:request))
+  (hunchentoot:query-string request))
+
+(defmethod wsal:request-method ((request hunchentoot:request))
+  (hunchentoot:request-method request))
+
+(defmethod wsal:request-uri ((request hunchentoot:request))
+  (hunchentoot:request-uri request))
 
 (defmethod wsal:server-protocol ((request hunchentoot:request))
   (hunchentoot:server-protocol request))
 
+(defmethod wsal:headers-in ((request hunchentoot:request))
+  (hunchentoot:headers-in request))
+
+(defmethod wsal:remote-address ((request hunchentoot:request))
+  (hunchentoot:remote-addr request))
+
 (defmethod wsal:remote-port ((request hunchentoot:request))
   (hunchentoot:remote-port request))
 
-(defmethod wsal:cookies-in ((request hunchentoot:request))
-  (hunchentoot:cookies-in request))
+(defmethod wsal:script-name ((request hunchentoot:request))
+  (hunchentoot:script-name request))
 
-(defmethod wsal:request-uri ((request hunchentoot:request))
-  (hunchentoot:request-uri request))
+(defmethod wsal:raw-post-data (request &key encoding force-text force-binary &allow-other-keys)
+  (hunchentoot:raw-post-data :request request
+                             :external-format (encoding-hunchentoot-external-format encoding)
+                             :force-text force-text
+                             :force-binary force-binary))
+
+;;; reply
+
+(defmethod wsal:headers-out ((reply hunchentoot:reply))
+  (hunchentoot:headers-out reply))
+
+(defmethod (setf wsal:headers-out) (newvalue (reply hunchentoot:reply))
+  (setf (slot-value reply 'hunchentoot:headers-out)
+        newvalue))
+
+(defmethod wsal:content-length ((reply hunchentoot:reply))
+  (hunchentoot:content-length reply))
+
+(defmethod wsal:content-type ((reply hunchentoot:reply))
+  (hunchentoot:content-type reply))
+
+(defmethod wsal:cookies-out ((reply hunchentoot:reply))
+  (hunchentoot:cookies-out reply))
+
+(defmethod (setf wsal:cookies-out) (newvalue (reply hunchentoot:reply))
+  (setf (hunchentoot:cookies-out reply)
+        newvalue))
+
+(defmethod wsal:return-code ((reply hunchentoot:reply))
+  (hunchentoot:return-code reply))
+
+(defmethod (setf wsal:return-code) (newvalue (reply hunchentoot:reply))
+  (setf (hunchentoot:return-code reply)
+        newvalue))
+
+(defmethod wsal:reply-external-format ((reply hunchentoot:reply))
+  (hunchentoot-external-format-encoding (hunchentoot:reply-external-format reply)))
+
+(defmethod (setf wsal:reply-external-format) (newvalue (reply hunchentoot:reply))
+  (hunchentoot-external-format-encoding 
+   (setf (hunchentoot:reply-external-format reply)
+         (encoding-hunchentoot-external-format newvalue))))
+
+(defmethod hunchentoot::stringify-cookie ((cookie wsal:cookie))
+  (wsal:stringify-cookie cookie))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-request
