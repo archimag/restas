@@ -58,6 +58,6 @@
                                                             :pub-addr pub-addr)
                       (loop
                          (let ((req (mongrel2:recv *connection*)))
-                           (unless (string= (wsal:header-in :method req) "JSON")
+                           (unless (mongrel2:is-disconnect req)
                              (restas-dispatcher req)))))))))
     (bordeaux-threads:make-thread  #'impl :name "Mongrel2 acceptor")))
