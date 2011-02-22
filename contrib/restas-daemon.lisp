@@ -338,7 +338,16 @@
 ;;;; start swank server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defpackage :swank-loader
+  (:use :cl)
+  (:export :init
+           :dump-image
+           :*source-directory*
+           :*fasl-directory*))
+
 (when *swankport*
+  (when *fasldir*
+    (defparameter swank-loader:*fasl-directory* *fasldir*))
   (asdf:oos 'asdf:load-op :swank))
 
 (when *swankport*
