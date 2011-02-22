@@ -249,7 +249,11 @@
 ;;;; required for start hunchentoot on port 80
 (load-shared-object (or 
 		     (find-if #'probe-file
-			      '("/lib/libcap.so.2" "/lib/libcap.so" "/lib/libcap.so.1"))
+                              (or
+                               #+sbcl (mapcar #'(lambda (item)
+                                                  (concatenate 'string (if (member :x86-64 cl:*features*) "/lib64/" "/lib/") item))
+                                              '("libcap.so.2" "libcap.so" "libcap.so.1"))
+			      '("/lib/libcap.so.2" "/lib/libcap.so" "/lib/libcap.so.1")))
 		     (error "No supported libcap found")))
 
 (sb-posix::define-call "cap_from_text" (* char) null-alien (text c-string))
