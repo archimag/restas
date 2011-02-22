@@ -219,9 +219,9 @@
     (let ((passwd (sb-posix:getpwnam name)))
       (unless group
         (setf gid
-              (sb-posix:passwd-gid passwd))
+              (sb-posix:passwd-gid passwd)))
         (setf uid
-              (sb-posix:passwd-uid passwd))))
+              (sb-posix:passwd-uid passwd)))
     (sb-posix:setresgid gid gid gid)
     (sb-posix:initgroups name gid)
     (sb-posix:setresuid uid uid uid)))
