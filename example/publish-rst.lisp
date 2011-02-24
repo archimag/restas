@@ -34,17 +34,22 @@
          (:li
           (:a :href (durl '-raw-) "Raw reStructuredText"))
          (:li
-          (:a :href (durl '-fine-) "reStructuredText as HTML"))))))))
+          (:a :href (durl '-fine-) "reStructuredText as HTML"))
+         (:li
+          (:a :href (durl '-safe-) "reStructuredText as HTML in safe mode"))))))))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish raw files
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (restas:mount-submodule -raw- (#:restas.directory-publisher)
   (restas.directory-publisher:*baseurl* '("raw"))
   (restas.directory-publisher:*directory* *rstdir*)
   (restas.directory-publisher:*autoindex* t))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish reStructuredText files as HTML
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass drawer () ())
 
@@ -62,7 +67,45 @@
   (restas.directory-publisher:*directory-index-files* '("index.txt"))
   (restas.directory-publisher:*autoindex* t))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Publish reStructuredText files as HTML with HTTP authorization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; http auth middleware
+
+(defclass http-auth-route (routes:proxy-route) () )
+
+(defmethod routes:route-check-conditions ((route http-auth-route) bindings)
+  (if (call-next-method)
+      (multiple-value-bind (user password) (hunchentoot:authorization)
+        (or (and (string= user "hello")
+                 (string= password "world"))
+            (hunchentoot:require-authorization)))))
+
+(defun http-auth-middleware (route)
+  (make-instance 'http-auth-route :target route))
+
+;;; render reStructuredText middleware
+
+(defclass render-rst-route (routes:proxy-route) ())
+
+(defmethod restas:process-route :around ((route render-rst-route) bindings)
+  (let ((restas.directory-publisher:*default-render-method* (make-instance 'drawer)))
+    (call-next-method)))
+
+(defun render-rst-middleware (route)
+  (make-instance 'render-rst-route :target route))
+
+;;; mount module
+
+(restas:mount-submodule -safe- (#:restas.directory-publisher http-auth-middleware render-rst-middleware)
+  (restas.directory-publisher:*baseurl* '("safe"))
+  (restas.directory-publisher:*directory* *rstdir*)
+  (restas.directory-publisher:*directory-index-files* '("index.txt"))
+  (restas.directory-publisher:*autoindex* t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (restas:start '#:restas.publish-rst :port 8080)

@@ -52,7 +52,8 @@
   ((symbol :initarg :symbol :initform nil :reader submodule-symbol)
    (module :initarg :module :initform nil :reader submodule-module)
    (context :initarg :context :initform (make-context) :reader submodule-context)
-   (parent :initarg :parent :initform nil :reader submodule-parent)))
+   (parent :initarg :parent :initform nil :reader submodule-parent)
+   (middlewares :initarg :middlewares :initform nil :reader submodule-middlewares)))
 
 (defmethod reinitialize-instance :before ((obj submodule) &rest initargs &key &allow-other-keys)
   (declare (ignore initargs))
@@ -89,7 +90,14 @@
         submodule)))
 
 (defmethod submodule-routes ((submodule submodule))
-  (module-routes (submodule-module submodule) submodule))
+  (labels ((apply-middlewares (route &optional (middlewares (submodule-middlewares submodule)))
+             (if middlewares
+                 (apply-middlewares (funcall (car middlewares)
+                                             route)
+                                    (cdr middlewares))
+                 route)))
+    (mapcar #'apply-middlewares
+            (module-routes (submodule-module submodule) submodule))))
 
 (defun connect-submodule (submodule mapper)
   (iter (for route in (submodule-routes submodule))

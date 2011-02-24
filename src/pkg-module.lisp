@@ -25,13 +25,14 @@
   (declare (ignore initargs))
   (call-next-method)
   (setf (submodule-submodules obj)
-        (iter (for (key thing) in-hashtable (symbol-value (find-symbol +submodules-symbol+
-                                                                       (submodule-module obj))))
-              (collect (make-instance 'pkg-submodule
-                                      :symbol key
-                                      :module (find-package (car thing))
-                                      :context (copy-restas-context (cdr thing))
-                                      :parent obj)))))
+        (iter (for (key thing) in-hashtable (symbol-value (find-symbol +submodules-symbol+ (submodule-module obj))))
+              (destructuring-bind (pkg ctxt middlewares) thing
+                (collect (make-instance 'pkg-submodule
+                                        :symbol key
+                                        :module (find-package pkg)
+                                        :context (copy-restas-context ctxt)
+                                        :parent obj
+                                        :middlewares middlewares))))))
 
 (defmacro with-submodule-context (submodule &body body)
   `(with-context (slot-value ,submodule 'context)
@@ -107,12 +108,13 @@
            (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
            *package*)))))
 
-(defmacro mount-submodule (name (module) &body bindings)
+(defmacro mount-submodule (name (module &rest middlewares) &body bindings)
   (let ((submodules (find-symbol +submodules-symbol+)))
     `(progn
        (setf (gethash ',name ,submodules)
-             (cons ',module
-                   (make-context ,@bindings)))
+             (list ',module
+                   (make-context ,@bindings)
+                   ',middlewares))
        (eval-when (:execute)
          (reconnect-all-routes)))))
 
