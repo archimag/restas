@@ -219,9 +219,9 @@
     (let ((passwd (sb-posix:getpwnam name)))
       (unless group
         (setf gid
-              (sb-posix:passwd-gid passwd))
+              (sb-posix:passwd-gid passwd)))
         (setf uid
-              (sb-posix:passwd-uid passwd))))
+              (sb-posix:passwd-uid passwd)))
     (sb-posix:setresgid gid gid gid)
     (sb-posix:initgroups name gid)
     (sb-posix:setresuid uid uid uid)))
@@ -249,7 +249,11 @@
 ;;;; required for start hunchentoot on port 80
 (load-shared-object (or 
 		     (find-if #'probe-file
-			      '("/lib/libcap.so.2" "/lib/libcap.so" "/lib/libcap.so.1"))
+                              (or
+                               #+sbcl (mapcar #'(lambda (item)
+                                                  (concatenate 'string (if (member :x86-64 cl:*features*) "/lib64/" "/lib/") item))
+                                              '("libcap.so.2" "libcap.so" "libcap.so.1"))
+			      '("/lib/libcap.so.2" "/lib/libcap.so" "/lib/libcap.so.1")))
 		     (error "No supported libcap found")))
 
 (sb-posix::define-call "cap_from_text" (* char) null-alien (text c-string))
@@ -334,7 +338,16 @@
 ;;;; start swank server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defpackage :swank-loader
+  (:use :cl)
+  (:export :init
+           :dump-image
+           :*source-directory*
+           :*fasl-directory*))
+
 (when *swankport*
+  (when *fasldir*
+    (defparameter swank-loader:*fasl-directory* *fasldir*))
   (asdf:oos 'asdf:load-op :swank))
 
 (when *swankport*
