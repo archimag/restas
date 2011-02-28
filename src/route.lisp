@@ -65,13 +65,15 @@
     (setf (hunchentoot:content-type*) content-type))
   (throw 'route-done obj))
 
-(defmacro define-route (name (template &key
-                                       (method :get)
-                                       content-type
-                                       render-method
-                                       requirement
-                                       parse-vars
-				       headers)
+(defmacro define-route (name (template
+                              &key
+                              (method :get)
+                              content-type
+                              render-method
+                              requirement
+                              parse-vars
+                              headers
+                              decorators)
                         &body body)
   (let* ((variables (iter (for var in (routes:template-variables (routes:parse-template template)))
                           (collect (list (intern (symbol-name var))
@@ -86,7 +88,8 @@
                    :parse-vars ,parse-vars
                    :requirement ,requirement
                    :render-method ,render-method
-		   :headers ,headers))
+                   :headers ,headers
+                   :decorators ,decorators))
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
@@ -98,6 +101,13 @@
                (submodule-full-baseurl submodule)
                (routes:parse-template (get symbol :template)
                                       (get symbol :parse-vars))))
+
+(defun apply-decorators (route decorators)
+  (if decorators
+      (apply-decorators (funcall (car decorators)
+                                 route)
+                        (cdr decorators))
+      route))
 
 (defun create-route-from-symbol (symbol submodule)
   (let* ((headers (append (string-symbol-value +headers-symbol+ 
@@ -112,14 +122,15 @@
 	     (or (string-symbol-value +content-type-symbol+
 				      (symbol-package symbol))
 		 "text/html"))))
-	 (make-instance 'route
-		   :template (route-template-from-symbol symbol submodule)
-		   :symbol symbol
-		   :required-method (get symbol :method)
-		   :arbitrary-requirement (get symbol :requirement)
-		   :render-method (get symbol :render-method)
-		   :submodule submodule
-		   :headers headers)))
+    (apply-decorators (make-instance 'route
+                                     :template (route-template-from-symbol symbol submodule)
+                                     :symbol symbol
+                                     :required-method (get symbol :method)
+                                     :arbitrary-requirement (get symbol :requirement)
+                                     :render-method (get symbol :render-method)
+                                     :submodule submodule
+                                     :headers headers)
+                      (get symbol :decorators))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; proxy route

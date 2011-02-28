@@ -89,15 +89,11 @@
         (submodule-toplevel parent)
         submodule)))
 
-(defmethod submodule-routes ((submodule submodule))
-  (labels ((apply-decorators (route &optional (decorators (submodule-decorators submodule)))
-             (if decorators
-                 (apply-decorators (funcall (car decorators)
-                                             route)
-                                    (cdr decorators))
-                 route)))
-    (mapcar #'apply-decorators
-            (module-routes (submodule-module submodule) submodule))))
+(defmethod submodule-routes ((submodule submodule)
+                             &aux (decorators (submodule-decorators submodule)))
+  (mapcar (lambda (route)
+            (apply-decorators route decorators))
+          (module-routes (submodule-module submodule) submodule)))
 
 (defun connect-submodule (submodule mapper)
   (iter (for route in (submodule-routes submodule))

@@ -17,6 +17,7 @@
 (defparameter +render-method-symbol+ "*DEFAULT-RENDER-METHOD*")
 (defparameter +content-type-symbol+ "*DEFAULT-CONTENT-TYPE*")
 (defparameter +headers-symbol+ "*DEFAULT-HEADERS*")
+(defparameter +decorators-sybmol+ "*DECORATORS*")
 
 (defclass pkg-submodule (submodule)
   ((submodules :accessor submodule-submodules)))
@@ -64,14 +65,18 @@
       current-submodule
       (find-upper-submodule module (submodule-parent current-submodule))))
 
-(defmethod module-routes ((module package) submodule)
+(defmethod module-routes ((module package) submodule
+                          &aux (decorators (symbol-value (find-symbol +decorators-sybmol+ module))))
   (with-submodule-context submodule
-    (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
-                                     (collect (create-route-from-symbol (find-symbol (symbol-name route-symbol)
-                                                                                     module)
-                                                                        submodule )))
-                               (iter (for ss in (submodule-submodules submodule))
-                                     (collect (submodule-routes ss)))))))
+    (mapcar
+     (lambda (route)
+       (apply-decorators route decorators))
+     (alexandria:flatten (list* (iter (for route-symbol in-package (symbol-value (find-symbol +routes-symbol+ module)))
+                                      (collect (create-route-from-symbol (find-symbol (symbol-name route-symbol)
+                                                                                      module)
+                                                                         submodule )))
+                                (iter (for ss in (submodule-submodules submodule))
+                                      (collect (submodule-routes ss))))))))
 
 (defmethod make-submodule ((module symbol) &key (context (make-context)))
   (make-submodule (or (find-package module)
@@ -89,9 +94,7 @@
          (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name))
          (defpackage-options (remove-if #'(lambda (opt)
                                             (member (car opt)
-                                                    (list :export 
-                                                          :default-render-method 
-                                                          :default-content-type)))
+                                                    '(:export :default-render-method :default-content-type :decorators)))
                                         options)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((*package* (defpackage ,name
@@ -106,6 +109,7 @@
            (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
            (defparam +content-type-symbol+ ',(second (assoc :default-content-type options)))
            (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
+           (defparam +decorators-sybmol+ ',(cdr (assoc :decorators options)))
            *package*)))))
 
 (defmacro mount-submodule (name (module &rest decorators) &body bindings)
