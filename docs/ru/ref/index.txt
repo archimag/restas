@@ -154,7 +154,7 @@ API Reference
   * submodule-symbol - индефикатор субмодуля, указаный при его определении с помощю
     :macro:`restas:mount-submodule`.
 
-.. defun:: restas:genurl-with-host
+.. defun:: restas:gen-full-url
   :args: route &rest args
 
   Данная функция аналогична :fun:`restas:genurl` за тем исключением, что в генерируемый

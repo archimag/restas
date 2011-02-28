@@ -147,7 +147,7 @@ Routes
   * submodule-symbol - identifier of submodule, specified at its definition 
     with :macro:`restas:mount-submodule`.
 
-.. defun:: restas:genurl-with-host
+.. defun:: restas:gen-full-url
   :args: route &rest args
 
   This function is analogous to :fun:`restas:genurl` except that the generated URL

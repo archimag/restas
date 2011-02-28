@@ -51,8 +51,8 @@ div.note .first { font-weight: bold ; font-family: sans-serif; }
 
 
 pre, .code {
-    background-color: #eff6f5;
-    border-top: 1px solid #666; border-bottom: 1px solid #666;
+    background-color: #f7fbfd;
+    border-top: 1px solid #AC9; border-bottom: 1px solid #AC9;
     margin: 0.2em; padding: 0.5em;
     font-family: "Courier New", monospace; font-size: 90%;
     overflow: auto;
