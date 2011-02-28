@@ -71,7 +71,7 @@
 ;;; Publish reStructuredText files as HTML with HTTP authorization
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; http auth middleware
+;;; http auth decorator
 
 (defclass http-auth-route (routes:proxy-route) () )
 
@@ -82,10 +82,10 @@
                  (string= password "world"))
             (hunchentoot:require-authorization)))))
 
-(defun http-auth-middleware (route)
+(defun http-auth-decorator (route)
   (make-instance 'http-auth-route :target route))
 
-;;; render reStructuredText middleware
+;;; render reStructuredText decorator
 
 (defclass render-rst-route (routes:proxy-route) ())
 
@@ -93,12 +93,12 @@
   (let ((restas.directory-publisher:*default-render-method* (make-instance 'drawer)))
     (call-next-method)))
 
-(defun render-rst-middleware (route)
+(defun render-rst-decorator (route)
   (make-instance 'render-rst-route :target route))
 
 ;;; mount module
 
-(restas:mount-submodule -safe- (#:restas.directory-publisher http-auth-middleware render-rst-middleware)
+(restas:mount-submodule -safe- (#:restas.directory-publisher http-auth-decorator render-rst-decorator)
   (restas.directory-publisher:*baseurl* '("safe"))
   (restas.directory-publisher:*directory* *rstdir*)
   (restas.directory-publisher:*directory-index-files* '("index.txt"))
