@@ -211,7 +211,7 @@ In this code, the following call is of the most interest:
 It generates a URL for viewing a record basing on the route name ('view-node) and :id
 parameters.
 
-.. note:: None
+.. note:: Note
 
   In route-based systems "manual" creation of URLs is not a common practice,
   because automatic generation considerably increases flexibility of an
