@@ -166,7 +166,7 @@
                                 args)
                    nil))
 
-(defun genurl-with-host (route &rest args)
+(defun gen-full-url (route &rest args)
   (let ((uri (genurl/impl (concatenate 'list
                                        (submodule-full-baseurl *submodule*)
                                        (route-symbol-template route))

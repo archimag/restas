@@ -18,7 +18,7 @@
            #:route-symbol
            #:genurl
            #:genurl-submodule
-           #:genurl-with-host
+           #:gen-full-url
            #:redirect
            #:parse-route-url
            #:abort-route-handler
