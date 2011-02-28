@@ -12,6 +12,7 @@
            #:*bindings*
            #:*route*
            #:*submodule*
+           
            ;; routes
            #:route
            #:define-route
@@ -24,6 +25,7 @@
            #:abort-route-handler
 
            #:process-route
+           
            ;; modules
            #:define-module
            #:initialize-module-instance
@@ -31,6 +33,7 @@
            #:define-initialization
            #:define-finalization
            #:define-default-render-method
+           
            ;; submodules
            #:submodule
            #:mount-submodule
@@ -49,11 +52,14 @@
            #:make-submodule
            #:submodule-routes
            #:module-routes
+           
            ;; render
            #:render-object
+           
            ;; cache
            #:define-memoized-function
            #:with-memoization
+           
            ;; context
            #:make-context
            #:context-add-variable
@@ -61,15 +67,22 @@
            #:context-symbol-value
            #:with-context
            #:copy-restas-context
+           
            ;; service
            #:start
            #:reconnect-all-routes
+           
            ;; debug
            #:*max-debugging-threads*
            #:debug-mode-on
            #:debug-mode-off
+           
            ;; misc
            #:request-full-uri
+           
            ;; hooks
            #:*after-dispatch-request-hook*
-           #:*before-dispatch-request-hook*))
+           #:*before-dispatch-request-hook*
+
+           ;; decorators
+           #:no-cache-decorator))
