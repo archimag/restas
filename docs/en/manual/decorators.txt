@@ -1,0 +1,106 @@
+.. -*- RST -*-
+
+.. _manual-decorators:
+
+Декораторы
+==========
+
+One of the attractive features of applications based on the `WSGI`_ is the use of a
+"middleware" components. `RESTAS`_  has similar capabilities provided by decorators. 
+This capabilities is based on use the class :class:`routes:proxy-route` for create
+a wrapper over the routes and a redefinition of their behavior via specialization of
+the generic methods.
+
+**Decorator** - a function that takes the route and returns a different route.
+For example,  to completely prevent caching in browsers you can use this decorator:
+
+.. code-block:: common-lisp
+
+  (defclass no-cache-route (routes:proxy-route) ())
+
+  (defmethod process-route :before ((route no-cache-route) bindings)
+    (setf (hunchentoot:header-out :expires)
+          (hunchentoot:rfc-1123-date))  
+    (setf (hunchentoot:header-out :cache-control)
+          "max-age=0, no-store, no-cache, must-revalidate"))
+
+  (defun @no-cache (route)
+    (make-instance 'no-cache-route :target route))
+
+Now you can use this decorator when defining a route:
+
+.. code-block:: common-lisp
+
+  (restas:define-route main ("" :decorators '(@no-cahe))
+    "<h1>Hello world!</h1>")
+
+Also it can be applied to the whole module:
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:restas.hello-world
+    (:use :cl)
+    (:decorators #'restas:@no-caсhe))
+
+Or even when mounted the submodule:
+
+.. code-block:: common-lisp
+
+  (restas:mount-submodule test-hello-world (#:hello-world restas:@no-caсhe))
+
+All routes identified through :macro:`restas:define-route`, before placement in
+dispatching tree passed through a succession of decorators. In the first queue
+for processing route used decorators listed in :macro:`restas:define-route`, then
+decorators listed in :macro:`restas:define-module` and finally decorators listed
+in :macro:`restas:mount-submodule`. Thus, in the dispatching tree inserted the
+chain of nested proxy objects instead the original object of class :class:`restas:route`.
+
+For a definition of a new decorator is necessary to define a new class that inherits
+from :class:`routes:proxy-route`, specialize for him one or more generic-methods
+and define the functions for create object of this class from the original route.
+
+For created in this way new classes of routes makes sense to specialize the
+following methods:
+
+* :fun:`routes:route-check-conditions` (route bindings) - 
+  called after the template URL of route will be match with URL of request and allows
+  you to define additional restrictions. If it returns :hs:`T`, then the route is
+  considered to satisfy the request, in the case :hs:`NIL` route is discarded and
+  the system goes to the next route.
+
+* :fun:`restas:process-route` (route bindings) -
+  called for the real request handling.
+
+Decorators can be used, for example:
+
+* Authentication/authorization
+
+* Fine-tuning the response headers
+
+* Environment settings around processing of the request
+
+Below is a trivial example of using decorator for HTTP-authentication when browsing
+the directory which published via `restas-directory-publisher`_.
+
+.. code-block:: common-lisp
+
+  (defclass http-auth-route (routes:proxy-route) ())
+
+  (defmethod routes:route-check-conditions ((route http-auth-route) bindings)
+    (and (call-next-method)
+         (multiple-value-bind (user password) (hunchentoot:authorization)
+           (or (and (string= user "hello")
+                    (string= password "world"))
+               (hunchentoot:require-authorization)))))
+
+  (defun @http-auth-require (route)
+    (make-instance 'http-auth-route :target route))
+
+  (restas:mount-submodule -tmp- (#:restas.directory-publisher @http-auth-require)
+    (restas.directory-publisher:*baseurl* '("tmp"))
+    (restas.directory-publisher:*directory* #P"/tmp/")
+    (restas.directory-publisher:*autoindex* t))
+
+.. _WSGI: http://en.wikipedia.org/wiki/Web_Server_Gateway_Interface
+.. _RESTAS: http://restas.lisper.ru/
+.. _restas-directory-publisher: http://github.com/archimag/restas-directory-publisher

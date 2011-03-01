@@ -1,0 +1,107 @@
+.. -*- RST -*-
+
+.. _manual-decorators:
+
+Декораторы
+==========
+
+Одной из заманчивых возможностей приложений на базе `WSGI`_ является использование
+middleware-прослоек. Для `RESTAS`_ аналогичные возможности предоставляют декораторы.
+Данная возможность основана на использовании класса :class:`routes:proxy-route`
+для создания обёрток над маршрутами и переопределения их поведения с помощью
+специализации соответствующих generic-методов.
+
+**Декоратор** - функция, которая принимает маршрут и возвращает другой.
+Например, для запрета кэширования браузерами результатов HTTP-запросов можно
+использовать такой декоратор:
+
+.. code-block:: common-lisp
+
+  (defclass no-cache-route (routes:proxy-route) ())
+
+  (defmethod process-route :before ((route no-cache-route) bindings)
+    (setf (hunchentoot:header-out :expires)
+          (hunchentoot:rfc-1123-date))  
+    (setf (hunchentoot:header-out :cache-control)
+          "max-age=0, no-store, no-cache, must-revalidate"))
+
+  (defun @no-cache (route)
+    (make-instance 'no-cache-route :target route))
+
+Теперь можно использовать данный декоратор при определении маршрута:
+
+.. code-block:: common-lisp
+
+  (restas:define-route main ("" :decorators '(@no-cahe))
+    "<h1>Hello world!</h1>")
+
+Либо, его можно применить к модулю целиком
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:restas.hello-world
+    (:use :cl)
+    (:decorators #'restas:@no-caсhe))
+
+Или даже при подключении субмодуля:
+
+.. code-block:: common-lisp
+
+  (restas:mount-submodule test-hello-world (#:hello-world restas:@no-caсhe))
+
+Все маршруты, определённые с помощью :macro:`restas:define-route`, перед помещение в
+дерево диспетчеризации пропускаются через последовательность декораторов. В первую
+очередь для обработки маршрута используются декораторы указанные в :macro:`restas:define-route`,
+затем декораторы указанные в :macro:`restas:define-module` и наконец декораторы указанные
+в :macro:`restas:mount-submodule`. Таким образом, в дерево помещается не оригинальный
+объект класса :class:`restas:route`, а цепочка вложенных друг в друга прокси-объектов.
+
+Определение нового декоратора состоит из определения класса, наследующего от :class:`routes:proxy-route`,
+специализации для него одного или нескольких generic-методов и определении функции
+для создания объектов этого класса из оригинальных объектов.
+
+При определении подобным образом новых классов маршрутов имеет смысл специализировать
+следующие методы:
+
+* :fun:`routes:route-check-conditions` (route bindings) - 
+  вызывается после того, как шаблон URL маршрута будет сопоставлен URL-запроса
+  и позволяет определить дополнительные ограничения. Если возвращается :hs:`T`, то маршрут
+  считается удовлетворяющим запросу, в случае :hs:`NIL` маршрут отбрасывается и система
+  переходит к рассмотрению следующего.
+
+* :fun:`restas:process-route` (route bindings) -
+  вызывается для реальной обработки запроса.
+
+Декораторы можно использовать, например, для:
+
+* Аутентификации/авторизации
+
+* Тонкой настройки заголовков ответа
+
+* Настройки окружения, в котором будет происходить обработка запроса
+
+Ниже тривиальный пример использования декоратора для требования HTTP-аутентификации при
+просмотре содержимого директории, опубликованного с помощью модуля `restas-directory-publisher`_.
+
+.. code-block:: common-lisp
+
+  (defclass http-auth-route (routes:proxy-route) ())
+
+  (defmethod routes:route-check-conditions ((route http-auth-route) bindings)
+    (and (call-next-method)
+         (multiple-value-bind (user password) (hunchentoot:authorization)
+           (or (and (string= user "hello")
+                    (string= password "world"))
+               (hunchentoot:require-authorization)))))
+
+  (defun @http-auth-require (route)
+    (make-instance 'http-auth-route :target route))
+
+  (restas:mount-submodule -tmp- (#:restas.directory-publisher @http-auth-require)
+    (restas.directory-publisher:*baseurl* '("tmp"))
+    (restas.directory-publisher:*directory* #P"/tmp/")
+    (restas.directory-publisher:*autoindex* t))
+
+.. _WSGI: http://ru.wikipedia.org/wiki/WSGI
+.. _RESTAS: http://restas.lisper.ru/
+.. _restas-directory-publisher: http://github.com/archimag/restas-directory-publisher

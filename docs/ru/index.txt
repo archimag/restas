@@ -17,15 +17,14 @@
 Подробности
 -----------
 
-* :ref:`Маршруты <manual-routes>`
+* **Логика:**
+  :ref:`Маршруты <manual-routes>` | :ref:`Модули <manual-modules>` | :ref:`Декораторы <manual-decorators>`
 
-* :ref:`Модули <manual-modules>`
+* **Представление:**
+  :ref:`Разделение логики и представления <manual-view>` | :ref:`Специальные страницы <manual-special-pages>`
 
-* :ref:`Разделение логики и представления <manual-view>` | :ref:`Специальные страницы <manual-special-pages>`
-
-* :ref:`Демонизация <manual-daemon>`
-
-* :ref:`Интеграция со SLIME <manual-slime>`
+* **Инструменты:**
+  :ref:`Демонизация <manual-daemon>` | :ref:`Интеграция со SLIME <manual-slime>`
 
 Поддержка
 ---------

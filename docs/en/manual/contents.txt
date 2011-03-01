@@ -10,5 +10,6 @@ Manual
    modules
    view
    special-pages
+   decorators
    daemon
    slime

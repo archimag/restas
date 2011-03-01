@@ -17,15 +17,14 @@ First steps
 Details
 -------
 
-* :ref:`Routes <manual-routes>`
+* **Logic:**
+  :ref:`Routes <manual-routes>` | :ref:`Modules <manual-modules>` | :ref:`Decorators <manual-decorators>`
 
-* :ref:`Modules <manual-modules>`
+* **View:**
+  :ref:`Separation of logic and representation <manual-view>` | :ref:`Special pages <manual-special-pages>`
 
-* :ref:`Separation of logic and representation <manual-view>` | :ref:`Special pages <manual-special-pages>`
-
-* :ref:`Daemonization <manual-daemon>`
-
-* :ref:`SLIME integration <manual-slime>`
+* **Auxiliary:**
+  :ref:`Daemonization <manual-daemon>` | :ref:`SLIME integration <manual-slime>`
 
 Support
 -------
