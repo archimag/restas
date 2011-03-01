@@ -19,6 +19,6 @@
   (setf (hunchentoot:header-out :cache-control)
         "max-age=0, no-store, no-cache, must-revalidate"))
 
-(defun no-cache-decorator (route)
+(defun @no-cache (route)
   (make-instance 'no-cache-route :target route))
 
