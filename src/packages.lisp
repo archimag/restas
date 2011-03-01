@@ -77,10 +77,6 @@
            
            ;; misc
            #:request-full-uri
-           
-           ;; hooks
-           #:*after-dispatch-request-hook*
-           #:*before-dispatch-request-hook*
 
            ;; decorators
            #:@no-cache))

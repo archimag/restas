@@ -60,14 +60,6 @@
   (if *standard-special-page-p*
       (call-next-method)))
 
-(defmethod hunchentoot:acceptor-dispatch-request :before ((acceptor restas-acceptor-mixin) request)
-  (dolist (function *before-dispatch-request-hook*)
-      (funcall function)))
-
-(defmethod hunchentoot:acceptor-dispatch-request :after ((acceptor restas-acceptor-mixin) request)
-  (dolist (function *after-dispatch-request-hook*)
-      (funcall function)))
-
 (defun request-hostname-port (acceptor request)
   (let ((host (cdr (assoc :host (hunchentoot:headers-in request)))))
     (if (find #\: host)

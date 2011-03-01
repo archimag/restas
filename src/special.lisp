@@ -32,9 +32,3 @@
 (defvar *debugging-threads-lock* (bt:make-lock "debugging threads lock")
   "A global lock to prevent two threads from modifying *debugging-threads* at
 the same time")
-
-(defvar *before-dispatch-request-hook* '()
-  "Hook run before dispatch request")
-
-(defvar *after-dispatch-request-hook* '()
-  "Hook run after dispatch request")
