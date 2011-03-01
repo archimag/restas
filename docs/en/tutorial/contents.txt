@@ -1,7 +1,7 @@
 .. -*- RST -*-
 
-Introduction
-============
+Tutorials
+=========
 
 .. toctree::
    :maxdepth: 1
