@@ -184,20 +184,19 @@ API Reference
   Инициализирует новый модуль: создаёт новый :hs:`package` и проводит его инициализацию
   (добавляет в него некоторые служебные переменные)
 
-.. defmacro:: restas:define-initialization
-  :args: (context) &body body
+.. defun:: restas:initialize-module-instance
+  :args: (module context) 
 
-  Определяет функцию, которая вызывается при подключении модуля с помощью
-  :macro:`restas:mount-submodule`. Может использваться, например, для дополнительной
-  настройки контекста субмодуля. Должна находиться внутри пакета, определённого
-  с помощью :macro:`restas:define-module`.
+  Generic-функция, вызывается при подключении модуля с помощью :macro:`restas:mount-submodule`.
+  Может использваться, например, для дополнительной настройки контекста
+  субмодуля. Должна находиться внутри пакета, определённого с помощью
+  :macro:`restas:define-module`.
 
-.. defmacro:: restas:define-finalization
-  :args: (context) &body body
+.. defun:: restas:finalize-module-instance
+  :args: (module context)
 
-  Определяет функцию, противоположную определённой с помощью :macro:`restas:define-initialization`.
-  Вызывается при повторном вычислении :macro:`restas:mount-submodule` и может использоваться,
-  например, для освобождении ресрсов, выделенных при инциализации субмодуля.
+  Generic-функция, вызывается при повторном вычислении :macro:`restas:mount-submodule` и может
+  использоваться, например, для освобождении ресрсов, выделенных при инциализации субмодуля.
 
 Субмодули
 =========

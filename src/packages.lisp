@@ -30,8 +30,6 @@
            #:define-module
            #:initialize-module-instance
            #:finalize-module-instance
-           #:define-initialization
-           #:define-finalization
            #:define-default-render-method
            
            ;; submodules

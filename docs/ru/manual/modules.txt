@@ -137,12 +137,12 @@ copy/paste с последующим редактированием кода, ч
 `Russian Lisp Planet`_ нуждается в механизме для сохранения объекта-робота (он по
 заданному расписанию считывает ленты и объединяет их в одну), который должен быть
 вычислен на основе переменных, которые могут быть помещены в контекст submodule.
-Для такого случая предусмотрен макрос :macro:`restas:define-initialization`, вот
-реальный код из planet.lisp:
+Для такого случая предусмотрена generic-функция :fun:`restas:define-initialization`,
+вот реальный код из planet.lisp:
 
 .. code-block:: common-lisp
 
-  (restas:define-initialization (context)
+  (defmethod restas:initialize-module-instance :before ((module (eql #.*package*)) context)
     (restas:with-context context
       (when *feeds*
         (restas:context-add-variable
@@ -160,11 +160,11 @@ copy/paste с последующим редактированием кода, ч
 вычислен при вычислении формы :macro:`restas:mount-submodule`. Поскольку создание
 объекта spider приводит к запуску планировщика (в частности, создаётся таймер), то
 также надо уметь останавливать их при повторном вычислении формы :macro:`restas:mount-submodule`,
-для этого предусмотрен макрос :macro:`restas:define-finalization`:
+для этого предусмотрена generic-функция :fun:`finalize-module-instance`
 
 .. code-block:: common-lisp
 
-  (restas:define-finalization (context)
+  (defmethod restas:finalize-module-instance :after ((module (eql #.*package*)) context)
     (let ((spider (restas:context-symbol-value context '*spider*)))
       (when spider
         (spider-stop-scheduler spider))))

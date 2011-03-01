@@ -35,14 +35,10 @@
   (:documentation "Create list of routes for module with of the parent submodule"))
 
 (defgeneric initialize-module-instance (module context)
-  (:documentation "Call for module initialization")
-  (:method (module context)
-    (declare (ignore module context))))
+  (:documentation "Call for module initialization"))
 
 (defgeneric finalize-module-instance (module context)
-  (:documentation "Call for module finalization")
-  (:method (module context)
-    (declare (ignore module context))))
+  (:documentation "Call for module finalization"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; submodule
@@ -54,22 +50,6 @@
    (context :initarg :context :initform (make-context) :reader submodule-context)
    (parent :initarg :parent :initform nil :reader submodule-parent)
    (decorators :initarg :decorators :initform nil :reader submodule-decorators)))
-
-(defmethod reinitialize-instance :before ((obj submodule) &rest initargs &key &allow-other-keys)
-  (declare (ignore initargs))
-  (let ((*submodule* obj))
-    (finalize-module-instance (submodule-module obj)
-                              (submodule-context obj)))
-  (iter (for thing in (submodule-submodules obj))
-        (let ((*submodule* thing))
-          (finalize-module-instance (submodule-module obj)
-                                    (submodule-context obj)))))
-
-(defmethod shared-initialize :after ((obj submodule) slot-names &rest initargs &key &allow-other-keys)
-  (declare (ignore initargs))
-  (let ((*submodule* obj))
-    (initialize-module-instance (submodule-module obj)
-                                (slot-value obj 'context))))
 
 (defun find-submodule (symbol &optional (parent *submodule*))
   (find-child-submodule symbol parent))

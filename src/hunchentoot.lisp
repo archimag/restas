@@ -122,7 +122,6 @@
           *acceptors*))
   (add-toplevel-submodule (make-submodule module :context context)
                           hostname
-                          port)
-  (reconnect-all-routes :reinitialize nil))
+                          port))
     
     

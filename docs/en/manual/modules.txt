@@ -128,12 +128,12 @@ to control created context inside the module. E.g. module
 mechanism to save a robot object (which periodically reads feeds and
 merges them into a single one), which should be computed on the basis of
 variables which can be placed in submodule's context. For such cases a
-macro :macro:`restas:define-initialization` is provided. Here is
+generic function :fun:`restas:define-initialization` is provided. Here is
 the real code from planet.lisp:
 
 .. code-block:: common-lisp
 
-  (restas:define-initialization (context)
+  (defmethod restas:initialize-module-instance :before ((module (eql #.*package*)) context)
     (restas:with-context context
       (when *feeds*
         (restas:context-add-variable
@@ -151,12 +151,12 @@ with variable :var:`*spider*` and is placed in the context of created submodule.
 The present code will be evaluated during evaluation of the :macro:`restas:mount-submodule`
 form. Considering creation of a spider object leads to launching a scheduler
 (in particular, a timer is created) we need to know how to stop it when evaluating
-:macro:`restas:mount-submodule` in the second time. The macro
-:macro:`restas:define-finalization` is provided for this.
+:macro:`restas:mount-submodule` in the second time. The generic function
+:fun:`restas:define-finalization` is provided for this.
 
 .. code-block:: common-lisp
 
-  (restas:define-finalization (context)
+  (defmethod restas:finalize-module-instance :after ((module (eql #.*package*)) context)
     (let ((spider (restas:context-symbol-value context '*spider*)))
       (when spider
         (spider-stop-scheduler spider))))

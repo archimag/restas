@@ -38,17 +38,25 @@
                                              :hostname hostname
                                              :port port)
                               *vhosts*)))))
-    (push submodule
-          (slot-value vhost 'modules)))
+    (push submodule (slot-value vhost 'modules))
+    (let ((*submodule* submodule))
+      (initialize-module-instance (submodule-module submodule)
+                                  (submodule-context submodule))
+      (connect-submodule submodule (slot-value vhost 'mapper))))
   (values))
   
 
-(defun reconnect-all-routes (&key (reinitialize t))
+(defun reconnect-all-routes ()
   (iter (for vhost in *vhosts*)
         (let ((mapper (slot-value vhost 'mapper)))
           (routes:reset-mapper mapper)
-          (iter (for module in (slot-value vhost 'modules))
-                (when reinitialize
-                  (reinitialize-instance module))
-                (connect-submodule module mapper))))
+          (iter (for sub in (slot-value vhost 'modules))
+                (let ((*submodule* sub))
+                  (finalize-module-instance (submodule-module sub)
+                                            (submodule-context sub))
+                  (reinitialize-instance sub)
+                  (initialize-module-instance (submodule-module sub)
+                                              (submodule-context sub)))
+                
+                (connect-submodule sub mapper))))
   (values))

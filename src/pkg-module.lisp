@@ -22,9 +22,7 @@
 (defclass pkg-submodule (submodule)
   ((submodules :accessor submodule-submodules)))
 
-(defmethod shared-initialize ((obj pkg-submodule) slot-names &rest initargs &key )
-  (declare (ignore initargs))
-  (call-next-method)
+(defmethod shared-initialize :after ((obj pkg-submodule) slot-names &key)
   (setf (submodule-submodules obj)
         (iter (for (key thing) in-hashtable (symbol-value (find-symbol +submodules-symbol+ (submodule-module obj))))
               (destructuring-bind (pkg ctxt decorators) thing
@@ -34,6 +32,18 @@
                                         :context (copy-restas-context ctxt)
                                         :parent obj
                                         :decorators decorators))))))
+
+(defmethod initialize-module-instance ((module package) context)
+  (iter (for child in (submodule-submodules *submodule*))
+        (let ((*submodule* child))
+          (initialize-module-instance (submodule-module child)
+                                      (submodule-context child)))))
+
+(defmethod finalize-module-instance ((module package) context)
+  (iter (for child in (submodule-submodules *submodule*))
+        (let ((*submodule* child))
+          (finalize-module-instance (submodule-module child)
+                                    (submodule-context child)))))
 
 (defmacro with-submodule-context (submodule &body body)
   `(with-context (slot-value ,submodule 'context)
@@ -106,10 +116,12 @@
            (defparam +routes-symbol+ (defpackage ,impl-package-name (:use)))
            (defparam +baseurl-symbol+)
            (defparam +submodules-symbol+ (make-hash-table))
-           (defparam +render-method-symbol+ ',(second (assoc :default-render-method options)))
-           (defparam +content-type-symbol+ ',(second (assoc :default-content-type options)))
+           (defparam +render-method-symbol+ ,(second (assoc :default-render-method options)))
+           (defparam +content-type-symbol+ ,(second (assoc :default-content-type options)))
            (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
-           (defparam +decorators-sybmol+ ',(cdr (assoc :decorators options)))
+           (defparam +decorators-sybmol+ (list ,@(cdr (assoc :decorators options))))
+           (eval-when (:execute)
+             (reconnect-all-routes))
            *package*)))))
 
 (defmacro mount-submodule (name (module &rest decorators) &body bindings)
@@ -125,14 +137,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Macros for simplify develop modules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmacro define-initialization ((context) &body body)
-  `(defmethod initialize-module-instance ((module (eql ,*package*)) ,context)
-     ,@body))
-
-(defmacro define-finalization ((context) &body body)
-  `(defmethod finalize-module-instance ((module (eql ,*package*)) ,context)
-     ,@body))
 
 (defmacro define-default-render-method ((data) &body body)
   `(setf ,(find-symbol +render-method-symbol+ *package*)

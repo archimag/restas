@@ -176,20 +176,18 @@ Modules
 
   Initializes a new module, creates new :hs:`package`, adds certain service variables to it, and conducts its initialization.
 
-.. defmacro:: restas:define-initialization
-  :args: (context) &body body
+.. defun:: restas:initialize-module-instance
+  :args: (module context) 
 
-  Defines a function for calling it when the module is mounted with
-  :macro:`restas:mount-submodule`. It can be called, for example, for additional 
-  adjustment of submodule context. It should be placed in the package, defined with
-  aid of :macro:`restas:define-module`.
+  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-submodule`
+  and can be used, for example, for additional adjustment of submodule context.
+  It should be placed in the package, defined with aid of :macro:`restas:define-module`.
 
-.. defmacro:: restas:define-finalization
-  :args: (context) &body body
+.. defun:: restas:finalize-module-instance
+  :args: (module context)
 
-  Defines a function contrary to those defined with :macro:`restas:define-initialization`.
-  Is called at the repeated evaluation of :macro:`restas:mount-submodule` and can be used
-  e.g. for freeing resources allocated at submodule initialization.
+  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-submodule`
+  and can be used e.g. for freeing resources allocated at submodule initialization.
 
 Submodules
 ==========
