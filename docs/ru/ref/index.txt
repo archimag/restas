@@ -74,7 +74,7 @@ API Reference
 ========
 
 .. defmacro:: restas:define-route
-  :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
+  :args: name (template &key (method :get) content-type render-method requirement parse-vars decorators) &body body
 
   Создаёт новый маршрут в текущем модуле
 
@@ -104,6 +104,8 @@ API Reference
 
   * parse-vars - *plist* с именами переменных (в виде :hs:`keyword`) и функциям
     их парсинга.
+
+  * decorators - список декораторов маршрута, см. :ref:`manual-decorators`.
 
   * body - тело обработчика, может содержать произвольный код, результат выполнения
     которого возвращается клиенту (после обработки с помощью :fun:`restas:render-object`).
@@ -202,7 +204,7 @@ API Reference
 =========
 
 .. defmacro:: restas:mount-submodule
-  :args: name (module) &rest bindings
+  :args: name (module &rest decorators) &rest bindings
 
   Определяет субмодуль, который становится частью модуля, в пакете которого
   он определяется.
@@ -210,6 +212,8 @@ API Reference
   * name - индентификатор (:hs:`symbol`) субмодуля.
 
   * module - `package designator`_ присоеденяемого модуля.
+
+  * decorators - список декораторов субмодуля, см. :ref:`manual-decorators`.
 
   * bindings - набор символов переменных и их значений, определяющий контекст
     субмодуля. Обработка маршрутов, принадлежащих данному субмодулю, будет

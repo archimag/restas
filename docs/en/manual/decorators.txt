@@ -2,7 +2,7 @@
 
 .. _manual-decorators:
 
-Декораторы
+Decorators
 ==========
 
 One of the attractive features of applications based on the `WSGI`_ is the use of a

@@ -72,7 +72,7 @@ Routes
 ======
 
 .. defmacro:: restas:define-route
-  :args: name (template &key (method :get) content-type render-method requirement parse-vars) &body body
+  :args: name (template &key (method :get) content-type render-method requirement parse-vars decorators) &body body
 
   Creates new route in the current module
 
@@ -98,6 +98,8 @@ Routes
 
   * parse-vars - *plist* with variables names (as :hs:`keyword`s) and functions
     for parsing them.
+
+  * decorators - list of decorators. See :ref:`manual-decorators`.
 
   * body - handler body can contain arbitrary code; its result is returned
     to the client (after processing it with :fun:`restas:render-object`).
@@ -193,13 +195,15 @@ Submodules
 ==========
 
 .. defmacro:: restas:mount-submodule
-  :args: name (module) &rest bindings
+  :args: name (module &rest decorators) &rest bindings
 
   Defines a submodule.
 
   * name - identifyer (:hs:`symbol`) of a submodule.
 
   * module - `package designator`_  of the mounted module.
+
+  * decorators - list of decorators. See :ref:`manual-decorators`.
 
   * bindings - the set of variables and their values defining the context of
     submodule. The processing of routes from this submodule will be conducted
