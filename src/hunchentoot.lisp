@@ -86,7 +86,13 @@
                                                 (hunchentoot:request-uri*))
           (not-found-if-null route)
           (handler-bind ((error #'maybe-invoke-debugger))
-            (process-route route bindings)))))))
+            (let ((result (process-route route bindings)))
+              (cond
+                ((pathnamep result)
+                 (hunchentoot:handle-static-file result
+                                                 (or (hunchentoot:mime-type result)
+                                                     (hunchentoot:content-type hunchentoot:*reply*))))
+                (t result)))))))))
 
 (defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-acceptor) request)
   (restas-dispatch-request acceptor request))
