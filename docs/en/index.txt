@@ -21,7 +21,7 @@ Details
   :ref:`Routes <manual-routes>` | :ref:`Modules <manual-modules>` | :ref:`Decorators <manual-decorators>`
 
 * **View:**
-  :ref:`Separation of logic and representation <manual-view>` | :ref:`Special pages <manual-special-pages>`
+  :ref:`Separation of logic and view <manual-view>` | :ref:`Special pages <manual-special-pages>`
 
 * **Auxiliary:**
   :ref:`Daemonization <manual-daemon>` | :ref:`SLIME integration <manual-slime>`

@@ -48,7 +48,7 @@ Or even when mounted the submodule:
 
   (restas:mount-submodule test-hello-world (#:hello-world restas:@no-caсhe))
 
-All routes identified through :macro:`restas:define-route`, before placement in
+All routes defined through :macro:`restas:define-route`, before placement in
 dispatching tree passed through a succession of decorators. In the first queue
 for processing route used decorators listed in :macro:`restas:define-route`, then
 decorators listed in :macro:`restas:define-module` and finally decorators listed
