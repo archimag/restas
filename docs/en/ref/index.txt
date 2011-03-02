@@ -164,11 +164,11 @@ Routes
 .. defun:: restas:abort-route-handler
    :args: obj &key return-code content-typе
 
-   Immediately abort handling the route and pass *OBJ* in :fun:`restas:render-object`
-   for the formation of a response. If specified the keyword argument *RETURN-CODE*
-   then it used to set the HTTP response status that allows you to return a special
-   page (500, 404, etc.) with arbitrary content (by default these pages formed in
-   a standard way, regardless of the result returned by the handler).
+   Immediately abort handling the route and pass *OBJ* to :fun:`restas:render-object`
+   to render a response. If the keyword argument *RETURN-CODE* is specified
+   then it used to set the HTTP response status to allow you to return a special
+   page (500, 404, etc.) with arbitrary content (by default these pages are formed in
+   a uniform way, regardless of the result returned by the handler).
 
 Modules
 =======
