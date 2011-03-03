@@ -41,3 +41,25 @@
 (defun @nginx-accel-redirect (origin)
   (make-instance 'nginx-accel-redirect-route :target origin))
              
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Apache X-Sendifle support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass apache-xsendfile-route (routes:proxy-route) ())
+
+(defmethod process-route ((route apache-xsendfile-route) bindings)
+  (let ((result (call-next-method)))
+    (cond
+      ((pathnamep result)
+       (setf (hunchentoot:header-out :content-type)
+             (or (hunchentoot:mime-type result)
+                 (hunchentoot:content-type*)))
+       (setf (hunchentoot:header-out :x-sendfile)
+             #+sbcl (sb-ext:native-namestring result)
+             #-sbcl (namestring result))
+       "")
+      (t result))))
+
+(defun @apache-xsendfile (origin)
+  (make-instance 'apache-xsendfile-route :target origin))
+

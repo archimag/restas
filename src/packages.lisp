@@ -80,4 +80,5 @@
 
            ;; decorators
            #:@no-cache
-           #:@nginx-accel-redirect))
+           #:@nginx-accel-redirect
+           #:@apache-xsendfile))
