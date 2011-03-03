@@ -79,4 +79,5 @@
            #:request-full-uri
 
            ;; decorators
-           #:@no-cache))
+           #:@no-cache
+           #:@nginx-accel-redirect))

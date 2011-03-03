@@ -22,3 +22,22 @@
 (defun @no-cache (route)
   (make-instance 'no-cache-route :target route))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Nginx X-Accel-Redirect support
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass nginx-accel-redirect-route (routes:proxy-route) ())
+
+(defmethod process-route ((route nginx-accel-redirect-route) bindings)
+  (let ((result (call-next-method)))
+    (cond
+      ((pathnamep result)
+       (setf (hunchentoot:header-out :x-accel-redirect)
+             #+sbcl (sb-ext:native-namestring result)
+             #-sbcl (namestring result))
+       "")
+      (t result))))
+
+(defun @nginx-accel-redirect (origin)
+  (make-instance 'nginx-accel-redirect-route :target origin))
+             
