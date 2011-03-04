@@ -9,10 +9,11 @@
 (in-package :restas)
 
 (defgeneric process-route (route bindings))
+(defgeneric route-submodule (route))
 
 (defclass route (routes:route)
   ((symbol :initarg :symbol :reader route-symbol)
-   (submodule :initarg :submodule :initform nil)
+   (submodule :initarg :submodule :initform nil :reader route-submodule)
    (required-method :initarg :required-method :initform nil :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
    (render-method :initarg :render-method :initform #'identity)
@@ -44,18 +45,24 @@
 (defmethod routes:route-name ((route route))
   (string-downcase (write-to-string (slot-value route 'symbol))))
 
+(defmethod route-submodule ((route routes:proxy-route))
+  (route-submodule (routes:proxy-route-target route)))
+
+(defmethod process-route :around ((route routes:base-route) bindings)
+  (with-submodule (route-submodule route)
+    (call-next-method)))
+
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
     (setf (hunchentoot:header-out name)
           (if (functionp value)
               (funcall value)
               value)))
-  (with-submodule (slot-value route 'submodule)
-    (let ((*route* route)
-          (*bindings* bindings))
-      (render-object (route-render-method route)
-                     (catch 'route-done
-                       (funcall (slot-value route 'symbol)))))))
+  (let ((*route* route)
+        (*bindings* bindings))
+    (render-object (route-render-method route)
+                   (catch 'route-done
+                     (funcall (slot-value route 'symbol))))))
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code

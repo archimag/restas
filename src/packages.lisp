@@ -80,5 +80,10 @@
 
            ;; decorators
            #:@no-cache
+
            #:@nginx-accel-redirect
+           #:*nginx-internal-location*
+           #:*nginx-internal-alias*
+           #:*nginx-internal-root*
+           
            #:@apache-xsendfile))

@@ -23,18 +23,41 @@
   (make-instance 'no-cache-route :target route))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Nginx X-Accel-Redirect support
+;;;; Nginx X-Accel-Redirect decorator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass nginx-accel-redirect-route (routes:proxy-route) ())
 
+(defvar *nginx-internal-location* nil)
+(defvar *nginx-internal-alias* nil)
+(defvar *nginx-internal-root* nil)
+
+(defun concat-pathnames (path1 path2)
+  (merge-pathnames (make-pathname
+                    :directory (cons :relative
+                                     (cdr (pathname-directory path2))))
+                   (fad:pathname-as-directory path1)))
+
 (defmethod process-route ((route nginx-accel-redirect-route) bindings)
+  (unless *nginx-internal-location*
+    (error "*nginx-internal-location* is not set!"))
   (let ((result (call-next-method)))
     (cond
       ((pathnamep result)
+       (setf (hunchentoot:header-out :content-type)
+             (or (hunchentoot:mime-type result)
+                 (hunchentoot:content-type*)))
        (setf (hunchentoot:header-out :x-accel-redirect)
-             #+sbcl (sb-ext:native-namestring result)
-             #-sbcl (namestring result))
+             (or (and *nginx-internal-root*
+                      (cffi-sys:native-namestring
+                       (merge-pathnames (enough-namestring result
+                                                           (concat-pathnames *nginx-internal-root*
+                                                                             *nginx-internal-location*))
+                                        (fad:pathname-as-directory *nginx-internal-location*))))
+                 (and *nginx-internal-alias*
+                      (merge-pathnames (cffi-sys:native-namestring (enough-namestring result *nginx-internal-alias*))
+                                       *nginx-internal-location*))
+                 (error "*nginx-internal-root* or *nginx-internal-alias* should be set!")))
        "")
       (t result))))
 
@@ -42,7 +65,7 @@
   (make-instance 'nginx-accel-redirect-route :target origin))
              
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Apache X-Sendifle support
+;;;; Apache X-Sendifle decorator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass apache-xsendfile-route (routes:proxy-route) ())
@@ -55,8 +78,7 @@
              (or (hunchentoot:mime-type result)
                  (hunchentoot:content-type*)))
        (setf (hunchentoot:header-out :x-sendfile)
-             #+sbcl (sb-ext:native-namestring result)
-             #-sbcl (namestring result))
+             (cffi-sys:native-namestring result))
        "")
       (t result))))
 
