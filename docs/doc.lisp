@@ -38,7 +38,7 @@
 
 (restas:mount-submodule -publisher- (#:restas.directory-publisher))
 
-(restas:define-initialization (context)
+(defmethod restas:initialize-module-instance ((module (eql #.*package*)) context)
   (restas:with-context context
     (make-documentation *restas-documentation-dir*)
     (setf (restas:context-symbol-value (restas:submodule-context (restas:find-submodule '-publisher-))
