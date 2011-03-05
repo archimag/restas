@@ -192,17 +192,19 @@
                            'restore-global-context))))))
 
 (defstruct %restas-vhost
-  vhost
-  port)
+  vhost)
 
 (defstruct %restas-vhost-list
   vhosts)
 
 (defun %restas-vhost-string (%vhost)
-  (format nil
-          "http://~A/"
-          (or (slot-value (%restas-vhost-vhost %vhost) 'restas::host)
-              (format nil "*:~A" (%restas-vhost-port %vhost)))))
+  (let ((hostname (or (restas::vhost-hostname (%restas-vhost-vhost %vhost))
+                      "*"))
+        (port (restas::vhost-port (%restas-vhost-vhost %vhost))))
+    (if port
+        (format nil "http://~A:~A/" hostname port)
+        (format nil "http://~A/" hostname))))
+
 
 (defmethod swank:emacs-inspect ((vhosts %restas-vhost-list))
   `("" (:newline)
@@ -239,10 +241,5 @@
 (swank:defslimefun inspect-vhosts ()
   (swank:inspect-object
    (make-%restas-vhost-list
-    :vhosts (let ((vhosts nil))
-              (iter (for acceptor in restas::*acceptors*)
-                    (iter (for vhost in (slot-value acceptor 'restas::vhosts))
-                          (push (make-%restas-vhost :vhost vhost
-                                                    :port (hunchentoot:acceptor-port acceptor))
-                                vhosts)))
-              vhosts))))
+    :vhosts (iter (for vhost in restas::*vhosts*)
+                  (collect (make-%restas-vhost :vhost vhost))))))
