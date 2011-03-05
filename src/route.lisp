@@ -30,17 +30,20 @@
                                        'module))
       #'identity))
 
-(defmethod routes:route-check-conditions ((route route) bindings)
+(defmethod routes:route-check-conditions :around ((route routes:base-route) bindings)
   (let ((*route* route))
-    (with-submodule (slot-value route 'submodule)
-      (with-slots (required-method arbitrary-requirement) route
-        (and (if required-method
-                 (eql (hunchentoot:request-method*) required-method)
-                 t)
-             (if arbitrary-requirement
-                 (let ((*bindings* bindings))
-                   (funcall arbitrary-requirement))
-                 t))))))
+    (with-submodule (route-submodule route)
+      (call-next-method))))
+
+(defmethod routes:route-check-conditions ((route route) bindings)
+  (with-slots (required-method arbitrary-requirement) route
+    (and (if required-method
+             (eql (hunchentoot:request-method*) required-method)
+             t)
+         (if arbitrary-requirement
+             (let ((*bindings* bindings))
+               (funcall arbitrary-requirement))
+             t))))))
 
 (defmethod routes:route-name ((route route))
   (string-downcase (write-to-string (slot-value route 'symbol))))
