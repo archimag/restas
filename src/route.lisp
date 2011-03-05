@@ -43,7 +43,7 @@
          (if arbitrary-requirement
              (let ((*bindings* bindings))
                (funcall arbitrary-requirement))
-             t))))))
+             t))))
 
 (defmethod routes:route-name ((route route))
   (string-downcase (write-to-string (slot-value route 'symbol))))
