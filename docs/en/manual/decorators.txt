@@ -9,20 +9,21 @@ One of the attractive features of applications based on `WSGI`_ is the
 use of "middleware" components. `RESTAS`_ has similar capabilities
 provided by decorators.  This is done by using
 :class:`routes:proxy-route` to create a wrapper over the routes and
-redefining their behavior by specializing on the associated generic
+redefining their behaviors by specializing on the associated generic
 functions.
 
 **Decorator** - a function that takes the route and returns a different route.
 
-Decorators can be used for things like:
+Decorators can be used for many purposes including:
 
 * Authentication/authorization
 
-* Fine-tuning the response headers
+* Fine-tuning response headers
 
-* Environment settings around processing of the request
+* Environment settings used for request processing
 
-For example, to completely prevent caching in browsers you can use this decorator:
+For example, to completely prevent caching in browsers you can define
+a decorator named :fun:`@no-cache` like so:
 
 .. code-block:: common-lisp
 
@@ -30,21 +31,21 @@ For example, to completely prevent caching in browsers you can use this decorato
 
   (defmethod process-route :before ((route no-cache-route) bindings)
     (setf (hunchentoot:header-out :expires)
-          (hunchentoot:rfc-1123-date))  
+          (hunchentoot:rfc-1123-date))
     (setf (hunchentoot:header-out :cache-control)
           "max-age=0, no-store, no-cache, must-revalidate"))
 
   (defun @no-cache (route)
     (make-instance 'no-cache-route :target route))
 
-Now you can use this decorator when defining a route:
+Now you can use the decorator when defining a route:
 
 .. code-block:: common-lisp
 
   (restas:define-route main ("" :decorators '(@no-cahe))
     "<h1>Hello world!</h1>")
 
-Also it can be applied to the whole module:
+It can also be applied to the whole module:
 
 .. code-block:: common-lisp
 
@@ -58,28 +59,28 @@ Or even when mounting a submodule:
 
   (restas:mount-submodule test-hello-world (#:hello-world restas:@no-caсhe))
 
-All routes defined through :macro:`restas:define-route` pass through a
-series of decorators before being placed in the dispatch tree. The
-decorators listed in :macro:`restas:define-route` are applied first,
-then the decorators listed in :macro:`restas:define-module`, and
-finally the decorators listed in
-:macro:`restas:mount-submodule`. Thus, instead of the original
-:class:`restas:route` object, a chain of nested proxy objects is
-inserted in the dispatch tree.
+All routes, which are defined through :macro:`restas:define-route`,
+are passed through a series of decorators before being placed in the
+dispatch tree.  The decorators listed in :macro:`restas:define-route`
+are applied first, then the decorators listed in
+:macro:`restas:define-module`, and finally the decorators listed in
+:macro:`restas:mount-submodule`.  Thus, a chain of nested proxy
+objects is inserted into the dispatch tree instead of the original
+:class:`restas:route` object.
 
 To define a new decorator, you need to define a new class that
-inherits from :class:`routes:proxy-route`, define a function to create
-an object of this class from the original route, and specialize
-methods on the following generic functions:
+inherits from :class:`routes:proxy-route`, then define a function to
+create an object of this class from the original route, and define the
+specialized methods on the following generic functions:
 
-* :fun:`routes:route-check-conditions` (route bindings) - 
+* :fun:`routes:route-check-conditions` (route bindings) -
   called when the route template URL matches the request URL, allowing
-  you to define additional restrictions. If this function returns :hs:`T`, then the route is
-  considered to satisfy the request, in the case :hs:`NIL` the route is discarded and
-  the system goes to try the next route.
+  you to define additional restrictions.  If this function returns :hs:`T`, the route is
+  considered to satisfy the request; in case of :hs:`NIL` the route is discarded and
+  the system moves on to try the next route.
 
 * :fun:`restas:process-route` (route bindings) -
-  called for the actual request handling.
+  called for actual request handling.
 
 Below is an example of using a decorator for HTTP authentication when browsing
 a directory published via `restas-directory-publisher`_.
