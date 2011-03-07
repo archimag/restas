@@ -5,14 +5,24 @@
 Decorators
 ==========
 
-One of the attractive features of applications based on the `WSGI`_ is the use of a
-"middleware" components. `RESTAS`_  has similar capabilities provided by decorators. 
-This capabilities is based on use the class :class:`routes:proxy-route` for create
-a wrapper over the routes and a redefinition of their behavior via specialization of
-the generic methods.
+One of the attractive features of applications based on `WSGI`_ is the
+use of "middleware" components. `RESTAS`_ has similar capabilities
+provided by decorators.  This is done by using
+:class:`routes:proxy-route` to create a wrapper over the routes and
+redefining their behavior by specializing on the associated generic
+functions.
 
 **Decorator** - a function that takes the route and returns a different route.
-For example,  to completely prevent caching in browsers you can use this decorator:
+
+Decorators can be used for things like:
+
+* Authentication/authorization
+
+* Fine-tuning the response headers
+
+* Environment settings around processing of the request
+
+For example, to completely prevent caching in browsers you can use this decorator:
 
 .. code-block:: common-lisp
 
@@ -42,45 +52,37 @@ Also it can be applied to the whole module:
     (:use :cl)
     (:decorators #'restas:@no-caсhe))
 
-Or even when mounted the submodule:
+Or even when mounting a submodule:
 
 .. code-block:: common-lisp
 
   (restas:mount-submodule test-hello-world (#:hello-world restas:@no-caсhe))
 
-All routes defined through :macro:`restas:define-route`, before placement in
-dispatching tree passed through a succession of decorators. In the first queue
-for processing route used decorators listed in :macro:`restas:define-route`, then
-decorators listed in :macro:`restas:define-module` and finally decorators listed
-in :macro:`restas:mount-submodule`. Thus, in the dispatching tree inserted the
-chain of nested proxy objects instead the original object of class :class:`restas:route`.
+All routes defined through :macro:`restas:define-route` pass through a
+series of decorators before being placed in the dispatch tree. The
+decorators listed in :macro:`restas:define-route` are applied first,
+then the decorators listed in :macro:`restas:define-module`, and
+finally the decorators listed in
+:macro:`restas:mount-submodule`. Thus, instead of the original
+:class:`restas:route` object, a chain of nested proxy objects is
+inserted in the dispatch tree.
 
-For a definition of a new decorator is necessary to define a new class that inherits
-from :class:`routes:proxy-route`, specialize for him one or more generic-methods
-and define the functions for create object of this class from the original route.
-
-For created in this way new classes of routes makes sense to specialize the
-following methods:
+To define a new decorator, you need to define a new class that
+inherits from :class:`routes:proxy-route`, define a function to create
+an object of this class from the original route, and specialize
+methods on the following generic functions:
 
 * :fun:`routes:route-check-conditions` (route bindings) - 
-  called after the template URL of route will be match with URL of request and allows
-  you to define additional restrictions. If it returns :hs:`T`, then the route is
-  considered to satisfy the request, in the case :hs:`NIL` route is discarded and
-  the system goes to the next route.
+  called when the route template URL matches the request URL, allowing
+  you to define additional restrictions. If this function returns :hs:`T`, then the route is
+  considered to satisfy the request, in the case :hs:`NIL` the route is discarded and
+  the system goes to try the next route.
 
 * :fun:`restas:process-route` (route bindings) -
-  called for the real request handling.
+  called for the actual request handling.
 
-Decorators can be used, for example:
-
-* Authentication/authorization
-
-* Fine-tuning the response headers
-
-* Environment settings around processing of the request
-
-Below is a trivial example of using decorator for HTTP-authentication when browsing
-the directory which published via `restas-directory-publisher`_.
+Below is an example of using a decorator for HTTP authentication when browsing
+a directory published via `restas-directory-publisher`_.
 
 .. code-block:: common-lisp
 
