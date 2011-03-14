@@ -57,7 +57,7 @@ see section :ref:`manual-modules`).
 
 Pastebin data can be stored in a number of ways. We define an
 interface and a special variable :fun:`*storage*`, with which an
-outside application can specify an implementation for storing
+external application can specify an implementation for storing
 data. For development and debugging, a developer needs to have a
 functioning model, which is implemented by a trivial class
 :class:`memory-storage` providing a way of storing data in the
@@ -184,10 +184,11 @@ routes.lisp
 In this file, processed URLs and the operation logic are defined.
 Because all view logic is handled by :var:`*default-render-method*`
 object, route handlers should just gather and prepare data to process
-them with function :fun:`restas:render-object`.  The view logic, as I
-said before, is implemented on the basis of `cl-closure-template`_
-library which uses *plist* as input data format (you can read about
-using *property list* in more detail at `here
+them with function :fun:`restas:render-object` (more details on
+`RESTAS`_ documentation).  The view logic, as I said before, is
+implemented on the basis of `cl-closure-template`_ library which uses
+*plist* as input data format (you can read about using *property list*
+in more detail at `here
 <http://lisper.ru/pcl/practical-a-simple-database>`_), so route
 handlers generate data in this format.
 
