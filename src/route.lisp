@@ -226,13 +226,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun parse-route-url (url route-symbol &optional submodule-symbol)
-  (let ((mapper (make-instance 'routes:mapper)))
+  (let ((mapper (make-instance 'routes:mapper))
+        (submodule (if submodule-symbol
+                       (find-submodule  submodule-symbol)
+                       *submodule*)))
     (routes:connect mapper
                     (make-instance 'routes:route
                                    :template (route-template-from-symbol route-symbol
-                                                                         (if submodule-symbol
-                                                                             (find-submodule  submodule-symbol)
-                                                                             *submodule*))))
+                                                                         submodule)
+                                   :submodule submodule))
     (multiple-value-bind (route bindings) (routes:match mapper url)
       (if route
           (alexandria:alist-plist bindings)))))
