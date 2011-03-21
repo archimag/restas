@@ -68,6 +68,7 @@
            #:*swankport*
            #:*default-host-redirect*
            #:*asdf-central-registry*
+           #:*quicklisp-home*
            #:*asdf-load-systems*
            #:*sites*))
 
@@ -97,11 +98,14 @@
 
 (defpref *asdf-central-registry*)
 
+(defpref *quicklisp-home*)
+
 (defpref *asdf-load-systems*)
 
 (defpref *sites*)
 
 (defpref *default-host-redirect*)
+
 
 (delete-package '#:sbcl.daemon.preferences)
 
@@ -319,20 +323,21 @@
   (sb-posix:setsid))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; load asdf
+;;;; load asdf/quicklisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'asdf)
+
+(when (*quicklisp-home*)
+  (load (merge-pathnames "quicklisp/setup.lisp"
+                         *quicklisp-home*)))
 
 (loop
    for path in *asdf-central-registry*
    do (push path asdf:*central-registry*))
 
-(asdf:oos 'asdf:load-op 'asdf-binary-locations)
-
-(setf asdf:*centralize-lisp-binaries* t)
-
-(setf asdf:*default-toplevel-directory* *fasldir*)
+(setf asdf::*user-cache*
+      `(,(pathname-directory *fasldir*) :implementation))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; start swank server
