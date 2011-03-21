@@ -90,7 +90,8 @@
 
 (defpref *group*)
 
-(defpref *fasldir* (format nil "/var/cache/~A/fasl/" *name*))
+(defpref *fasldir*
+    (make-pathname :directory (list :absolute "var" "cache" *name* "fasl")))
 
 (defpref *pidfile* (format nil "/var/run/~A/~A.pid" *name* *name*))
 
@@ -106,8 +107,14 @@
 
 (defpref *default-host-redirect*)
 
-
 (delete-package '#:sbcl.daemon.preferences)
+
+;;; set fasl dir
+
+(require 'asdf)
+
+(setf asdf::*user-cache* *fasldir*)
+(setf asdf::*system-cache* asdf::*user-cache*)
 
 ;;;; create necessary directories
 
@@ -326,18 +333,12 @@
 ;;;; load asdf/quicklisp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'asdf)
-
-(when (*quicklisp-home*)
-  (load (merge-pathnames "quicklisp/setup.lisp"
-                         *quicklisp-home*)))
-
 (loop
    for path in *asdf-central-registry*
    do (push path asdf:*central-registry*))
 
-(setf asdf::*user-cache*
-      `(,(pathname-directory *fasldir*) :implementation))
+(when *quicklisp-home*
+ (load (merge-pathnames "setup.lisp" *quicklisp-home*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; start swank server

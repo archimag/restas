@@ -21,7 +21,8 @@
     (push symbol
           (context-vars context))
     (push (or value
-              (symbol-value symbol))
+              (and (boundp symbol)
+                   (symbol-value symbol)))
           (context-values context)))
 
 (defun context-remove-variable (context symbol)
