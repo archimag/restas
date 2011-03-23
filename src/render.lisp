@@ -26,7 +26,8 @@
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
   (declare (ignore designer))
-  (setf *standard-special-page-p* t))
+  (setf *standard-special-page-p* t)
+  "")
 
 (defmethod render-object (designer (string string))
   "Default handler for string"
