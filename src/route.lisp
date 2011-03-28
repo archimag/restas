@@ -231,7 +231,7 @@
                        (find-submodule  submodule-symbol)
                        *submodule*)))
     (routes:connect mapper
-                    (make-instance 'routes:route
+                    (make-instance 'route
                                    :template (route-template-from-symbol route-symbol
                                                                          submodule)
                                    :submodule submodule))
