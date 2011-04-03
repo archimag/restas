@@ -85,7 +85,10 @@
                               headers
                               decorators)
                         &body body)
-  (let* ((variables (iter (for var in (routes:template-variables (routes:parse-template template)))
+  (let* ((template-value (if (symbolp template)
+                             (symbol-value template)
+                             template))
+         (variables (iter (for var in (routes:template-variables (routes:parse-template template-value)))
                           (collect (list (intern (symbol-name var))
                                          (list 'cdr (list 'assoc var '*bindings*)))))))
     `(progn
