@@ -161,16 +161,27 @@
   (routes:parse-template (get route-symbol :template)))
 
 (defun genurl/impl (tmpl args)
-  (let ((uri (make-instance 'puri:uri)))
+  (let* ((uri (make-instance 'puri:uri))
+         (bindings (iter (for rest on args by #'cddr)
+                         (for key = (first rest))
+                         (for value = (second rest))
+                         (collect
+                             (cons key
+                                   (if (or (stringp value) (consp value))
+                                   value
+                                   (write-to-string value))))))
+         (query-part (set-difference bindings
+                                     (routes:template-variables tmpl)
+                                     :test (alexandria:named-lambda known-variable-p (pair var)
+                                             (eql (car pair) var)))))
     (setf (puri:uri-parsed-path uri)
           (cons :absolute
-                (routes::apply-bindings tmpl 
-                                        (iter (for pair in (alexandria:plist-alist args))
-                                              (collect (cons (car pair)
-                                                             (if (or (stringp (cdr pair))
-                                                                     (consp (cdr pair)))
-                                                                 (cdr pair)
-                                                                 (write-to-string (cdr pair)))))))))
+                (routes::apply-bindings tmpl bindings)))
+    (when query-part
+      (setf (puri:uri-query uri)
+            (format nil
+                    "~{~(~A~)=~A~^&~}"
+                    (alexandria:flatten query-part))))
     uri))
 
 
