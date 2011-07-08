@@ -148,7 +148,7 @@ available for the handler and specified inside of :macro:`restas:define-route`.
         (:ul
          (iter (for x from 1 to 10)
                (who:htm (:li
-                         ((:a :href (genurl 'chapter-?.html :id x))
+                         ((:a :href (restas:genurl 'chapter-?.html :id x))
                           (who:fmt "Chapter ~A" x))))))))))
 
   (restas:define-route chapter-?.html ("chapter-:(id).html")
@@ -161,9 +161,9 @@ available for the handler and specified inside of :macro:`restas:define-route`.
         (:ul
          (iter (for x from 1 to 10)
                (who:htm (:li
-                         ((:a :href (genurl 'chapter-?-?.html :id1 id :id2 x))
+                         ((:a :href (restas:genurl 'chapter-?-?.html :id1 id :id2 x))
                           (who:fmt "Chapter ~A-~A" id x))))))
-        ((:a :href (genurl 'root))
+        ((:a :href (restas:genurl 'root))
          "Back to Index")))))
   
   (restas:define-route chapter-?-?.html ("chapter-:(id1)-:(id2).html")
@@ -174,7 +174,7 @@ available for the handler and specified inside of :macro:`restas:define-route`.
        (:body
         (:h1 (who:fmt "Chapter ~A-~A" id1 id2))
         (:p (who:fmt "This is a chapter ~A-~A" id1 id2))
-        ((:a :href (genurl 'chapter-?.html :id id1))
+        ((:a :href (restas:genurl 'chapter-?.html :id id1))
          (who:fmt "Back to Chapter ~A" id1))))))
 
   (restas:start :restas.example-2 :port 8080)
