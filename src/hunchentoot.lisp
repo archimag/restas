@@ -48,13 +48,17 @@
   ()
   (:default-initargs
    :request-class 'restas-request
-   :error-template-directory nil))
+   :error-template-directory nil
+   :access-log-destination nil
+   :message-log-destination nil))
 
 (defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
   ()
   (:default-initargs
    :request-class 'restas-request
-   :error-template-directory nil))
+   :error-template-directory nil
+   :access-log-destination nil
+   :message-log-destination nil))
 
 (defmethod hunchentoot:acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
   (if *standard-special-page-p*
