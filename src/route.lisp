@@ -81,6 +81,7 @@
                               content-type
                               render-method
                               requirement
+                              validators
                               parse-vars
                               headers
                               decorators)
@@ -98,6 +99,7 @@
              (list :template ,template
                    :method ,method
                    :content-type ,content-type
+                   :validators ,validators
                    :parse-vars ,parse-vars
                    :requirement ,requirement
                    :render-method ,render-method
@@ -113,7 +115,10 @@
   (concatenate 'list
                (submodule-full-baseurl submodule)
                (routes:parse-template (get symbol :template)
-                                      (get symbol :parse-vars))))
+                                      (append (iter (for lst on (get symbol :validators) by #'cddr)
+                                                    (collect (first lst))
+                                                    (collect (data-sift:compile-rule (second lst))))
+                                              (get symbol :parse-vars)))))
 
 (defun apply-decorators (route decorators)
   (if decorators
