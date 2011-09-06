@@ -1,0 +1,30 @@
+// -*- mode: closure-template-html -*-
+
+{namespace restas.example-4.view}
+
+{template frame}
+    <a href="{$info.foo.href}">Foo</a>
+    <a href="{$info.bar.href}">Bar</a>
+
+    <hr />
+    
+    {$content |noAutoescape}
+{/template}
+
+{template foo}
+    {call frame}
+        {param info: $info /}
+        {param content}
+            <h1>{$foo}</h1>
+        {/param}
+    {/call}
+{/template}
+
+{template bar}
+    {call frame}
+        {param info: $info /}
+        {param content}
+            <h1>{$bar}</h1>
+        {/param}
+    {/call}
+{/template}
