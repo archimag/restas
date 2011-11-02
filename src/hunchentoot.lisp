@@ -125,5 +125,9 @@
   (add-toplevel-submodule (make-submodule module :context context)
                           hostname
                           port))
-    
-    
+
+(defun stop-all (&key soft)
+  (setf *vhosts* nil)
+  (iter (for acceptor in *acceptors*)
+        (hunchentoot:stop acceptor :soft soft))
+  (setf *acceptors* nil))

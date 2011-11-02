@@ -68,6 +68,7 @@
            
            ;; service
            #:start
+           #:stop-all
            #:reconnect-all-routes
            
            ;; debug
