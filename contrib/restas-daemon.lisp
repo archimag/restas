@@ -107,6 +107,8 @@
 
 (defpref *default-host-redirect*)
 
+(defpref *acceptor-class*)
+
 (delete-package '#:sbcl.daemon.preferences)
 
 ;;; set fasl dir
@@ -380,6 +382,7 @@
    do (if (consp site)
           (apply #'restas:start 
 		 (first site)
+         :acceptor-class (if *acceptor-class* (read-from-string *acceptor-class*))
 		 :hostname (second site)
 		 :port (third site)
 		 (let* ((ssl-files (fourth site)))

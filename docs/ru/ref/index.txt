@@ -7,7 +7,7 @@ API Reference
 =============
 
 .. defun:: restas:start
-  :args: module &key hostname (port 80) (context (make-context)) ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
+  :args: module &key hostname (port 80) (context (make-context)) acceptor-class ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
 
   Устанавливает (запускает) модуль для обработки HTTP-запросов. `RESTAS`_
   поддерживает концепцию `виртуальных хостов <http://httpd.apache.org/docs/current/vhosts/>`_,
@@ -25,6 +25,10 @@ API Reference
 
   * context - окружение, аналогичное указываемуму в :macro:`restas:mount-submodule`,
     которое позволяет настроить параметры модуля.
+
+  * acceptor-class - символ, который определяет какой класс должен использоваться для создания
+    acceptor. Данный класс должен наследовать от :class:`restas:restas-acceptor`
+    или :class:`restas:restas-ssl-acceptor`. 
 
   * ssl-certificate-file - путь к файлу-сертификату. Указывается для соединения по
     протоколу SSL (на Lispworks можно использовать один файл содержащий и сертификат

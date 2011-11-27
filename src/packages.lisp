@@ -12,6 +12,10 @@
            #:*bindings*
            #:*route*
            #:*submodule*
+
+           ;; acceptors
+           #:restas-acceptor
+           #:restas-ssl-acceptor
            
            ;; routes
            #:route

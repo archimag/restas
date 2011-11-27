@@ -108,18 +108,20 @@
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun start (module &key 
+(defun start (module &key
               ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
-              hostname (port (if ssl-certificate-file 443 80)) (context (make-context)))
+              hostname (port (if ssl-certificate-file 443 80))
+              acceptor-class
+              (context (make-context)))
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start
            (if ssl-certificate-file
-               (make-instance 'restas-ssl-acceptor
+               (make-instance (or acceptor-class 'restas-ssl-acceptor)
                               :ssl-certificate-file ssl-certificate-file
                               :ssl-privatekey-file ssl-privatekey-file
                               :ssl-privatekey-password ssl-privatekey-password
                               :port port)
-               (make-instance 'restas-acceptor
+               (make-instance (or acceptor-class 'restas-acceptor)
                               :port port)))
           *acceptors*))
   (add-toplevel-submodule (make-submodule module :context context)
