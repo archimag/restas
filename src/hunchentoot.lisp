@@ -113,6 +113,7 @@
 (defun start (module &key
               ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
               hostname (port (if ssl-certificate-file 443 80))
+              address
               acceptor-class
               (context (make-context)))
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
@@ -122,8 +123,10 @@
                               :ssl-certificate-file ssl-certificate-file
                               :ssl-privatekey-file ssl-privatekey-file
                               :ssl-privatekey-password ssl-privatekey-password
+                              :address address
                               :port port)
                (make-instance (or acceptor-class 'restas-acceptor)
+                              :address address
                               :port port)))
           *acceptors*))
   (add-toplevel-submodule (make-submodule module :context context)
