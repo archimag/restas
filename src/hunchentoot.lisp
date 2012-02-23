@@ -52,6 +52,7 @@
    :access-log-destination nil
    :message-log-destination nil))
 
+#-hunchentoot-no-ssl
 (defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
   ()
   (:default-initargs
@@ -101,6 +102,7 @@
 (defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-acceptor) request)
   (restas-dispatch-request acceptor request))
 
+#-hunchentoot-no-ssl
 (defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-ssl-acceptor) request)
   (restas-dispatch-request acceptor request))
 
