@@ -93,7 +93,7 @@ In other words, we define an URL template and its handler, meanwhile the handler
 body have immediate access to the variables defined in the URL template. Embedded handler
 by default may return :hs:`string`  or "octets :hs:`array`", or integer number
 (which will be interpreted as a code of request status), or :hs:`pathname`
-(in this case :fun:`hunchentoot:handle-static-file` is called, which, contrary
+(in this case :fun:`hunchentoot:handle-static-file`) is called, which, contrary
 to Ruby- and Python-based systems, works fast enough and usually there is
 no need for additional servers for static content, such as the `nginx`_ server.
 
