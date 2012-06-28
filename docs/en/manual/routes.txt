@@ -36,7 +36,7 @@ Here are several URL templates for `cl-routes`_ library.
   /forum/archives/:year/:month/:day
   /forum/:chapter/rss
 
-Or joining stings:
+Or joining strings:
 ::
 
   /book/:(name)-:(chapter).html
