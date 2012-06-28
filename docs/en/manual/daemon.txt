@@ -112,9 +112,9 @@ The following parameters are possible:
       '((#:rulisp "lisper.ru" 443 ("/path/to/ssl_cert.cer" "/path/to/private.key" "your_pass"))
         (#:rulisp.restas "restas.lisper.ru" 80)))
 
-  When for using key - password not need, then in list with SSL configs 
-  third element "your_pass" not using.
-    
+  Unless a password is mandatory, you're free to omit the third
+  element, "your_pass", from the SSL config list.
+
 There is special support for Gentoo-based systems. During installation of `RESTAS`_ 
 with `archimag-lisp-overlay`_ the script restas.lo is added to directory /etc/init.d/.
 Now, for creation of initd script you can create a symlink to this file and create
