@@ -359,8 +359,8 @@
   (asdf:oos 'asdf:load-op :swank))
 
 (when *swankport*
-  (setf swank:*use-dedicated-output-stream* nil)
-  (swank:create-server :port *swankport*
+  (setf (symbol-value (read-from-string "swank:*use-dedicated-output-stream*")) nil)
+  (funcall (read-from-string "swank:create-server :port *swankport*")
                        :coding-system "utf-8-unix"
                        :dont-close t))
 
