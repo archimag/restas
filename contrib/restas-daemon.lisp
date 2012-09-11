@@ -148,7 +148,7 @@
 ;;;; zap - remove pid file
 
 (when (string-equal *daemon-command* "zap")
-  (with-exit-on-error     
+  (with-exit-on-error
     (delete-file *pidfile*)
     (sb-ext:quit :unix-status 0)))
 
@@ -167,7 +167,7 @@
   (delete-file *pidfile*))
 
 (when (string-equal *daemon-command* "stop")
-  (with-exit-on-error 
+  (with-exit-on-error
     (stop-daemon)
     (sb-ext:quit :unix-status 0)))
 
@@ -260,7 +260,7 @@
 (change-user *user* *group*)
 
 ;;;; required for start hunchentoot on port 80
-(load-shared-object (or 
+(load-shared-object (or
 		     (find-if #'probe-file
                               (or
                                #+sbcl (mapcar #'(lambda (item)
@@ -293,7 +293,7 @@
 
 (defparameter *ppid* (sb-posix:getppid))
 
-;;;; set global error handler 
+;;;; set global error handler
 (defun global-error-handler (condition x)
   (declare (ignore x))
   (let ((err (with-output-to-string (out)
@@ -360,7 +360,7 @@
 
 (when *swankport*
   (setf (symbol-value (read-from-string "swank:*use-dedicated-output-stream*")) nil)
-  (funcall (read-from-string "swank:create-server :port *swankport*")
+  (funcall (read-from-string "swank:create-server") :port *swankport*
                        :coding-system "utf-8-unix"
                        :dont-close t))
 
@@ -380,7 +380,7 @@
 (loop
    for site in *sites*
    do (if (consp site)
-          (apply #'restas:start 
+          (apply #'restas:start
 		 (first site)
          :acceptor-class (if *acceptor-class* (read-from-string *acceptor-class*))
 		 :hostname (second site)
@@ -393,10 +393,10 @@
 
 (when *as-daemon*
   (sb-sys:enable-interrupt sb-posix:sigusr1
-                           #'(lambda (sig info context)                             
+                           #'(lambda (sig info context)
                                (declare (ignore sig info context))
                                (handler-case
-                                   (progn 
+                                   (progn
                                      (sb-posix:syslog sb-posix:log-info "Stop ~A daemon" *name*)
                                      (error "~A stop" *name*)
                                      )
@@ -420,5 +420,3 @@
   (setf *debugger-hook* nil)
 
   (sb-posix:syslog sb-posix:log-info "Start ~A daemon" *name*))
-
-
