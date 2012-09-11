@@ -116,7 +116,7 @@
 (require 'asdf)
 
 (setf asdf::*user-cache* *fasldir*)
-(setf asdf::*system-cache* asdf::*user-cache*)
+#-asdf2 (setf asdf::*system-cache* asdf::*user-cache*)
 
 ;;;; create necessary directories
 
