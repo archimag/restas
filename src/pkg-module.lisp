@@ -99,7 +99,7 @@
                  :context context))
 
 
-(defmacro define-module (name &rest options)
+(defmacro define-module (name &body options)
   (let* ((export (cdr (assoc :export options)))
          (impl-package-name (format nil "~:@(~A.IMPL.ROUTES~)" name))
          (defpackage-options (remove-if #'(lambda (opt)
