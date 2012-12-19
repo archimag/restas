@@ -108,8 +108,7 @@
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
-       (eval-when (:execute)
-         (reconnect-all-routes)))))
+       (reconnect-all-routes))))
 
 (defun route-template-from-symbol (symbol submodule)
   (concatenate 'list
