@@ -57,6 +57,9 @@
            
            ;; render
            #:render-object
+
+           ;; policy
+           #:define-policy
            
            ;; cache
            #:define-memoized-function
