@@ -120,8 +120,7 @@
            (defparam +content-type-symbol+ ,(second (assoc :default-content-type options)))
            (defparam +headers-symbol+ ',(second (assoc :default-headers options)))
            (defparam +decorators-sybmol+ (list ,@(cdr (assoc :decorators options))))
-           (eval-when (:execute)
-             (reconnect-all-routes))
+	   (reconnect-all-routes)
            *package*)))))
 
 (defmacro mount-submodule (name (module &rest decorators) &body bindings)
@@ -131,8 +130,7 @@
              (list ',module
                    (make-context ,@bindings)
                    ',decorators))
-       (eval-when (:execute)
-         (reconnect-all-routes)))))
+       (reconnect-all-routes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Macros for simplify develop modules
