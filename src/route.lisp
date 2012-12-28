@@ -42,7 +42,9 @@
              t)
          (if arbitrary-requirement
              (let ((*bindings* bindings))
-               (funcall arbitrary-requirement))
+               (if (listp arbitrary-requirement)
+                   (every #'funcall arbitrary-requirement)
+                   (funcall arbitrary-requirement)))
              t))))
 
 (defmethod routes:route-name ((route route))
@@ -62,10 +64,16 @@
               (funcall value)
               value)))
   (let ((*route* route)
-        (*bindings* bindings))
+        (*bindings* bindings)
+        (rsymbol (route-symbol route)))
     (render-object (route-render-method route)
                    (catch 'route-done
-                     (funcall (slot-value route 'symbol))))))
+                     (apply rsymbol
+                            (append (iter (for item in (get rsymbol :variables))
+                                          (collect (cdr (assoc item bindings :test #'string=))))
+                                    (iter (for (key fun) in (get rsymbol :additional-variables))
+                                          (collect key)
+                                          (collect (funcall fun)))))))))
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
@@ -75,39 +83,112 @@
     (setf (hunchentoot:content-type*) content-type))
   (throw 'route-done obj))
 
-(defmacro define-route (name (template
-                              &key
-                              (method :get)
-                              content-type
-                              render-method
-                              requirement
-                              validators
-                              parse-vars
-                              headers
-                              decorators)
-                        &body body)
-  (let* ((template-value (if (symbolp template)
-                             (symbol-value template)
-                             template))
-         (variables (iter (for var in (routes:template-variables (routes:parse-template template-value)))
-                          (collect (list (intern (symbol-name var))
-                                         (list 'cdr (list 'assoc var '*bindings*)))))))
+;;;; define-route
+
+(defgeneric parse-route-declarations (type declarations traits))
+
+(defmethod parse-route-declarations (type declarations traits)
+  (error "Unknown ROUTE declaration type: ~A" type))
+
+(defmethod parse-route-declarations ((type (eql :sift-variables)) declarations traits)
+  (let ((variables (gethash :variables traits)))
+    (setf (gethash :parse-vars traits)
+          (cons 'list
+                (iter (for (var rule) in declarations)
+                      (collect (find var variables :test #'string=))
+                      (collect `(data-sift:compile-rule ,rule)))))))
+
+(defmethod parse-route-declarations ((type (eql :additional-variables)) declarations traits)
+  (iter (for (var handler default) in declarations)
+        (collect (if default
+                     (list var default)
+                     var)
+          :into arglist)
+        (collect (if default
+                     `(list ,(alexandria:make-keyword var)
+                        (alexandria:named-lambda additional-variable-handler ()
+                          (or ,handler ,default)))
+                     `(list ,(alexandria:make-keyword var)
+                        (alexandria:named-lambda additional-variable-handler ()
+                          ,handler)))
+          :into handlers)
+        (finally
+         (setf (gethash :additional-variables-arglist traits) (cons '&key arglist)
+               (gethash :additional-variables traits) (cons 'list handlers)))))
+
+(defmethod parse-route-declarations ((type (eql :render-method)) declarations traits)
+  (when (cdr declarations)
+    (error "Multiple instances of ~A ROUTE declaration" type))
+  (setf (gethash type traits)
+        (first declarations)))
+
+(defmethod parse-route-declarations ((type (eql :apply-render-method)) declarations traits)
+  (when (cdr declarations)
+    (error "Multiple instances of ~A ROUTE declaration" type))
+  (setf (gethash :render-method traits)
+        `(alexandria:named-lambda apply-render-method (data)
+           (apply ,(first declarations) data))))
+
+(defmethod parse-route-declarations ((type (eql :content-type)) declarations traits)
+  (when (cdr declarations)
+    (error "Multiple instances of ~A ROUTE declaration" type))
+  (setf (gethash type traits)
+        (first declarations)))
+
+(defmethod parse-route-declarations ((type (eql :decorators)) declarations traits)
+  (setf (gethash type traits)
+        (cons 'list declarations)))
+
+(defmethod parse-route-declarations ((type (eql :http-method)) declarations traits)
+  (when (cdr declarations)
+    (error "Multiple instances of ~A ROUTE declaration" type))
+  (setf (gethash :method traits)
+        (first declarations)))
+
+(defmethod parse-route-declarations ((type (eql :requirement)) declarations traits)
+  (setf (gethash type traits) (cons 'list declarations)))
+
+(defmacro define-route (name (template &key method content-type) &body body)
+  (let* ((route-traits (make-hash-table))
+         (declarations-map (make-hash-table))
+         (variables (routes:template-variables (routes:parse-template template)))
+         (arglist (mapcar (alexandria:compose #'intern #'symbol-name) variables))
+         (real-body body))
+    
+    (setf (gethash :template route-traits) template
+          (gethash :method route-traits) (or method :get)
+          (gethash :content-type route-traits) content-type
+          (gethash :variables route-traits) variables)
+
+    (iter (for rbody on body)
+          (for form = (car rbody))
+          (while (and (consp  form) (keywordp (car form))))
+          (setf real-body (cdr rbody))
+          (setf (gethash (car form) declarations-map)
+                (append (cdr form)
+                        (gethash (car form) declarations-map))))
+
+    (iter (for (type declarations) in-hashtable declarations-map)
+          (parse-route-declarations type declarations route-traits))
+
     `(progn
-       (defun ,name (,@(if variables (cons '&key variables)))
-         ,@body)
+       (defun ,name (,@arglist ,@(gethash :additional-variables-arglist route-traits))
+         ,@real-body)
+
        (setf (symbol-plist ',name)
-             (list :template ,template
-                   :method ,method
-                   :content-type ,content-type
-                   :validators ,validators
-                   :parse-vars ,parse-vars
-                   :requirement ,requirement
-                   :render-method ,render-method
-                   :headers ,headers
-                   :decorators ,decorators))
+             (list ,@(iter (for type in '(:template :method :content-type :render-method
+                                          :parse-vars :requirement :decorators
+                                          :additional-variables))
+                           (for value = (gethash type route-traits))
+                           (when value
+                             (collect type)
+                             (collect value)))))
+       (setf (get ',name :variables) ',arglist)
+             
        (intern (symbol-name ',name)
                (symbol-value (find-symbol +routes-symbol+)))
        (export ',name)
+       
        (reconnect-all-routes))))
 
 (defun route-template-from-symbol (symbol submodule)
@@ -191,7 +272,9 @@
 
 (defun genurl (route-symbol &rest args)
   (puri:render-uri (genurl/impl (concatenate 'list
-                                             (submodule-full-baseurl *submodule*)
+                                             (if *submodule*
+                                                 (submodule-full-baseurl *submodule*)
+                                                 "")
                                              (route-symbol-template route-symbol))
                                 args)
                    nil))
@@ -207,7 +290,7 @@
 
 (defun gen-full-url (route &rest args)
   (let ((uri (genurl/impl (concatenate 'list
-                                       (submodule-full-baseurl *submodule*)
+                                       (if *submodule* (submodule-full-baseurl *submodule*) "")
                                        (route-symbol-template route))
                           args)))
     (setf (puri:uri-scheme uri)
