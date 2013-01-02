@@ -114,8 +114,9 @@
                 (push (cdr item) methods))
                (t
                 (error "Unknown DEFINE-POLICY option: ~A" item))))))
-    `(%define-policy ',name ',methods
-                     :interface-package ',interface-package
-                     :interface-method-template ,interface-method-template
-                     :internal-package ',internal-package
-                     :internal-function-template ,internal-function-template)))
+    `(eval-when (:compile-toplevel :load-toplevel :execute) 
+       (%define-policy ',name ',methods
+                       :interface-package ',interface-package
+                       :interface-method-template ,interface-method-template
+                       :internal-package ',internal-package
+                       :internal-function-template ,internal-function-template))))

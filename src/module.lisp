@@ -7,76 +7,211 @@
 
 (in-package #:restas)
 
-(defgeneric make-submodule (module &key context)
-  (:documentation "Make submodule from module"))
+(defgeneric module-sybmol (module)
+  (:documentation "MODULE identifier"))
 
-(defgeneric submodule-sybmol (submodule)
-  (:documentation "Submodule identifier"))
+(defgeneric module-context (module)
+  (:documentation "Context of the MODULE"))
 
-(defgeneric submodule-module (submodule)
-  (:documentation "module"))
+(defgeneric module-parent (module)
+  (:documentation "Parent of the MODULE"))
 
-(defgeneric submodule-context (submodule)
-  (:documentation "Context of the submodule"))
+(defgeneric module-mount-url (module)
+  (:documentation "Return URL where the MODULE is mounted"))
 
-(defgeneric submodule-parent (submodule)
-  (:documentation "Parent submodule"))
-
-(defgeneric submodule-baseurl (submodule)
-  (:documentation "Retrun URL where the submodule is mounted"))
-
-(defgeneric submodule-routes (submodule)
-  (:documentation "List routes for the submodule"))
-
-(defgeneric find-child-submodule (symbol parent-submodule)
-  (:documentation "Find child submodule by symbol"))
-
-(defgeneric module-routes (module submodule)
-  (:documentation "Create list of routes for module with of the parent submodule"))
+(defgeneric module-render-method (module)
+  (:documentation "Return MODULE render method"))
 
 (defgeneric initialize-module-instance (module context)
-  (:documentation "Call for module initialization"))
+  (:documentation "Call for module initialization")
+  (:method (module context)))
 
 (defgeneric finalize-module-instance (module context)
-  (:documentation "Call for module finalization"))
+  (:documentation "Call for module finalization")
+  (:method (module context)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; submodule
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgeneric connect-module (module mapper)
+  (:documentation "Adds routes of the module to the routing table"))
 
-(defclass submodule ()
-  ((symbol :initarg :symbol :initform nil :reader submodule-symbol)
-   (module :initarg :module :initform nil :reader submodule-module)
-   (context :initarg :context :initform (make-context) :reader submodule-context)
-   (parent :initarg :parent :initform nil :reader submodule-parent)
-   (decorators :initarg :decorators :initform nil :reader submodule-decorators)))
+(defgeneric module-find-route (module route-symbol)
+  (:documentation "Find the route in the MODULE"))
 
-(defun find-submodule (symbol &optional (parent *submodule*))
-  (find-child-submodule symbol parent))
+(defmacro with-module-context (module &body body)
+  `(with-context (module-context ,module)
+     ,@body))
 
-(defun submodule-full-baseurl (submodule)
-  (let ((prefix (submodule-baseurl submodule))
-        (parent (submodule-parent submodule)))
+(defmacro with-module (module &body body)
+  (alexandria:once-only (module)
+    `(if (eq *module* ,module)
+         (progn ,@body)
+         (let ((*module* ,module))
+           (with-module-context *module*
+             ,@body)))))
+
+(defun module-real-url (module)
+  (let ((prefix (module-mount-url module))
+        (parent (module-parent module)))
     (if parent
-        (concatenate 'list
-                     (submodule-full-baseurl parent)
-                     prefix)
+        (append (module-real-url parent) prefix)
         prefix)))
 
-(defun submodule-toplevel (submodule)
-  (let ((parent (submodule-parent submodule)))
-    (if parent
-        (submodule-toplevel parent)
-        submodule)))
+(defun find-route (route-symbol &optional (module *module*))
+  (module-find-route module route-symbol))
 
-(defmethod submodule-routes ((submodule submodule)
-                             &aux (decorators (submodule-decorators submodule)))
-  (mapcar (lambda (route)
-            (apply-decorators route decorators))
-          (module-routes (submodule-module submodule) submodule)))
+(defun apply-decorators (route decorators)
+  (if decorators
+      (apply-decorators (funcall (car decorators) route)
+                        (cdr decorators))
+      route))
 
-(defun connect-submodule (submodule mapper)
-  (iter (for route in (submodule-routes submodule))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; *pkgmodules-traits*
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defparameter *pkgmodules-traits* (make-hash-table))
+
+(defun register-pkgmodule-traits (package &rest traits &key &allow-other-keys)
+  (let ((dict (alexandria:plist-hash-table traits)))
+    (setf (gethash (find-package package) *pkgmodules-traits*)
+          dict)
+    (alexandria:ensure-gethash :modules dict (make-hash-table))
+    (alexandria:ensure-gethash :routes dict (make-hash-table))
+    (alexandria:ensure-gethash :references dict)))
+
+(defun find-pkgmodule-traits (package)
+  (gethash (find-package package) *pkgmodules-traits*))
+
+(defun distribute-route (route-symbol)
+  (let ((package (symbol-package route-symbol)))
+    (iter (for pkg in (pkgmodule-traits-references package))
+          (iter (for (key thing) in-hashtable (pkgmodule-traits-modules pkg))
+                (distribute-route (alexandria:format-symbol pkg "~A.~A" key route-symbol))))))
+
+(defun distribute-all-routes (package)
+  (iter (for (key value) in-hashtable (pkgmodule-traits-routes package))
+        (distribute-route key))
+  (iter (for (key value) in-hashtable (pkgmodule-traits-modules package))
+        (distribute-all-routes (find-package (car value)))))
+
+(defun pkgmodule-traits-routes (package)
+  (gethash :routes (gethash (find-package package) *pkgmodules-traits*)))
+
+(defun pkgmodule-traits-modules (package)
+  (gethash :modules (gethash (find-package package) *pkgmodules-traits*)))
+
+(defun pkgmodule-traits-references (package)
+  (gethash :references (gethash (find-package package) *pkgmodules-traits*)))
+
+(defun pkgmodule-traits-append-reference (package reference)
+  (alexandria:ensure-gethash :references (gethash (find-package package) *pkgmodules-traits*))
+  (pushnew reference (gethash :references (gethash (find-package package) *pkgmodules-traits*))))
+
+(defun register-route-traits (route-symbol traits)
+  (let ((package (symbol-package route-symbol)))
+    (setf (gethash route-symbol (pkgmodule-traits-routes package))
+          traits)
+    (distribute-route route-symbol)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pkgmodules
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass pkgmodule ()
+  ((symbol :initarg :symbol :initform nil :reader module-symbol)
+   (context :initarg :context :initform (make-context) :reader module-context)
+   (parent :initarg :parent :initform nil :reader module-parent)
+   (mount-url :initarg :url :initform nil :reader module-mount-url)
+   (render-method :initarg :render-method :initform nil :reader module-render-method)
+   (decorators :initarg :decorators :initform nil)
+   (package :initarg :package)
+   (children :initform (make-hash-table))
+   (routes :initform (make-hash-table))))
+
+(defmethod shared-initialize :after ((module pkgmodule) slot-names &key)
+  (when (alexandria:emptyp (alexandria:lastcar (module-mount-url module)))
+    (setf (slot-value module 'mount-url)
+          (butlast (module-mount-url module))))
+  (with-slots (package children routes) module
+    (let ((traits (find-pkgmodule-traits package)))
+      (iter (for (key thing) in-hashtable (gethash :modules traits))
+            (destructuring-bind (pkg ctxt child-traits) thing
+              (setf (gethash key children)
+                    (make-instance 'pkgmodule
+                                   :symbol key
+                                   :context (let ((context (copy-restas-context ctxt)))
+                                              (when (gethash :inherit-parent-context child-traits)
+                                                (setf (context-prototype context)
+                                                      (module-context module)))
+                                              context)
+                                   :parent module
+                                   :package pkg
+                                   :url (routes:parse-template (gethash :url child-traits ""))
+                                   :render-method (gethash :render-method child-traits)
+                                   :decorators (gethash :decorators child-traits)))))
+
+      (iter (for rsymbol in (alexandria:hash-table-keys (gethash :routes traits)))
+            (setf (gethash (find-symbol (string rsymbol) package)  routes)
+                  (create-route-from-symbol (find-symbol (symbol-name rsymbol) package)
+                                            module)))
+
+      (iter (for (child-key child) in-hashtable (slot-value module 'children))
+            (for decorators = (slot-value child 'decorators))
+            (iter (for (route-key route) in-hashtable (slot-value child 'routes))
+                  (for key = (alexandria:format-symbol package "~A.~A" child-key route-key))
+                  (setf (gethash key routes)
+                        (apply-decorators route decorators)))))))
+
+(defmethod connect-module ((module pkgmodule) mapper)
+  (iter (for route in (alexandria:hash-table-values (slot-value module 'routes)))
         (routes:connect mapper route)))
+    
+(defmethod initialize-module-instance ((module pkgmodule) context)  
+  (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
+        (initialize-module-instance child (module-context child)))
+  (initialize-module-instance (slot-value module 'package) context))
 
+(defmethod finalize-module-instance ((module pkgmodule) context)  
+  (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
+        (finalize-module-instance child  (module-context child)))
+  (finalize-module-instance (slot-value module 'package) context))
 
+(defmethod module-find-route ((module pkgmodule) route-symbol)
+  (with-slots (routes parent) module
+    (or (gethash route-symbol routes)
+        (and parent (module-find-route parent route-symbol)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; define-module
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro define-module (name &body options)
+  (let ((defpackage-options options)
+        (traits nil))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (defpackage ,name ,@defpackage-options)
+       (register-pkgmodule-traits ',name ,@traits)
+       (reconnect-all-routes)
+       (find-package ',name))))
+
+;; TODO
+;; render-method content-type headers decorators
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; mount-module
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro mount-module (name (module) &body body)
+  (multiple-value-bind (declarations context) (split-code-declarations body)
+    (let ((bindings (iter (for (symbol value) in context)
+                          (collect `(cons ',symbol ,value))))
+          (traits (parse-all-declarations declarations
+                                          '(:decorators :url :render-method :inherit-parent-context))))
+    `(progn
+       (setf (gethash ',name (pkgmodule-traits-modules *package*))
+             (list ',module
+                   (make-context (list ,@bindings))
+                   (alexandria:plist-hash-table
+                    (list ,@(alexandria:hash-table-plist traits)))))
+       (pkgmodule-traits-append-reference (find-package ',module) *package*)
+       (distribute-all-routes (find-package ',module))
+       (reconnect-all-routes)))))

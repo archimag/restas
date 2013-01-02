@@ -9,9 +9,8 @@
 (defpackage :restas
   (:use :cl :iter :split-sequence)
   (:export #:*default-host-redirect*
-           #:*bindings*
            #:*route*
-           #:*submodule*
+           #:*module*
 
            ;; acceptors
            #:restas-acceptor
@@ -22,10 +21,9 @@
            #:define-route
            #:route-symbol
            #:genurl
-           #:genurl-submodule
-           #:gen-full-url
+           #:genurl*
            #:redirect
-           #:parse-route-url
+           ;;#:parse-route-url
            #:abort-route-handler
 
            #:process-route
@@ -34,36 +32,13 @@
            #:define-module
            #:initialize-module-instance
            #:finalize-module-instance
-           #:define-default-render-method
-           
-           ;; submodules
-           #:submodule
-           #:mount-submodule
-           #:submodule
-           #:submodule-symbol
-           #:submodule-module
-           #:submodule-parent
-           #:submodule-baseurl
-           #:connect-submodule
-           #:with-submodule-context
-           #:with-submodule
-           #:find-submodule
-           #:submodule-context
-           #:find-upper-submodule
-
-           #:make-submodule
-           #:submodule-routes
-           #:module-routes
+           #:mount-module
            
            ;; render
            #:render-object
 
            ;; policy
            #:define-policy
-           
-           ;; cache
-           #:define-memoized-function
-           #:with-memoization
            
            ;; context
            #:make-context

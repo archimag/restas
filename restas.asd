@@ -5,25 +5,23 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(defsystem restas
-    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:alexandria #:data-sift #+swank-archimag #:closer-mop )
-    :components
-    ((:module "src"
-              :components
-              ((:file "packages")
-               (:file "special" :depends-on ("packages"))
-               (:file "memoize" :depends-on ("special"))
-               (:file "errors" :depends-on ("special"))
-               (:file "render" :depends-on ("special"))
-               (:file "context" :depends-on ("special"))
-               (:file "module" :depends-on ("context"))
-               (:file "pkg-module" :depends-on ("module"))
-               (:file "route" :depends-on ("pkg-module" "render"))
-               (:file "decorators" :depends-on ("route"))
-               (:file "vhost" :depends-on ("special"))
-               (:file "hunchentoot" :depends-on ("vhost" "module" "memoize" "errors"))
-               (:file "policy" :depends-on ("packages"))))
-     #+swank-archimag
-     (:module "slime" 
-              :components ((:file "restas-swank"))
-              :depends-on ("src"))))
+(defsystem #:restas
+    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:alexandria #:data-sift)
+    :pathname "src"
+    :components ((:file "packages")
+                 (:file "special" :depends-on ("packages"))
+                 (:file "declarations" :depends-on ("packages"))
+                 (:file "errors" :depends-on ("special"))
+                 (:file "render" :depends-on ("special"))
+                 (:file "context" :depends-on ("special"))                 
+                 (:file "module" :depends-on ("context" "declarations"))
+                 (:file "route" :depends-on ("module" "render"))
+                 (:file "decorators" :depends-on ("route"))
+                 (:file "vhost" :depends-on ("special"))
+                 (:file "hunchentoot" :depends-on ("vhost" "module" "errors"))
+                 (:file "policy" :depends-on ("packages"))))
+
+     ;; #+swank-archimag
+     ;; (:module "slime" 
+     ;;          :components ((:file "restas-swank"))
+     ;;          :depends-on ("src"))))

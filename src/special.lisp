@@ -13,11 +13,7 @@
 
 (defvar *route* nil)
 
-(defvar *submodule* nil)
-
-(defvar *bindings*)
-
-(defvar *memotable* nil)
+(defvar *module* nil)
 
 (defvar *catch-errors-p* t)
 

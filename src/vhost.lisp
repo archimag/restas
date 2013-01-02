@@ -29,34 +29,44 @@
             :key #'vhost-hostname-port
             :test #'equal)))
 
-(defun add-toplevel-submodule (submodule hostname port)
-  (let ((vhost (or (find (cons hostname port)
-                         *vhosts*
-                         :key #'vhost-hostname-port
-                         :test #'equal)
-                   (car (push (make-instance 'vhost
-                                             :hostname hostname
-                                             :port port)
-                              *vhosts*)))))
-    (push submodule (slot-value vhost 'modules))
-    (let ((*submodule* submodule))
-      (initialize-module-instance (submodule-module submodule)
-                                  (submodule-context submodule))
-      (connect-submodule submodule (slot-value vhost 'mapper))))
+(defun ensure-vhost-exist (hostname port)
+  "Tests whether the vhost exist, and attempts to create them if they do not."
+  (or (find (cons hostname port)
+            *vhosts*
+            :key #'vhost-hostname-port
+            :test #'equal)
+      (car (push (make-instance 'vhost
+                                :hostname hostname
+                                :port port)
+                 *vhosts*))))
+
+(defgeneric add-toplevel-module (module hostname port))
+
+(defmethod add-toplevel-module ((module symbol) hostname port)
+  (add-toplevel-module (find-package module) hostname port))
+
+(defmethod add-toplevel-module ((package package) hostname port)
+  (let ((vhost (ensure-vhost-exist hostname port))
+        (module (make-instance 'pkgmodule :package package)))
+    (push module (slot-value vhost 'modules))
+    (let ((*module* module))
+      (initialize-module-instance module (module-context module))
+      (connect-module module (slot-value vhost 'mapper))))
   (values))
   
-
 (defun reconnect-all-routes ()
   (iter (for vhost in *vhosts*)
         (let ((mapper (slot-value vhost 'mapper)))
           (routes:reset-mapper mapper)
-          (iter (for sub in (slot-value vhost 'modules))
-                (let ((*submodule* sub))
-                  (finalize-module-instance (submodule-module sub)
-                                            (submodule-context sub))
-                  (reinitialize-instance sub)
-                  (initialize-module-instance (submodule-module sub)
-                                              (submodule-context sub)))
-                
-                (connect-submodule sub mapper))))
+          (iter (for module in (slot-value vhost 'modules))
+                (finalize-module-instance module (module-context module))
+                (reinitialize-instance module)
+                (initialize-module-instance module (module-context module))
+                (connect-module module mapper))))
   (values))
+
+
+(defun clear-all-vhost ()
+  (iter (for vhost in *vhosts*)
+        (routes:reset-mapper (slot-value vhost 'mapper))
+        (setf (slot-value vhost 'modules) nil)))
