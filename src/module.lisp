@@ -60,8 +60,9 @@
 
 (defun apply-decorators (route decorators)
   (if decorators
-      (apply-decorators (funcall (car decorators) route)
-                        (cdr decorators))
+      (funcall (car decorators) (apply-decorators route (cdr decorators)))
+      ;; (apply-decorators (funcall (car decorators) route)
+      ;;                   (cdr decorators))
       route))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -127,6 +128,12 @@
    (children :initform (make-hash-table))
    (routes :initform (make-hash-table))))
 
+(defun module-decorators (pkgmodule)
+  (with-slots (parent decorators) pkgmodule
+    (if parent
+        (append (module-decorators parent) decorators)
+        decorators)))
+
 (defmethod shared-initialize :after ((module pkgmodule) slot-names &key)
   (when (alexandria:emptyp (alexandria:lastcar (module-mount-url module)))
     (setf (slot-value module 'mount-url)
@@ -155,11 +162,11 @@
                                             module)))
 
       (iter (for (child-key child) in-hashtable (slot-value module 'children))
-            (for decorators = (slot-value child 'decorators))
+            (for child-routes = (slot-value child 'routes))
             (iter (for (route-key route) in-hashtable (slot-value child 'routes))
                   (for key = (alexandria:format-symbol package "~A.~A" child-key route-key))
                   (setf (gethash key routes)
-                        (apply-decorators route decorators)))))))
+                        route))))))
 
 (defmethod connect-module ((module pkgmodule) mapper)
   (iter (for route in (alexandria:hash-table-values (slot-value module 'routes)))

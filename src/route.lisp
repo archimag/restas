@@ -10,6 +10,7 @@
 
 (defgeneric process-route (route bindings))
 (defgeneric route-module (route))
+(defgeneric make-route-url (obj args))
 
 (defclass route (routes:route)
   ((symbol :initarg :symbol :reader route-symbol)
@@ -140,21 +141,8 @@
                                      :headers headers
                                      :variables variables
                                      :additional-variables additional-variables)
-                      decorators)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; proxy route
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod process-route ((route routes:proxy-route) bindings)
-  (process-route (routes:proxy-route-target route)
-                 bindings))
-
-(defmethod route-module ((route routes:proxy-route))
-  (route-module (routes:proxy-route-target route)))
-
-(defmethod route-symbol ((route routes:proxy-route))
-  (route-symbol (routes:proxy-route-target route)))
+                      (append (module-decorators module)
+                              decorators))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; generate url by route
@@ -163,10 +151,8 @@
 (defun route-symbol-template (route-symbol)
   (routes:parse-template (gethash :template (gethash route-symbol (pkgmodule-traits-routes (symbol-package route-symbol))))))
 
-(defun route-real-template (route)
-  (append (routes:route-template route)))
 
-(defun genurl/impl (tmpl args)
+(defmethod make-route-url ((tmpl list) args)
   (let* ((uri (make-instance 'puri:uri))
          (bindings (iter (for rest on args by #'cddr)
                          (for key = (first rest))
@@ -190,32 +176,13 @@
                     (alexandria:flatten query-part))))
     uri))
 
-(defun make-route-url (route-symbol args)
-  (let* ((tmpl (if *module*
-                   (route-real-template (find-route route-symbol))
-                   (route-symbol-template route-symbol)))
-         (uri (make-instance 'puri:uri))
-         (bindings (iter (for rest on args by #'cddr)
-                         (for key = (first rest))
-                         (for value = (second rest))
-                         (collect
-                             (cons key
-                                   (if (or (stringp value) (consp value))
-                                       value
-                                       (write-to-string value))))))
-         (query-part (set-difference bindings
-                                     (routes:template-variables tmpl)
-                                     :test (alexandria:named-lambda known-variable-p (pair var)
-                                             (eql (car pair) var)))))
-    (setf (puri:uri-parsed-path uri)
-          (cons :absolute
-                (routes::apply-bindings tmpl bindings)))
-    (when query-part
-      (setf (puri:uri-query uri)
-            (format nil
-                    "~{~(~A~)=~A~^&~}"
-                    (alexandria:flatten query-part))))
-    uri))
+(defmethod make-route-url ((route symbol) args)
+  (if *module*
+      (make-route-url (find-route route) args)
+      (make-route-url (route-symbol-template route) args)))
+
+(defmethod make-route-url ((route route) args)
+  (make-route-url (routes:route-template route) args))
 
 (defun genurl (route-symbol &rest args &key &allow-other-keys)
   (puri:render-uri (make-route-url route-symbol args) nil))
@@ -267,3 +234,20 @@
 ;;       (if route
 ;;           (alexandria:alist-plist bindings)))))
   
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; proxy route
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod process-route ((route routes:proxy-route) bindings)
+  (process-route (routes:proxy-route-target route)
+                 bindings))
+
+(defmethod route-module ((route routes:proxy-route))
+  (route-module (routes:proxy-route-target route)))
+
+(defmethod route-symbol ((route routes:proxy-route))
+  (route-symbol (routes:proxy-route-target route)))
+
+(defmethod make-route-url ((route routes:proxy-route) bindings)
+  (make-route-url (routes:proxy-route-target route) bindings))

@@ -20,6 +20,7 @@
            #:route
            #:define-route
            #:route-symbol
+           #:make-route-url
            #:genurl
            #:genurl*
            #:redirect
