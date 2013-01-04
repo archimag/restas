@@ -153,7 +153,8 @@
                                    :parent module
                                    :package pkg
                                    :url (routes:parse-template (gethash :url child-traits ""))
-                                   :render-method (gethash :render-method child-traits)
+                                   :render-method (or (gethash :render-method child-traits)
+                                                      (gethash :render-method (find-pkgmodule-traits pkg)))
                                    :decorators (gethash :decorators child-traits)))))
 
       (iter (for rsymbol in (alexandria:hash-table-keys (gethash :routes traits)))
@@ -192,16 +193,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro define-module (name &body options)
-  (let ((defpackage-options options)
-        (traits nil))
+  (let (defpackage-options traits)
+    (iter (for option in options)
+          (case (car option)
+            (:render-method
+             (collect :render-method into pkgtraits)
+             (collect (second option) into pkgtraits))
+            (otherwise
+             (collect option into pkgoptions)))
+          (finally
+           (setf defpackage-options pkgoptions
+                 traits pkgtraits)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (defpackage ,name ,@defpackage-options)
        (register-pkgmodule-traits ',name ,@traits)
-       (reconnect-all-routes)
-       (find-package ',name))))
-
-;; TODO
-;; render-method content-type headers decorators
+       (reconnect-all-routes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mount-module
