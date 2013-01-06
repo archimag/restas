@@ -13,9 +13,10 @@
 
 (in-package #:restas.doc)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; make documentation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defparameter *restas-documentation-dir*
+  (merge-pathnames #P"html/" (asdf:component-pathname (asdf:find-system '#:restas-doc))))
+
+;; make documentation
 
 (defparameter *langs* '("en" "ru"))
 
@@ -30,30 +31,24 @@
                                                       target-dir)
                                      :verbose verbose))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; publish documentation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; publish documentation
 
-(defparameter *restas-documentation-dir* #P"/usr/share/doc/restas/")
-
-(restas:mount-submodule -publisher- (#:restas.directory-publisher))
+(restas:mount-module -html- (#:restas.directory-publisher)
+  (:inherit-parent-context t))
 
 (defmethod restas:initialize-module-instance ((module (eql #.*package*)) context)
   (restas:with-context context
-    (make-documentation *restas-documentation-dir*)
-    (setf (restas:context-symbol-value (restas:submodule-context (restas:find-submodule '-publisher-))
-                                       'restas.directory-publisher:*directory*)
+    (make-documentation *restas-documentation-dir* :verbose t)
+    (setf (restas:context-symbol-value context 'restas.directory-publisher:*directory*)
           *restas-documentation-dir*)))
-  
+
 (restas:define-route entry ("")
   (let* ((accept-languages (hunchentoot:header-in* :accept-language))
          (prefer-lang (if (and accept-languages
                                (> (length accept-languages) 1))
                           (string-downcase (subseq accept-languages 0 2)))))
     (hunchentoot:redirect
-     (restas:genurl-submodule '-publisher-
-                              'restas.directory-publisher:route
-                              :path (list (if (string= prefer-lang "ru")
-                                              "ru"
-                                              *default-lang*)
-                                          "")))))
+     (restas:genurl '-html-.route
+                    :path (list (or (find prefer-lang *langs* :test #'string=)
+                                    *default-lang*)
+                                "")))))
