@@ -178,7 +178,7 @@
 
 (defmethod make-route-url ((route symbol) args)
   (if *module*
-      (make-route-url (find-route route) args)
+      (make-route-url (or (find-route route) (error "Unknown route: ~A" route)) args)
       (make-route-url (route-symbol-template route) args)))
 
 (defmethod make-route-url ((route route) args)
