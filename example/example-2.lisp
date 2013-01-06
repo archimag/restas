@@ -5,9 +5,8 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-
-(asdf:operate 'asdf:load-op '#:cl-who)
-(asdf:operate 'asdf:load-op '#:restas)
+(ql:quickload "cl-who")
+(ql:quickload "restas")
 
 (restas:define-module #:restas.example-2
   (:use #:cl #:iter))

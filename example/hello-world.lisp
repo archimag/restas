@@ -5,14 +5,14 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(asdf:operate 'asdf:load-op '#:restas)
+(ql:quickload "restas")
 
 (restas:define-module #:restas.hello-world
-  (:use :cl))
+  (:use #:cl))
 
 (in-package #:restas.hello-world)
 
-(define-route main ("")
+(restas:define-route main ("")
   "<h1>Hello world!</h1>")
 
 (restas:start '#:restas.hello-world :port 8080)

@@ -5,13 +5,13 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(asdf:operate 'asdf:load-op '#:cl-who)
+(ql:quickload "cl-who")
 
 ;; http://www.cliki.net/CL-DOCUTILS
-(asdf:operate 'asdf:load-op '#:docutils)
+(ql:quickload "docutils")
 
-;;https://github.com/archimag/restas-directory-publisher
-(asdf:operate 'asdf:load-op '#:restas-directory-publisher)
+;; https://github.com/archimag/restas-directory-publisher
+(ql:quickload "restas-directory-publisher")
 
 (restas:define-module #:restas.publish-rst
   (:use #:cl))
@@ -19,87 +19,60 @@
 (in-package #:restas.publish-rst)
 
 (defparameter *rstdir*
-  (merge-pathnames "example/rst/"
-                   (make-pathname :directory (pathname-directory
-                                              (asdf:component-pathname (asdf:find-system '#:restas))))))
+  (merge-pathnames "../example/rst/" (asdf:component-pathname (asdf:find-system '#:restas))))
+
 (restas:define-route entry ("")
-  (flet ((durl (submodule-symbol)
-           (restas:genurl-submodule submodule-symbol
-                                    'restas.directory-publisher:route
-                                    :path '(""))))
-    (who:with-html-output-to-string (out)
-      (:html
-       (:body
-        (:ul
-         (:li
-          (:a :href (durl '-raw-) "Raw reStructuredText"))
-         (:li
-          (:a :href (durl '-fine-) "reStructuredText as HTML"))
-         (:li
-          (:a :href (durl '-safe-) "reStructuredText as HTML in safe mode"))))))))
+  (who:with-html-output-to-string (out)
+    (:html
+     (:body
+      (:ul
+       (:li (:a :href (restas:genurl '-raw-.route :path "") "Raw reStructuredText"))
+       (:li (:a :href (restas:genurl '-fine-.route :path "") "reStructuredText as HTML"))
+       (:li (:a :href (restas:genurl '-safe-.route :path "") "reStructuredText as HTML in safe mode")))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish raw files
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(restas:mount-submodule -raw- (#:restas.directory-publisher)
-  (restas.directory-publisher:*baseurl* '("raw"))
+(restas:mount-module -raw- (#:restas.directory-publisher)
+  (:url "raw")          
   (restas.directory-publisher:*directory* *rstdir*)
   (restas.directory-publisher:*autoindex* t))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish reStructuredText files as HTML
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass drawer () ())
+(defclass renderer () ())
 
-(defmethod restas:render-object ((drawer drawer) (file pathname))
-  (restas:render-object drawer (docutils:read-rst file)))
+(defmethod restas:render-object ((renderer renderer) (file pathname))
+  (restas:render-object renderer (docutils:read-rst file)))
 
-(defmethod restas:render-object ((drawer drawer) (rst docutils.nodes:document))
+(defmethod restas:render-object ((renderer renderer) (rst docutils.nodes:document))
   (with-output-to-string (out)
     (docutils:write-html out rst)))
 
-(restas:mount-submodule -fine- (#:restas.directory-publisher)
-  (restas.directory-publisher:*default-render-method* (make-instance 'drawer)) ;;; Set custom drawer!!!
-  (restas.directory-publisher:*baseurl* '("fine"))
+(restas:mount-module -fine- (#:restas.directory-publisher)
+  (:url "fine")
+  (:render-method (make-instance 'renderer)) ;; Set custom renderer!!!
   (restas.directory-publisher:*directory* *rstdir*)
   (restas.directory-publisher:*directory-index-files* '("index.txt"))
   (restas.directory-publisher:*autoindex* t))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Publish reStructuredText files as HTML with HTTP authorization
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;; http auth decorator
 
 (defclass http-auth-route (routes:proxy-route) () )
 
 (defmethod routes:route-check-conditions ((route http-auth-route) bindings)
   (if (call-next-method)
       (multiple-value-bind (user password) (hunchentoot:authorization)
-        (or (and (string= user "hello")
-                 (string= password "world"))
+        (or (and (string= user "admin")
+                 (string= password "default"))
             (hunchentoot:require-authorization)))))
 
 (defun http-auth-decorator (route)
   (make-instance 'http-auth-route :target route))
 
-;;; render reStructuredText decorator
-
-(defclass render-rst-route (routes:proxy-route) ())
-
-(defmethod restas:process-route :around ((route render-rst-route) bindings)
-  (let ((restas.directory-publisher:*default-render-method* (make-instance 'drawer)))
-    (call-next-method)))
-
-(defun render-rst-decorator (route)
-  (make-instance 'render-rst-route :target route))
-
-;;; mount module
-
-(restas:mount-submodule -safe- (#:restas.directory-publisher http-auth-decorator render-rst-decorator)
-  (restas.directory-publisher:*baseurl* '("safe"))
+(restas:mount-module -safe- (#:restas.directory-publisher)
+  (:url "safe")
+  (:render-method (make-instance 'renderer))
+  (:decorators #'http-auth-decorator)
   (restas.directory-publisher:*directory* *rstdir*)
   (restas.directory-publisher:*directory-index-files* '("index.txt"))
   (restas.directory-publisher:*autoindex* t))

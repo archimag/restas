@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(asdf:operate 'asdf:load-op '#:restas)
+(ql:quickload "restas")
 
 (restas:define-module #:restas.custom-acceptor.example
   (:use #:cl))
