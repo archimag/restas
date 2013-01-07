@@ -139,6 +139,8 @@
     (setf (slot-value module 'mount-url)
           (butlast (module-mount-url module))))
   (with-slots (package children routes) module
+    (clrhash children)
+    (clrhash routes)
     (let ((traits (find-pkgmodule-traits package)))
       (iter (for (key thing) in-hashtable (gethash :modules traits))
             (destructuring-bind (pkg ctxt child-traits) thing
@@ -176,12 +178,12 @@
 (defmethod initialize-module-instance ((module pkgmodule) context)  
   (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
         (initialize-module-instance child (module-context child)))
-  (initialize-module-instance (slot-value module 'package) context))
+  (initialize-module-instance (find-package (slot-value module 'package)) context))
 
 (defmethod finalize-module-instance ((module pkgmodule) context)  
   (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
         (finalize-module-instance child  (module-context child)))
-  (finalize-module-instance (slot-value module 'package) context))
+  (finalize-module-instance (find-package (slot-value module 'package)) context))
 
 (defmethod module-find-route ((module pkgmodule) route-symbol)
   (with-slots (routes parent) module
