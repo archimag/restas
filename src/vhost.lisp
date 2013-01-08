@@ -47,7 +47,10 @@
 
 (defmethod add-toplevel-module ((package package) hostname port)
   (let ((vhost (ensure-vhost-exist hostname port))
-        (module (make-instance 'pkgmodule :package package)))
+        (module (make-instance 'pkgmodule
+                               :package package
+                               :render-method (let ((fun (gethash :render-method (find-pkgmodule-traits package))))
+                                                (if fun (funcall fun))))))
     (push module (slot-value vhost 'modules))
     (let ((*module* module))
       (initialize-module-instance module (module-context module))

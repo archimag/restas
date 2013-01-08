@@ -108,9 +108,12 @@
   (pushnew reference (gethash :references (gethash (find-package package) *pkgmodules-traits*))))
 
 (defun register-route-traits (route-symbol traits)
-  (let ((package (symbol-package route-symbol)))
+  (let* ((package (symbol-package route-symbol))
+         (export (gethash :export-route-symbols (find-pkgmodule-traits package))))
     (setf (gethash route-symbol (pkgmodule-traits-routes package))
           traits)
+    (when export
+      (export route-symbol package))
     (distribute-route route-symbol)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,7 +159,8 @@
                                    :package pkg
                                    :url (routes:parse-template (gethash :url child-traits ""))
                                    :render-method (or (gethash :render-method child-traits)
-                                                      (gethash :render-method (find-pkgmodule-traits pkg)))
+                                                      (let ((fun (gethash :render-method (find-pkgmodule-traits pkg))))
+                                                        (if fun (funcall fun))))
                                    :decorators (gethash :decorators child-traits)))))
 
       (iter (for rsymbol in (alexandria:hash-table-keys (gethash :routes traits)))
@@ -200,6 +204,9 @@
           (case (car option)
             (:render-method
              (collect :render-method into pkgtraits)
+             (collect `(alexandria:named-lambda make-render-method () ,(second option)) into pkgtraits))
+            (:export-route-symbols
+             (collect :export-route-symbols into pkgtraits)
              (collect (second option) into pkgtraits))
             (otherwise
              (collect option into pkgoptions)))
