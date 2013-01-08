@@ -116,6 +116,8 @@
               acceptor-class
               (context (make-context)))
   (declare (ignore context))
+  (unless (find-package module)
+    (error "Package ~A not found" module) )
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start
            (if ssl-certificate-file
