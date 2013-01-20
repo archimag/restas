@@ -28,7 +28,7 @@
           (cons 'list
                 (iter (for (var rule) in declarations)
                       (collect (find var variables :test #'string=))
-                      (collect `(data-sift:compile-rule ,rule)))))))
+                      (collect `(data-sift:compile-parse-rule ,rule)))))))
 
 (defmethod parse-declarations ((type (eql :additional-variables)) declarations traits)
   (iter (for (var handler default) in declarations)
