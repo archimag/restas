@@ -72,12 +72,19 @@
 (defparameter *pkgmodules-traits* (make-hash-table))
 
 (defun register-pkgmodule-traits (package &rest traits &key &allow-other-keys)
-  (let ((dict (alexandria:plist-hash-table traits)))
+  (let ((dict (alexandria:plist-hash-table traits))
+        (old (gethash (find-package package) *pkgmodules-traits*)))
+    (cond
+      (old
+       (iter (for key in '(:modules :routes :references))
+             (setf (gethash key dict)
+                   (gethash key old))))
+      (t
+       (setf (gethash :modules dict) (make-hash-table)
+             (gethash :routes dict) (make-hash-table)
+             (gethash :references dict) nil)))
     (setf (gethash (find-package package) *pkgmodules-traits*)
-          dict)
-    (alexandria:ensure-gethash :modules dict (make-hash-table))
-    (alexandria:ensure-gethash :routes dict (make-hash-table))
-    (alexandria:ensure-gethash :references dict)))
+          dict)))
 
 (defun find-pkgmodule-traits (package)
   (gethash (find-package package) *pkgmodules-traits*))
@@ -141,10 +148,16 @@
   (when (alexandria:emptyp (alexandria:lastcar (module-mount-url module)))
     (setf (slot-value module 'mount-url)
           (butlast (module-mount-url module))))
-  (with-slots (package children routes) module
+  (with-slots (package children routes render-method) module
     (clrhash children)
     (clrhash routes)
+    
     (let ((traits (find-pkgmodule-traits package)))
+      
+      (let ((fun (gethash :render-method traits)))
+          (setf render-method
+                (if fun (funcall fun))))
+      
       (iter (for (key thing) in-hashtable (gethash :modules traits))
             (destructuring-bind (pkg ctxt child-traits) thing
               (setf (gethash key children)
