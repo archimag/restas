@@ -109,13 +109,16 @@
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun start (module &key
-              ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
-              hostname (port (if ssl-certificate-file 443 80))
-              address
-              acceptor-class
-              (context (make-context)))
-  (declare (ignore context))
+(defun start (module
+              &key
+                ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
+                hostname (port (if ssl-certificate-file 443 80))
+                address
+                acceptor-class
+                (context (make-context))
+                url
+                render-method
+                decorators)
   (unless (find-package module)
     (error "Package ~A not found" module) )
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
@@ -131,7 +134,11 @@
                               :address address
                               :port port)))
           *acceptors*))
-  (add-toplevel-module module hostname port)
+  (add-toplevel-module module hostname port
+                       :context context
+                       :url url
+                       :render-method render-method
+                       :decorators decorators)
   (values))
 
 (defun stop-all (&key soft)
