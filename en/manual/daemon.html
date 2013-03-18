@@ -1,0 +1,63 @@
+<html> <head> <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" /> <meta name="keywords" content="restas,web,framework,web framework,REST,Common Lisp,lisp" /> <title>Daemonization</title> <link rel="stylesheet" type="text/css" href="../_static/style.css" /> </head> <body> <a href="http://github.com/archimag/restas/"> <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub"> </a> <div id="frame"> <div id="page-title"> <h1>RESTAS</h1> <b>Framework for web application development in Common Lisp</b> </div> <div id="menu"> <ul> <li> <a href="../index.html">Home</a>  </li><li> <a href="../overview.html">Overview</a>  </li><li> <a href="../installation.html">Installation</a>  </li><li> <a href="../tutorial/contents.html">Tutorials</a> <ul> <li> <a href="../tutorial/hello-world.html">Hello World</a> </li><li> <a href="../tutorial/pastebin.html">Pastebin</a> </li> </ul> </li><li> <a href="contents.html">Manual</a> <ul> <li> <a href="routes.html">Routes</a> </li><li> <a href="modules.html">Modules</a> </li><li> <a href="view.html">View</a> </li><li> <a href="special-pages.html">Special pages</a> </li><li> <a href="decorators.html">Decorators</a> </li><li> <strong>Daemonization</strong> </li><li> <a href="slime.html">SLIME</a> </li> </ul> </li><li> <a href="../ref/index.html">API Reference</a>  </li> </ul> </div> <div id="content"> <div id="daemonization" class="document"><h1>Daemonization<a href="#daemonization" class="headerlink" title="Permalink to this headline">¶</a></h1><a id="manual-daemon" class="target" name="manual-daemon"></a><p>Most Common Lisp implementations rely on being run from a terminal - when the standard input stream is closed, the Lisp process will terminate.</p>
+<p>Deploying a Common Lisp application on GNU/Linux servers poses the problem of creating a Lisp daemon process.</p>
+<p>There are several very inconvenient and unreliable methods for solving this problem (see <a class="reference" href="http://www.cliki.net/swank-daemon"><span>swank-daemon</span></a> and <a class="reference" href="http://www.cliki.net/detachtty"><span>detachtty</span></a>). But for deploying <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a>-based web applications using <a class="reference" href="http://www.sbcl.org/"><span>SBCL</span></a> under GNU/Linux, there is a simple and convenient tool: <a class="reference" href="http://github.com/archimag/restas/blob/master/contrib/restas-daemon.lisp"><span>restas-daemon.lisp</span></a> script, which is placed in 'contrib' directory of RESTAS package. With this script, you can quite simply make a daemon process: :</p>
+<pre class="literal-block">
+sbcl --load /path/to/restas/contrib/restas-daemon.lisp /path/to/daemon.conf COMMAND
+</pre><p>As you see, the script accepts two parameters: path to the daemon configuration file and a command name. Following commands are supported:</p>
+<ul>
+<li><p class="first"><strong><span>start</span></strong> - launching</p>
+</li>
+<li><p class="first"><strong><span>stop</span></strong> - stopping</p>
+</li>
+<li><p class="first"><strong><span>restart</span></strong> - restart</p>
+</li>
+<li><p class="first"><strong><span>kill</span></strong> - kill the daemon, if it somehow doesn't want to halt with 'stop'.</p>
+</li>
+<li><p class="first"><strong><span>zap</span></strong> - remove the PID file</p>
+</li>
+<li><p class="first"><strong><span>nodaemon</span></strong> - basically the same, as 'start' (including permissions change etc.), but during this the process doesn't fork itself and doesn't disconnect from the terminal. This gives you the ability to examine its output and is handy for debugging.</p>
+</li>
+</ul>
+<p>The daemon configuration file can contain definitions for several variables altering daemon behaviour. Here is the full config of my home daemon:</p>
+<p><div class="code"><span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*name*</span> <span class="string">"homesite"</span></span>)</span><br><br>
+<span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*user*</span> <span class="string">"andrey"</span></span>)</span><br><br>
+<span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*swankport*</span> 9000</span>)</span><br><br>
+<span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*asdf-central-registry*</span><br>&nbsp;'<span class="paren2">(<span class="">#P<span class="string">"/usr/share/common-lisp/systems/"</span> #P<span class="string">"/home/andrey/development/common-lisp/systems/"</span></span>)</span></span>)</span><br><br>
+<span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*asdf-load-systems*</span> '<span class="paren2">(<span class=""><span class="keyword">#:homesite</span></span>)</span></span>)</span><br><br>
+<span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*sites*</span> &nbsp;'<span class="paren2">(<span class=""><span class="paren3">(<span class=""><span class="keyword">#:homesite</span> nil 80</span>)</span></span>)</span></span>)</span></div></p>
+<p>The following parameters are possible:</p>
+<ul>
+<li><p class="first"><span class="common-lisp-entity">*name*</span> - daemon name, the only required parameter now.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*user*</span> - name of a user to be owner of the daemon, by default it is the same as daemon name.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*group*</span> - user group</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*fasldir*</span> - path to a directory for putting fasl files, by default is derived from daemon name as</p>
+<p><div class="code"><span class="paren1">(<span class="">format nil <span class="string">"/var/cache/~A/fasl/"</span> <span class="special">*name*</span></span>)</span></div></p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*pidfile*</span> - daemon PID file, by default</p>
+<p><div class="code"><span class="paren1">(<span class="">format nil <span class="string">"/var/run/~A/~A.pid"</span> <span class="special">*name*</span> <span class="special">*name*</span></span>)</span></div></p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*swankport*</span> - port for starting swank, if it isn't supplied or nil, swank won't be started.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*default-host-redirect*</span> - in <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> sites are started with <span class="common-lisp-entity">restas:start-site</span>, in this case you can supply a host name (virtual host analogue), this variable designates host for making a redirect if there is no site for requested host, e.g. you can get in <a class="reference" href="http://lisper.ru/"><span>lisper.ru</span></a> by typing in a browser <a class="reference" href="http://www.lisper.ru/"><span>http://www.lisper.ru/</span></a>, <a class="reference" href="http://lisp.catap.ru/"><span>http://lisp.catap.ru/</span></a> or just the direct address, all such requests are redirected to <a class="reference" href="http://lisper.ru/"><span>lisper.ru</span></a>.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*asdf-central-registry*</span> - list of directories for searching of systems.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*asdf-load-systems*</span> - list of systems which are necessary to load when the daemon starts.</p>
+</li>
+<li><p class="first"><span class="common-lisp-entity">*sites*</span> - list of sites to be loaded at daemon's startup with function <a class="common-lisp-entity" href="../ref/index.html#restas-start">restas:start</a>. You can supply just a <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> module or a list containing module name, host name, and port as a site (if required SSL connection, must be 4th parameter with SSL configurations, about it below). For example, site <a class="reference" href="http://restas.lisper.ru"><span>http://restas.lisper.ru</span></a> and site <a class="reference" href="http://lisper.ru/"><span>lisper.ru</span></a> are loaded in one process, and variable <span class="common-lisp-entity">*sites*</span> is defined in daemon config as</p>
+<p><div class="code"><span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*sites*</span><br>&nbsp;&nbsp;'<span class="paren2">(<span class=""><span class="paren3">(<span class=""><span class="keyword">#:rulisp</span> <span class="string">"lisper.ru"</span> 80</span>)</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="paren3">(<span class=""><span class="keyword">#:rulisp.restas</span> <span class="string">"restas.lisper.ru"</span> 80</span>)</span></span>)</span></span>)</span></div></p>
+<p>When using safe connection, for lisper.ru site configs could be such:</p>
+<p><div class="code"><span class="paren1">(<span class=""><i><span class="symbol">defparameter</span></i> <span class="special">*sites*</span><br>&nbsp;&nbsp;'<span class="paren2">(<span class=""><span class="paren3">(<span class=""><span class="keyword">#:rulisp</span> <span class="string">"lisper.ru"</span> 443 <span class="paren4">(<span class=""><span class="string">"/path/to/ssl_cert.cer"</span> <span class="string">"/path/to/private.key"</span> <span class="string">"your_pass"</span></span>)</span></span>)</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="paren3">(<span class=""><span class="keyword">#:rulisp.restas</span> <span class="string">"restas.lisper.ru"</span> 80</span>)</span></span>)</span></span>)</span></div></p>
+<p>Unless a password is mandatory, you're free to omit the third element, "your_pass", from the SSL config list.</p>
+</li>
+</ul>
+<p>There is special support for Gentoo-based systems. During installation of <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> with <a class="reference" href="http://github.com/archimag/archimag-lisp-overlay"><span>archimag-lisp-overlay</span></a> the script restas.lo is added to directory /etc/init.d/. Now, for creation of initd script you can create a symlink to this file and create configuration file in /etc/conf.d/, for example, :</p>
+<pre class="literal-block">
+cd /etc/init.d/
+ln -s restas.lo homesite
+emacs /etc/conf.d/homesite.conf
+/etc/init.d/homesite start
+</pre></div> </div> </div> <div class="bottom">@2009-2011 <a href="mailto:archimag@gmail.com">Moskvitin Andrey</a></div> </body> </html>

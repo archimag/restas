@@ -1,0 +1,42 @@
+<html> <head> <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" /> <meta name="keywords" content="restas,web,framework,web framework,REST,Common Lisp,lisp" /> <title>Установка</title> <link rel="stylesheet" type="text/css" href="_static/style.css" /> </head> <body> <a href="http://github.com/archimag/restas/"> <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub"> </a> <div id="frame"> <div id="page-title"> <h1>RESTAS</h1> <b>Фрэймворк для разработки web-приложений на Common Lisp</b> </div> <div id="menu"> <ul> <li> <a href="index.html">Начало</a>  </li><li> <a href="overview.html">Обзор</a>  </li><li> <strong>Установка</strong>  </li><li> <a href="tutorial/contents.html">Введение</a> <ul> <li> <a href="tutorial/hello-world.html">Hello World</a> </li><li> <a href="tutorial/pastebin.html">Pastebin</a> </li> </ul> </li><li> <a href="manual/contents.html">Руководство</a> <ul> <li> <a href="manual/routes.html">Маршруты</a> </li><li> <a href="manual/modules.html">Модули</a> </li><li> <a href="manual/view.html">Представление</a> </li><li> <a href="manual/special-pages.html">Специальные страницы</a> </li><li> <a href="manual/decorators.html">Декораторы</a> </li><li> <a href="manual/daemon.html">Демонизация</a> </li><li> <a href="manual/slime.html">SLIME</a> </li> </ul> </li><li> <a href="ref/index.html">API Reference</a>  </li> </ul> </div> <div id="content"> <div id="установка" class="document"><h1>Установка<a href="#установка" class="headerlink" title="Permalink to this headline">¶</a></h1><h2 id="ручная-установка">Ручная установка<a href="#ручная-установка" class="headerlink" title="Permalink to this headline">¶</a></h2><a id="installation" class="target" name="installation"></a><p><a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> это обычная <a class="reference" href="http://common-lisp.net/projects/asdf/"><span>ASDF</span></a>-система, и её установка ничем не отличается от установки большинства других пакетов.</p>
+<p>Перед установкой <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> необходимо установить следующие зависимости:</p>
+<ul>
+<li><p class="first"><a class="reference" href="http://www.weitz.de/hunchentoot/"><span>Hunchentoot</span></a></p>
+</li>
+<li><p class="first"><a class="reference" href="http://common-lisp.net/project/alexandria/"><span>alexandria</span></a></p>
+</li>
+<li><p class="first"><a class="reference" href="http://code.google.com/p/cl-routes/"><span>cl-routes</span></a></p>
+</li>
+</ul>
+<p>Далее необходимо получить исходный код. Последнюю версию <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> можно скачать на странице <a class="reference" href="http://code.google.com/p/restas/downloads/list"><span>http://code.google.com/p/restas/downloads/list</span></a>.</p>
+<p>Любители нестабильных версий могут также воспользоваться <a class="reference" href="http://git-scm.com/"><span>git</span></a>-репозиторием: :</p>
+<pre class="literal-block">
+git clone git://github.com/archimag/restas.git
+</pre><p>Теперь необходимо распаковать исходный код и добавить его в <span class="common-lisp-entity">asdf:*central-registry*</span>:</p>
+<p><div class="code"><span class="paren1">(<span class="">push #P<span class="string">"/path/to/restas/"</span> <span class="special">asdf:*central-registry*</span></span>)</span></div></p>
+<p>Или создать символическую ссылку: :</p>
+<pre class="literal-block">
+cd &nbsp;/sbcl/.systems   # Или любая другая директория, указанная в asdf:*central-registry*
+ln -s /path/to/restas/restas.asd .
+</pre><div id="gentoo-linux" class="section"><h2>Gentoo Linux<a href="#gentoo-linux" class="headerlink" title="Permalink to this headline">¶</a></h2><p>Пользователи Gentoo Linux могут воспользоваться <a class="reference" href="http://github.com/archimag/archimag-lisp-overlay"><span>archimag-lisp-overlay</span></a>, форком <a class="reference" href="http://repo.or.cz/w/gentoo-lisp-overlay.git"><span>gentoo-lisp-overlay</span></a>.</p>
+<p>Установить этот оверлей при помощи <a class="reference" href="http://layman.sourceforge.net/"><span>layman</span></a> можно следующим образом: :</p>
+<pre class="literal-block">
+emerge layman
+</pre><p>Теперь необходимо добавить <a class="reference" href="http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml"><span>http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml</span></a> в параметр overlays в конфигурационном файле /etc/layman/layman.cfg: :</p>
+<pre class="literal-block">
+overlays  : http://www.gentoo.org/proj/en/overlays/repositories.xml
+            http://github.com/archimag/archimag-lisp-overlay/raw/master/layman-list.xml
+</pre><p>И наконец: :</p>
+<pre class="literal-block">
+layman -f -a archimag-lisp
+emerge restas
+</pre></div>
+<div id="опциональные-пакеты" class="section"><h2>Опциональные пакеты<a href="#опциональные-пакеты" class="headerlink" title="Permalink to this headline">¶</a></h2><div id="puri-unicode" class="section"><h3>PURI-UNICODE<a href="#puri-unicode" class="headerlink" title="Permalink to this headline">¶</a></h3><p><a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> зависит от <a class="reference" href="http://puri.b9.com/"><span>puri</span></a>, которая является очень хорошей библиотекой, но имеет тот существенный недостаток, что не обеспечивает корректного разбора URL содержащих не-ASСII символы (для кодирования которых используется UTF-8). Для решения этой проблемы вместо <a class="reference" href="http://puri.b9.com/"><span>puri</span></a> можно использовать <a class="reference" href="http://github.com/archimag/puri-unicode"><span>puri-unicode</span></a>, которая является форком <a class="reference" href="http://puri.b9.com/"><span>puri</span></a> и обеспечивает корректную обработку подобных символов с помощью библиотеки <a class="reference" href="http://common-lisp.net/project/babel/"><span>babel</span></a>. Скачать стабильную версию этой библиотеки можно по адресу: <a class="reference" href="http://github.com/archimag/puri-unicode/downloads"><span>http://github.com/archimag/puri-unicode/downloads</span></a>.</p>
+</div>
+<div id="slime-archimag" class="section"><h3>SLIME-ARCHIMAG<a href="#slime-archimag" class="headerlink" title="Permalink to this headline">¶</a></h3><p><a class="reference" href="http://common-lisp.net/project/slime/"><span>SLIME</span></a> является, безусловно, выдающимся инструментом для разработки приложений на Common Lisp, но, к сожалению, он замкнут на себя и не предусматривает простых механизмов расширения функционала. Между тем, он содержит замечательную инфраструктуру, которая могла бы быть использована для предоставления различных инструментальных средств. <a class="reference" href="http://restas.lisper.ru/"><span>RESTAS</span></a> поддерживает <a href="manual/slime.html#slime">интеграцию</a> со <a class="reference" href="http://common-lisp.net/project/slime/"><span>SLIME</span></a>, предоставляя ряд инструментов, упрощающих разработку веб-приложений, но для их использования необходимо использовать форк <a class="reference" href="http://github.com/archimag/slime-archimag"><span>SLIME-ARCHIMAG</span></a>, вместо оригинального <a class="reference" href="http://common-lisp.net/project/slime/"><span>SLIME</span></a>, и  дополнительная инициализация Emacs: :</p>
+<pre class="literal-block">
+(add-to-list 'load-path "/path/to/restas/slime/")
+(require 'restas)
+</pre></div>
+</div>
+</div> </div> </div> <div class="bottom">@2009-2011 <a href="mailto:archimag@gmail.com">Moskvitin Andrey</a></div> </body> </html>
