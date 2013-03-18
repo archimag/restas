@@ -153,10 +153,11 @@
     (clrhash routes)
     
     (let ((traits (find-pkgmodule-traits package)))
-      
-      (let ((fun (gethash :render-method traits)))
+
+      (unless render-method
+        (let ((fun (gethash :render-method traits)))
           (setf render-method
-                (if fun (funcall fun))))
+                (if fun (funcall fun)))))
       
       (iter (for (key thing) in-hashtable (gethash :modules traits))
             (destructuring-bind (pkg ctxt child-traits) thing
@@ -171,9 +172,7 @@
                                    :parent module
                                    :package pkg
                                    :url (routes:parse-template (gethash :url child-traits ""))
-                                   :render-method (or (gethash :render-method child-traits)
-                                                      (let ((fun (gethash :render-method (find-pkgmodule-traits pkg))))
-                                                        (if fun (funcall fun))))
+                                   :render-method (gethash :render-method child-traits)
                                    :decorators (gethash :decorators child-traits)))))
 
       (iter (for rsymbol in (alexandria:hash-table-keys (gethash :routes traits)))
