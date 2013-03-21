@@ -1,17 +1,24 @@
-<html> <head> <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" /> <title></title> </head> <body> <div id="content"> <div class="document"><!-- -*- RST -*- -->
-<a id="index" class="target" name="index"></a><p><a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a> вдохновленна <a class="reference" href="https://developers.google.com/closure/templates/"><span>Google Closure Templates</span></a> и реализует язык шаблонов Closure Templates. Документация по <a class="reference" href="https://developers.google.com/closure/templates/"><span>Google Closure Templates</span></a> в части описания языка шаблонов в значительной степени может использовать и как документация по <a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a>. Существующие раличия описанны на странице Bad section id: differences-from-the-original-implementation.</p>
-<p><a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a> реализует систему шаблонов для серверной и клиенсткой стороны, котороая позволяет динамически создавать повторно используемые HTML и UI компоненты. Язык шаблонов имеет простой, естественный для программистов, систаксис. В отличие от традиционных систем, в которых каждый шаблон описывает целую страницу, вы можете использовать <a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a> для создания небольших компонентов и комбинировать их для создания пользовательского интерфейса.</p>
-<div id="преимущества-использования-cl-closure-template" class="section"><h2>Преимущества использования cl-closure-template<a href="#преимущества-использования-cl-closure-template" class="headerlink" title="Permalink to this headline">¶</a></h2><ul>
-<li><p class="first">Удобство. <a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a> обеспечивает простой способ создания фрагментов разметки и отделения логики приложения от представления.</p>
+<html> <head> <meta http-equiv="Content-Type" content="text/html; charset='utf-8'" /> <meta name="keywords" content="restas,web,framework,web framework,REST,Common Lisp,lisp" /> <title>Начало</title> <link rel="stylesheet" type="text/css" href="static/style.css" /> </head> <body> <a href="http://github.com/archimag/restas/"> <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub"> </a> <div id="frame"> <div id="page-title"> <h1>RESTAS</h1> <b>Фрэймворк для разработки web-приложений на Common Lisp</b> </div> <div id="menu"> <ul> <li> <strong>Начало</strong>  </li><li> <a href="overview.html">Обзор</a>  </li><li> <a href="installation.html">Установка</a>  </li><li> <a href="tutorial/contents.html">Введение</a> <ul> <li> <a href="tutorial/hello-world.html">Hello World</a> </li><li> <a href="tutorial/pastebin.html">Pastebin</a> </li> </ul> </li><li> <a href="manual/contents.html">Руководство</a> <ul> <li> <a href="manual/routes.html">Маршруты</a> </li><li> <a href="manual/modules.html">Модули</a> </li><li> <a href="manual/view.html">Представление</a> </li><li> <a href="manual/special-pages.html">Специальные страницы</a> </li><li> <a href="manual/decorators.html">Декораторы</a> </li><li> <a href="manual/daemon.html">Демонизация</a> </li><li> <a href="manual/slime.html">SLIME</a> </li> </ul> </li><li> <a href="ref/index.html">API Reference</a>  </li> </ul> </div> <div id="content"> <div id="начало" class="document"><h1>Начало<a href="#начало" class="headerlink" title="Permalink to this headline">¶</a></h1><h2 id="первые-шаги">Первые шаги<a href="#первые-шаги" class="headerlink" title="Permalink to this headline">¶</a></h2><!-- -*- RST -*- -->
+<a id="index" class="target" name="index"></a><ul>
+<li><p class="first last"><strong><span>С нуля:</span></strong> <a href="overview.html#обзор">Обзор</a> | <a href="installation.html#установка">Установка</a></p>
 </li>
-<li><p class="first">Язык шаблонов не зависит от используемого языка программирования и реализован для JavaScript и Common Lisp. Вы можете написать один шаблон и использовать его как на клиенте, так и на сервере.</p>
+<li><p class="first last"><strong><span>Tutorial:</span></strong> <a href="tutorial/hello-world.html#hello-world">Здравствуй мир</a> | <a href="tutorial/pastebin.html#pastebin">Pastebin</a></p>
 </li>
-<li><p class="first">Легкость чтения. Вы можете чётко видеть структуру генерируемого HTML глядя на стуктуру кода шаблонов.</p>
+</ul>
+<div id="подробности" class="section"><h2>Подробности<a href="#подробности" class="headerlink" title="Permalink to this headline">¶</a></h2><ul>
+<li><p class="first last"><strong><span>Логика:</span></strong> <a href="manual/routes.html#маршруты">Маршруты</a> | <a href="manual/modules.html#модули">Модули</a> | <a href="manual/decorators.html#декораторы">Декораторы</a></p>
 </li>
-<li><p class="first">Язык шаблонов ориентирован на программистов. Шаблоны это просто функции, которые могу вызывать друг друга. Синтаксис включает в себя конструкции, знакомые любому программисту. В однин исходный файл можно поместить несколько шаблонов.</p>
+<li><p class="first last"><strong><span>Представление:</span></strong> <a href="manual/view.html#представление">Разделение логики и представления</a> | <a href="manual/special-pages.html#специальные-страницы">Специальные страницы</a></p>
 </li>
-<li><p class="first">Инструмент, а не фреймворк. <a class="reference" href="https://github.com/archimag/cl-closure-template"><span>cl-closure-template</span></a> может быть использованна вместе с любой библиотекой или фреймворком.</p>
+<li><p class="first last"><strong><span>Инструменты:</span></strong> <a href="manual/daemon.html#демонизация">Демонизация</a> | <a href="manual/slime.html#slime">Интеграция со SLIME</a></p>
 </li>
 </ul>
 </div>
-</div> </div> </body> </html>
+<div id="поддержка" class="section"><h2>Поддержка<a href="#поддержка" class="headerlink" title="Permalink to this headline">¶</a></h2><ul>
+<li><p class="first last"><a class="reference" href="http://groups.google.com/group/restas/"><span>RESTAS discussion group</span></a></p>
+</li>
+<li><p class="first last"><a class="reference" href="http://lisper.ru/forum/restas"><span>Форум</span></a></p>
+</li>
+</ul>
+</div>
+</div> </div> </div> <div class="bottom">@2009-2011 <a href="mailto:archimag@gmail.com">Moskvitin Andrey</a></div> </body> </html>
