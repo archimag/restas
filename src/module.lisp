@@ -7,7 +7,7 @@
 
 (in-package #:restas)
 
-(defgeneric module-sybmol (module)
+(defgeneric module-symbol (module)
   (:documentation "MODULE identifier"))
 
 (defgeneric module-context (module)
