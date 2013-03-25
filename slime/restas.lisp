@@ -117,11 +117,11 @@
        "--------------------------------------------------"
        (:newline)
        ,@(or (let* ((context (slot-value module 'restas::context))
-                    (max (iter (for symbol in (restas::context-vars context))
+                    (max (iter (for symbol in (restas::context-all-vars context))
                                (maximize (length (write-to-string symbol))))))
                ;;(setf restas::*submodule* submodule)
-               (iter (for symbol in (restas::context-vars context))
-                     (for value in (restas::context-values context))
+               (iter (for symbol in (restas::context-all-vars context))
+                     (for value in (restas::context-all-values context))
                      (collect (list :value symbol))
                      (collect (make-string (- max
                                               (length (write-to-string symbol)))
@@ -138,8 +138,8 @@
                      (setf restas:*module* module)
                      (setf *saved-global-context*
                            (let ((context (slot-value module 'restas::context)))
-                             (iter (for symbol in (restas::context-vars context))
-                                   (for value in (restas::context-values context))
+                             (iter (for symbol in (restas::context-all-vars context))
+                                   (for value in (restas::context-all-values context))
                                    (collect (cons symbol
                                                   (symbol-value symbol)))
                                    (setf (symbol-value symbol)
