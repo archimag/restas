@@ -6,14 +6,15 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defsystem #:restas
-    :depends-on (#:hunchentoot #:bordeaux-threads #:routes #:alexandria #:data-sift)
+    :depends-on (#:cffi #:hunchentoot #:bordeaux-threads
+                 #:routes #:alexandria #:data-sift)
     :pathname "src"
     :components ((:file "packages")
                  (:file "special" :depends-on ("packages"))
                  (:file "declarations" :depends-on ("packages"))
                  (:file "errors" :depends-on ("special"))
                  (:file "render" :depends-on ("special"))
-                 (:file "context" :depends-on ("special"))                 
+                 (:file "context" :depends-on ("special"))
                  (:file "module" :depends-on ("context" "declarations"))
                  (:file "route" :depends-on ("module" "render"))
                  (:file "decorators" :depends-on ("route"))
@@ -22,6 +23,6 @@
                  (:file "policy" :depends-on ("packages"))))
 
      ;; #+swank-archimag
-     ;; (:module "slime" 
+     ;; (:module "slime"
      ;;          :components ((:file "restas-swank"))
      ;;          :depends-on ("src"))))

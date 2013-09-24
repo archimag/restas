@@ -76,9 +76,9 @@
       (setf (symbol-value %obj-symbol) nil))
 
     (iter (for (method lambda-list docstring) in methods)
-          (for interface-name = (intern (format nil (or interface-method-template "~A") method)
+          (for interface-name = (intern (format nil (or interface-method-template "~A") (string method))
                                         %interface-package))
-          (for internal-name = (intern (format nil (or internal-function-template "~A") method)
+          (for internal-name = (intern (format nil (or internal-function-template "~A") (string method))
                                        %internal-package))
           (when (eql interface-name internal-name)
             (error "Internal and external names must be different"))
