@@ -220,19 +220,17 @@
 ;;; parse url for route
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defun parse-route-url (url route-symbol &optional module-symbol)
-;;   (let ((mapper (make-instance 'routes:mapper))
-;;         (module (if module-symbol
-;;                        (find-module  module-symbol)
-;;                        *module*)))
-;;     (routes:connect mapper
-;;                     (make-instance 'route
-;;                                    :template (route-template-from-symbol route-symbol
-;;                                                                          module)
-;;                                    :module module))
-;;     (multiple-value-bind (route bindings) (routes:match mapper url)
-;;       (if route
-;;           (alexandria:alist-plist bindings)))))
+(defun parse-route-url (url route-symbol)
+  (let ((mapper (make-instance 'routes:mapper))
+        (module *module*))
+    (routes:connect mapper
+                    (make-instance 'route
+                                   :template (routes:route-template (module-find-route module route-symbol))
+                                   ;;(route-template-from-symbol route-symbol module)
+                                   :module module))
+    (multiple-value-bind (route bindings) (routes:match mapper url)
+      (if route
+          (alexandria:alist-plist bindings)))))
   
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

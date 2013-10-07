@@ -36,6 +36,9 @@
 (defgeneric module-find-route (module route-symbol)
   (:documentation "Find the route in the MODULE"))
 
+(defgeneric module-find-child-module (module module-symbol)
+  (:documentation "Find the mounted module in the MODULE"))
+
 (defmacro with-module-context (module &body body)
   `(with-context (module-context ,module)
      ,@body))
@@ -57,6 +60,9 @@
 
 (defun find-route (route-symbol &optional (module *module*))
   (module-find-route module route-symbol))
+
+(defun find-mounted-module (module-symbol &optional (module *module*))
+  (module-find-child-module module module-symbol))
 
 (defun apply-decorators (route decorators)
   (if decorators
@@ -206,6 +212,9 @@
     (or (gethash route-symbol routes)
         (and parent (module-find-route parent route-symbol)))))
 
+(defmethod module-find-child-module ((module pkgmodule) module-symbol)
+  (gethash module-symbol (slot-value module 'children)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define-module
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -217,7 +226,7 @@
             (:render-method
              (collect :render-method into pkgtraits)
              (collect `(alexandria:named-lambda make-render-method () ,(second option)) into pkgtraits))
-            (:export-route-symbols
+            ((:export-route-symbols :content-type)
              (collect :export-route-symbols into pkgtraits)
              (collect (second option) into pkgtraits))
             (otherwise
