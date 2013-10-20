@@ -114,6 +114,10 @@ Routes
 
   * :decorators - list of decorators. See :ref:`manual-decorators`.
 
+  * :additional-variables - declaration with an effect of
+    :macro:`let`, adding to the function :hs:`keyword` parameters to
+    simplify REPL experiments with it.
+
   Example of definition of a trivial route:
 
   .. code-block:: common-lisp
