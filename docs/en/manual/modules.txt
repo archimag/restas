@@ -52,7 +52,7 @@ served URLs and this information must be used by the request dispatch mechanism 
 correctly identify the code responsible for processing the incoming request. In the terms
 of routes every reused web component is just a list of routes processed
 by it, and this is just what modules are from the RESTAS point of view. For
-using a module from another module one can use :macro:`restas:mount-submodule`
+using a module from another module one can use :macro:`restas:mount-module`
 . Example (depends on the code above):
 
 .. code-block:: common-lisp
@@ -62,7 +62,7 @@ using a module from another module one can use :macro:`restas:mount-submodule`
 
   (in-package #:test)
 
-  (restas:mount-submodule test-hello-world (#:hello-world))
+  (restas:mount-module test-hello-world (#:hello-world))
 
   (restas:start '#:test :port 8080)
 
@@ -77,7 +77,7 @@ used by `lisper.ru`_ for publishing static files:
 
 .. code-block:: common-lisp
 
-  (restas:mount-submodule rulisp-static (#:restas.directory-publisher)
+  (restas:mount-module rulisp-static (#:restas.directory-publisher)
     (restas.directory-publisher:*directory* (merge-pathnames "static/" *resources-dir*))
     (restas.directory-publisher:*autoindex* nil))
 
@@ -85,7 +85,7 @@ In this example we use the `restas-directory-publisher`_ module.
 
 The :package:`restas.directory-publisher` module defines several
 dynamic variables which can later be used for
-configuration. In :macro:`restas:mount-submodule` some of these variables
+configuration. In :macro:`restas:mount-module` some of these variables
 are bound to new values - these bindings are not applied directly but
 are saved as a context for future use. At request processing time
 the dispatcher finds the route, identifies the module related to it,
@@ -98,14 +98,16 @@ When defining a new module with :macro:`restas:define-module` the
 :var:`*baseurl*` variable is added to it (to its :hs:`package`). This
 variable should be a list of strings that defines a base URL where the
 module is mounted. It is set to :hs:`nil` by default. This variable
-can be used in :macro:`restas:mount-submodule` for specifying where
-the submodule will be plugged in. Here is a more complex example of
-the module `restas-directory-publisher`_ of `lisper.ru`_ (you can
-see it in action at address http://lisper.ru/files/).
+can be used in :macro:`restas:mount-module` for specifying where
+the submodule will be plugged in.
+
+Here is a more complex example of the module
+`restas-directory-publisher`_ of `lisper.ru`_ (you can see it in
+action at address http://lisper.ru/files/).
 
 .. code-block:: common-lisp
 
-  (restas:mount-submodule rulisp-files (#:restas.directory-publisher)
+  (restas:mount-module rulisp-files (#:restas.directory-publisher)
     (restas.directory-publisher:*baseurl* '("files"))
     (restas.directory-publisher:*directory* (merge-pathnames "files/" *vardir*))
     (restas.directory-publisher:*autoindex-template*
@@ -121,7 +123,7 @@ without any conflicts between them.
 Internal initialization
 -----------------------
 
-The macro :macro:`restas:mount-submodule` lets you control module
+The macro :macro:`restas:mount-module` lets you control module
 customization "from outside", but sometimes you need the possibility
 to control created context inside the module. E.g. module
 `restas-planet`_ used for organizing `Russian Lisp Planet`_ requires a
@@ -148,10 +150,10 @@ the real code from planet.lisp:
 
 Here the computation of 'spider' object is made and the object is associated
 with variable :var:`*spider*` and is placed in the context of created submodule.
-The present code will be evaluated during evaluation of the :macro:`restas:mount-submodule`
+The present code will be evaluated during evaluation of the :macro:`restas:mount-module`
 form. Considering creation of a spider object leads to launching a scheduler
 (in particular, a timer is created) we need to know how to stop it when evaluating
-:macro:`restas:mount-submodule` in the second time. The generic function
+:macro:`restas:mount-module` in the second time. The generic function
 :fun:`restas:define-finalization` is provided for this.
 
 .. code-block:: common-lisp

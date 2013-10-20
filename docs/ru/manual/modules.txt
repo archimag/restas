@@ -53,7 +53,7 @@ web-приложений. Отличие web-компонента  от прос
 В терминах routes (маршрутов) любой повторно используемый web-компонент является
 просто списком обрабатываемых им маршрутов, а это как раз и есть то, чем являются
 модули с точки зрения `RESTAS`_. Для повторного использования модуля из другого
-модуля используется макрос :macro:`restas:mount-submodule`. Пример (зависит от кода выше):
+модуля используется макрос :macro:`restas:mount-module`. Пример (зависит от кода выше):
 
 .. code-block:: common-lisp
 
@@ -62,7 +62,7 @@ web-приложений. Отличие web-компонента  от прос
 
   (in-package #:test)
 
-  (restas:mount-submodule test-hello-world (#:hello-world))
+  (restas:mount-module test-hello-world (#:hello-world))
 
   (restas:start '#:test :port 8080)
 
@@ -89,7 +89,7 @@ copy/paste с последующим редактированием кода, ч
 
 .. code-block:: common-lisp
 
-  (restas:mount-submodule rulisp-static (#:restas.directory-publisher)
+  (restas:mount-module rulisp-static (#:restas.directory-publisher)
     (restas.directory-publisher:*directory* (merge-pathnames "static/" *resources-dir*))
     (restas.directory-publisher:*autoindex* nil))
 
@@ -97,7 +97,7 @@ copy/paste с последующим редактированием кода, ч
 
 В модуле :package:`restas.directory-publisher` определены (с помощью :hs:`defparameter`
 или :hs:`defvar`) несколько глобальных динамических переменных, которые можно
-использоваться для настройки его работы. В макросе :marcro:`restas:mount-submodule`
+использоваться для настройки его работы. В макросе :macro:`restas:mount-module`
 некоторые из этих переменных связываются c новыми значения, но эти связывания не
 применяются непосредственно, а сохраняются в виде контекста для использования в
 будущем. При обработке запроса диспетчер находит маршрут, определяет связанный с
@@ -109,13 +109,16 @@ copy/paste с последующим редактированием кода, ч
 (в :hs:`package`) добавляется переменная :var:`*baseurl*`, которая должна быть списком
 строк и определяет базовый url, по которому будет активизирован данный модуль,
 по-умолчанию она установленная в :hs:`nil`. Данную переменную можно использовать в
-:macro:`restas:mount-submodule` для задания url, по которому будет подключён
-подмодуль. Вот более сложный пример использования модуля `restas-directory-publisher`_
-на сайте `lisper.ru`_ (посмотреть этот код в работе можно по адресу http://lisper.ru/files/):
+:macro:`restas:mount-module` для задания url, по которому будет подключён
+подмодуль.
+
+Вот более сложный пример использования модуля
+`restas-directory-publisher`_ на сайте `lisper.ru`_ (посмотреть этот
+код в работе можно по адресу http://lisper.ru/files/):
 
 .. code-block:: common-lisp
 
-  (restas:mount-submodule rulisp-files (#:restas.directory-publisher)
+  (restas:mount-module rulisp-files (#:restas.directory-publisher)
     (restas.directory-publisher:*baseurl* '("files"))
     (restas.directory-publisher:*directory* (merge-pathnames "files/" *vardir*))
     (restas.directory-publisher:*autoindex-template*
@@ -131,7 +134,7 @@ copy/paste с последующим редактированием кода, ч
 Внутренняя инициализация
 ------------------------
 
-Макрос :macro:`restas:mount-submodule` позволяет контролировать настройку модуля
+Макрос :macro:`restas:mount-module` позволяет контролировать настройку модуля
 "снаружи", но порой надо иметь возможность влиять на создаваемый контекст изнутри
 модуля. Например, модуль `restas-planet`_, который используется для организации
 `Russian Lisp Planet`_ нуждается в механизме для сохранения объекта-робота (он по
@@ -157,9 +160,9 @@ copy/paste с последующим редактированием кода, ч
 
 Здесь производится вычисление объекта spider, который ассоциируется с переменной 
 :var:`*spider*` и помещается в контекст создаваемого submodule. Данный код будет
-вычислен при вычислении формы :macro:`restas:mount-submodule`. Поскольку создание
+вычислен при вычислении формы :macro:`restas:mount-module`. Поскольку создание
 объекта spider приводит к запуску планировщика (в частности, создаётся таймер), то
-также надо уметь останавливать их при повторном вычислении формы :macro:`restas:mount-submodule`,
+также надо уметь останавливать их при повторном вычислении формы :macro:`restas:mount-module`,
 для этого предусмотрена generic-функция :fun:`finalize-module-instance`
 
 .. code-block:: common-lisp

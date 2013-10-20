@@ -59,6 +59,6 @@
 .. _Screen: http://www.gnu.org/software/screen/
 .. _detachtty: http://www.cliki.net/detachtty
 .. _HTML-TEMPLATE: http://www.weitz.de/html-template/
-.. _cl-closure-template: http://code.google.com/p/cl-closure-template/
+.. _cl-closure-template: http://github.com/archimag/cl-closure-template
 .. _REST: http://ru.wikipedia.org/wiki/REST
 .. _Lisp LGPL: http://opensource.franz.com/preamble.html

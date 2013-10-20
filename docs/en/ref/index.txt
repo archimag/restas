@@ -23,7 +23,7 @@ API Reference
 
   * port - port for accepting requests
 
-  * context - environment analogous to specified with :macro:`restas:mount-submodule`,
+  * context - environment analogous to specified with :macro:`restas:mount-module`,
     permits customizing module parameters.
 
   * acceptor-class - determines which class of acceptor objects is created  and
@@ -49,7 +49,7 @@ API Reference
 
   Reinitialises request dispatcher. Usually there is no need to call
   this function directly, because during evaluation of
-  :macro:`restas:mount-submodule` and :macro:`restas:define-route` it
+  :macro:`restas:mount-module` and :macro:`restas:define-route` it
   is called automatically.
 
 Special variables
@@ -63,9 +63,9 @@ Special variables
 
   The set of parsed variables of the route is stored here.
 
-.. defvar:: restas:*submodule*
+.. defvar:: restas:*module*
 
-  Active submodule the current route being handled belongs to.
+  Active module the current route being handled belongs to.
 
 .. defvar:: restas:*route*
    :args: foo bar
@@ -76,7 +76,7 @@ Routes
 ======
 
 .. defmacro:: restas:define-route
-  :args: name (template &key (method :get) content-type render-method requirement parse-vars decorators) &body body
+  :args: name (template &key (method :get) content-type) &body body
 
   Creates new route in the current module
 
@@ -92,21 +92,31 @@ Routes
 
   * content-type - result **Content-Type** HTTP header.
 
-  * headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
-
-  * render-method - object, used by call to :fun:`restas:render-object` for processing of
-    the result of route handler before serving it to client.
-
-  * requirement - arbitrary function called for checking whether a route and a request match
-    each other. If result is :hs:`NIL` then route is regarded as not satisfying the request.
-
-  * parse-vars - *plist* with variables names (as :hs:`keyword`s) and functions
-    for parsing them.
-
-  * decorators - list of decorators. See :ref:`manual-decorators`.
-
   * body - handler body can contain arbitrary code; its result is returned
     to the client (after processing it with :fun:`restas:render-object`).
+
+  In the beginning of the route body can be used declarations that are
+  special forms, starting with :hs:`keyword`:
+
+  * :headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
+
+  * :render-method - object, used by call to :fun:`restas:render-object` for processing of
+    the result of route handler before serving it to client.
+
+  * :apply-render-method - analogous to :render-method, but is called using
+    :fun:`apply` and not :fun:`funcall`.
+
+  * :requirement - arbitrary function called for checking whether a route and a request match
+    each other. If result is :hs:`NIL` then route is regarded as not satisfying the request.
+
+  * :sift-variables - the list of the lists that consist of the
+    variable name and `data-sift`_ parsing rule (e.g. function).
+
+  * :decorators - list of decorators. See :ref:`manual-decorators`.
+
+  * :additional-variables - declaration with an effect of
+    :macro:`let`, adding to the function :hs:`keyword` parameters to
+    simplify REPL experiments with it.
 
   Example of definition of a trivial route:
 
@@ -141,19 +151,7 @@ Routes
                    :arg1 "foo"
                    :arg2 "bar")
 
-  **Important**: this functions works right only for routes being in the same
-  module with processed at the call time route.
-
-.. defun:: restas:genurl-submodule
-  :args: submodule-symbol route-symbol &rest args
-
-  Analogous to :fun:`restas:genurl`, but is used for routes from modules mounted
-  with :macro:`restas:mount-submodule`.
-
-  * submodule-symbol - identifier of submodule, specified at its definition 
-    with :macro:`restas:mount-submodule`.
-
-.. defun:: restas:gen-full-url
+.. defun:: restas:genurl*
   :args: route &rest args
 
   This function is analogous to :fun:`restas:genurl` except that the generated URL
@@ -185,20 +183,20 @@ Modules
 .. defun:: restas:initialize-module-instance
   :args: (module context) 
 
-  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-submodule`
+  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-module`
   and can be used, for example, for additional adjustment of submodule context.
   It should be placed in the package, defined with aid of :macro:`restas:define-module`.
 
 .. defun:: restas:finalize-module-instance
   :args: (module context)
 
-  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-submodule`
+  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-module`
   and can be used e.g. for freeing resources allocated at submodule initialization.
 
 Submodules
 ==========
 
-.. defmacro:: restas:mount-submodule
+.. defmacro:: restas:mount-module
   :args: name (module &rest decorators) &rest bindings
 
   Defines a submodule.
@@ -217,32 +215,14 @@ Submodules
 
   .. code-block:: common-lisp
 
-    (restas:mount-submodule tmp (#:restas.directory-publisher)
+    (restas:mount-module tmp (#:restas.directory-publisher)
       (restas.directory-publisher:*baseurl* '("tmp"))
       (restas.directory-publisher:*directory* #P"/tmp/"))
 
+.. defmacro:: restas:with-module
+  :args: module &body body
 
-.. defun:: restas:submodule-symbol
-  :args: submodule
-
-  Returns the :hs:`symbol` bound to the submodule object (e.g., at request processing
-  time such object is bound to :var:`restas:*submodule*`).
-
-.. defun:: restas:submodule-module
-  :args: submodule
-
-  Returns the `package designator`_ associated with submodule object.
-
-.. defun:: restas:submodule-parent
-  :args: submodule
-
-  Returns a submoudle to which the passed submodule is mounted. With aid of macro
-  :macro:`restas:mount-submodule` you can create entire hierarchies of submodules.
-
-.. defmacro:: restas:with-submodule-context
-  :args: submodule &body body
-
-  Lets you execute an arbitrary code at the context of the specified submodule.
+  Lets you execute an arbitrary code at the context of the specified module.
 
 View
 ====
@@ -323,7 +303,8 @@ Debugging
   Maximal number of simultaneously debugged threads.
 
 .. _RESTAS: http://restas.lisper.ru/
-.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _data-sift: http://github.com/archimag/data-sift
+.. _garbage-pools: http://github.com/archimag/garbage-pools
 .. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator
 .. _Buffer-Local Variables: http://www.gnu.org/software/emacs/elisp/html_node/Intro-to-Buffer_002dLocal.html
 .. _GNU Emacs: http://www.gnu.org/software/emacs/
