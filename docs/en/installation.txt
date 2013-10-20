@@ -16,10 +16,7 @@ Before installing `RESTAS`_ the following dependencies need to be installed:
 * `alexandria`_
 * `cl-routes`_
 
-After this you should get the source code. The latest version of `RESTAS`_
-can be downloaded at http://code.google.com/p/restas/downloads/list.
-
-Fans of unstable versions also can use the git repository:
+After this you should get the source code. You can use the git repository:
 ::
 
   git clone git://github.com/archimag/restas.git
@@ -89,10 +86,11 @@ additional Emacs initialization:
   (require 'restas)
 
 .. _RESTAS: http://restas.lisper.ru/
+.. _Quicklisp: http://www.quicklisp.org/beta/
 .. _ASDF: http://common-lisp.net/projects/asdf/
 .. _Hunchentoot: http://www.weitz.de/hunchentoot/
 .. _alexandria: http://common-lisp.net/project/alexandria/
-.. _cl-routes: http://code.google.com/p/cl-routes/
+.. _cl-routes: http://github.com/archimag/cl-routes
 .. _git: http://git-scm.com/
 .. _clbuild: http://common-lisp.net/project/clbuild/
 .. _archimag-lisp-overlay: http://github.com/archimag/archimag-lisp-overlay
