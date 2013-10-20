@@ -92,6 +92,9 @@ Routes
 
   * content-type - result **Content-Type** HTTP header.
 
+  * body - handler body can contain arbitrary code; its result is returned
+    to the client (after processing it with :fun:`restas:render-object`).
+
   In the beginning of the route body can be used declarations that are
   special forms, starting with :hs:`keyword`:
 
@@ -110,9 +113,6 @@ Routes
     variable name and `data-sift`_ parsing rule (e.g. function).
 
   * :decorators - list of decorators. See :ref:`manual-decorators`.
-
-  * :body - handler body can contain arbitrary code; its result is returned
-    to the client (after processing it with :fun:`restas:render-object`).
 
   Example of definition of a trivial route:
 
