@@ -76,7 +76,7 @@ Routes
 ======
 
 .. defmacro:: restas:define-route
-  :args: name (template &key (method :get) content-type render-method requirement parse-vars decorators) &body body
+  :args: name (template &key (method :get) content-type) &body body
 
   Creates new route in the current module
 
@@ -92,20 +92,26 @@ Routes
 
   * content-type - result **Content-Type** HTTP header.
 
-  * headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
+  In the beginning of the route body can be used declarations that are
+  special forms, starting with :hs:`keyword`:
 
-  * render-method - object, used by call to :fun:`restas:render-object` for processing of
+  * :headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
+
+  * :render-method - object, used by call to :fun:`restas:render-object` for processing of
     the result of route handler before serving it to client.
 
-  * requirement - arbitrary function called for checking whether a route and a request match
+  * :apply-render-method - analogous to :render-method, but is called using
+    :fun:`apply` and not :fun:`funcall`.
+
+  * :requirement - arbitrary function called for checking whether a route and a request match
     each other. If result is :hs:`NIL` then route is regarded as not satisfying the request.
 
-  * parse-vars - *plist* with variables names (as :hs:`keyword`s) and functions
-    for parsing them.
+  * :sift-variables - the list of the lists that consist of the
+    variable name and `data-sift`_ parsing rule (e.g. function).
 
-  * decorators - list of decorators. See :ref:`manual-decorators`.
+  * :decorators - list of decorators. See :ref:`manual-decorators`.
 
-  * body - handler body can contain arbitrary code; its result is returned
+  * :body - handler body can contain arbitrary code; its result is returned
     to the client (after processing it with :fun:`restas:render-object`).
 
   Example of definition of a trivial route:

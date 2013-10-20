@@ -144,15 +144,14 @@ URL parameter control
 
 Often there is a need to put a restriction to URL template parameters, e.g.
 a restriction of type, or a need to transform them from a string representation to
-some objects. For this you can use :parse-vars parameter of macro
+some objects. For this you can use :sift-variables declaration of macro
 :macro:`restas:define-route`, for example:
 
 .. code-block:: common-lisp
 
-  (restas:define-route myroute ("/foo/:bar/:id/:page"
-                                :parse-vars (list :bar (lambda (str)
-                                                           (check-bar str))
-                                                  :id #'parse-integer))
+  (restas:define-route myroute ("/foo/:bar/:id/:page")
+    (:sift-variables (bar #'check-bar)
+                     (id 'integer))
     ...)
 
 Here id parameter is parsed as integer, bar is checked with aid of
@@ -167,7 +166,7 @@ as returned by specified function.
 Arbitrary restriction
 ---------------------
 
-With :requirement parameter of macro :macro:`restas:define-route`
+With :requirement declaration of macro :macro:`restas:define-route`
 you can specify an arbitrary function to be called when the route is
 checked. If it returns :hs:`NIL` then the route is treated as inappropriate.
 
@@ -177,18 +176,18 @@ uses the following code:
 .. code-block:: common-lisp
 
   (define-route edit-wiki-page/preview ("edit/:page"
-                                        :method :post
-                                        :requirement (lambda () (hunchentoot:post-parameter "preview")))
+                                        :method :post)
+    (:requirement (lambda () (hunchentoot:post-parameter "preview")))
     ...)
 
   (define-route edit-wiki-page/cancel ("edit/:page"
-                                       :method :post
-                                       :requirement (lambda () (hunchentoot:post-parameter "cancel")))
+                                       :method :post)
+    (:requirement (lambda () (hunchentoot:post-parameter "cancel")))
     ...)
 
   (define-route edit-wiki-page/save ("edit/:page"
-                                     :method :post
-                                     :requirement (lambda () (hunchentoot:post-parameter "save")))
+                                     :method :post)
+    (:requirement (lambda () (hunchentoot:post-parameter "save")))
     ...)
 
 Here the routes edit-wiki-page/preview, edit-wiki-page/cancel, and edit-wiki-page/save
