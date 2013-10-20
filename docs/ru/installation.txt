@@ -4,6 +4,15 @@
  Установка
 ===========
 
+Quicklisp
+=========
+
+`RESTAS`_ есть в `Quicklisp`_:
+
+.. code-block:: common-lisp
+
+  (ql:quickload "restas")
+
 Ручная установка
 ================
 

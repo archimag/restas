@@ -4,6 +4,15 @@
  Installation
 ==============
 
+Quicklisp
+=========
+
+You can install `RESTAS`_ using `Quicklisp`_:
+
+.. code-block:: common-lisp
+
+  (ql:quickload "restas")
+
 Manual installation
 ===================
 
