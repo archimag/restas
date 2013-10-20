@@ -148,19 +148,7 @@ API Reference
                    :arg1 "foo"
                    :arg2 "bar")
 
-  **Важно**: данная функция работает правильно только для маршрутов, которые находятся
-  в одном модуле с обрабатываемым в момент вызова маршрутом.
-
-.. defun:: restas:genurl-submodule
-  :args: submodule-symbol route-symbol &rest args
-
-  Аналогична :fun:`restas:genurl`, но используется для маршрутов из подключаемых
-  с помощью :macro:`restas:mount-submodule` модулей.
-
-  * submodule-symbol - индефикатор субмодуля, указаный при его определении с помощю
-    :macro:`restas:mount-submodule`.
-
-.. defun:: restas:gen-full-url
+.. defun:: restas:genurl*
   :args: route &rest args
 
   Данная функция аналогична :fun:`restas:genurl` за тем исключением, что в генерируемый

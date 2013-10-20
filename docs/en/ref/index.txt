@@ -141,19 +141,7 @@ Routes
                    :arg1 "foo"
                    :arg2 "bar")
 
-  **Important**: this functions works right only for routes being in the same
-  module with processed at the call time route.
-
-.. defun:: restas:genurl-submodule
-  :args: submodule-symbol route-symbol &rest args
-
-  Analogous to :fun:`restas:genurl`, but is used for routes from modules mounted
-  with :macro:`restas:mount-submodule`.
-
-  * submodule-symbol - identifier of submodule, specified at its definition 
-    with :macro:`restas:mount-submodule`.
-
-.. defun:: restas:gen-full-url
+.. defun:: restas:genurl*
   :args: route &rest args
 
   This function is analogous to :fun:`restas:genurl` except that the generated URL
