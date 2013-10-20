@@ -317,7 +317,8 @@ Debugging
   Maximal number of simultaneously debugged threads.
 
 .. _RESTAS: http://restas.lisper.ru/
-.. _garbage-pools: http://code.google.com/p/garbage-pools/
+.. _data-sift: http://github.com/archimag/data-sift
+.. _garbage-pools: http://github.com/archimag/garbage-pools
 .. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator
 .. _Buffer-Local Variables: http://www.gnu.org/software/emacs/elisp/html_node/Intro-to-Buffer_002dLocal.html
 .. _GNU Emacs: http://www.gnu.org/software/emacs/
