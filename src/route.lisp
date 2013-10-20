@@ -114,11 +114,17 @@
          (reconnect-all-routes)))))
 
 (defun route-template-from-symbol (symbol module)
-  (let ((traits (gethash symbol (pkgmodule-traits-routes (symbol-package symbol)))))
-    (concatenate 'list
-                 (module-real-url module)
-                 (routes:parse-template (gethash :template traits) 
-                                        (gethash :parse-vars traits)))))
+  (flet ((call-in-context-wrap (fun)
+           (alexandria:named-lambda parse-in-context (value)
+             (with-module module
+               (funcall fun value)))))
+    (let ((traits (gethash symbol (pkgmodule-traits-routes (symbol-package symbol)))))
+      (concatenate 'list
+                   (module-real-url module)
+                   (routes:parse-template (gethash :template traits) 
+                                          (iter (for tail on (gethash :parse-vars traits) by #'cddr)
+                                                (collect (first tail))
+                                                (collect (call-in-context-wrap (second tail)))))))))
 
 (defun create-route-from-symbol (symbol module)
   (destructuring-bind (&key content-type headers method requirement render-method decorators
