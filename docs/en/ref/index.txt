@@ -23,7 +23,7 @@ API Reference
 
   * port - port for accepting requests
 
-  * context - environment analogous to specified with :macro:`restas:mount-submodule`,
+  * context - environment analogous to specified with :macro:`restas:mount-module`,
     permits customizing module parameters.
 
   * acceptor-class - determines which class of acceptor objects is created  and
@@ -49,7 +49,7 @@ API Reference
 
   Reinitialises request dispatcher. Usually there is no need to call
   this function directly, because during evaluation of
-  :macro:`restas:mount-submodule` and :macro:`restas:define-route` it
+  :macro:`restas:mount-module` and :macro:`restas:define-route` it
   is called automatically.
 
 Special variables
@@ -63,9 +63,9 @@ Special variables
 
   The set of parsed variables of the route is stored here.
 
-.. defvar:: restas:*submodule*
+.. defvar:: restas:*module*
 
-  Active submodule the current route being handled belongs to.
+  Active module the current route being handled belongs to.
 
 .. defvar:: restas:*route*
    :args: foo bar
@@ -183,20 +183,20 @@ Modules
 .. defun:: restas:initialize-module-instance
   :args: (module context) 
 
-  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-submodule`
+  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-module`
   and can be used, for example, for additional adjustment of submodule context.
   It should be placed in the package, defined with aid of :macro:`restas:define-module`.
 
 .. defun:: restas:finalize-module-instance
   :args: (module context)
 
-  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-submodule`
+  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-module`
   and can be used e.g. for freeing resources allocated at submodule initialization.
 
 Submodules
 ==========
 
-.. defmacro:: restas:mount-submodule
+.. defmacro:: restas:mount-module
   :args: name (module &rest decorators) &rest bindings
 
   Defines a submodule.
@@ -215,32 +215,14 @@ Submodules
 
   .. code-block:: common-lisp
 
-    (restas:mount-submodule tmp (#:restas.directory-publisher)
+    (restas:mount-module tmp (#:restas.directory-publisher)
       (restas.directory-publisher:*baseurl* '("tmp"))
       (restas.directory-publisher:*directory* #P"/tmp/"))
 
+.. defmacro:: restas:with-module
+  :args: module &body body
 
-.. defun:: restas:submodule-symbol
-  :args: submodule
-
-  Returns the :hs:`symbol` bound to the submodule object (e.g., at request processing
-  time such object is bound to :var:`restas:*submodule*`).
-
-.. defun:: restas:submodule-module
-  :args: submodule
-
-  Returns the `package designator`_ associated with submodule object.
-
-.. defun:: restas:submodule-parent
-  :args: submodule
-
-  Returns a submoudle to which the passed submodule is mounted. With aid of macro
-  :macro:`restas:mount-submodule` you can create entire hierarchies of submodules.
-
-.. defmacro:: restas:with-submodule-context
-  :args: submodule &body body
-
-  Lets you execute an arbitrary code at the context of the specified submodule.
+  Lets you execute an arbitrary code at the context of the specified module.
 
 View
 ====

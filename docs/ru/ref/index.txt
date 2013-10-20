@@ -23,7 +23,7 @@ API Reference
 
   * port - порт на котором будут приниматься запросы
 
-  * context - окружение, аналогичное указываемуму в :macro:`restas:mount-submodule`,
+  * context - окружение, аналогичное указываемуму в :macro:`restas:mount-module`,
     которое позволяет настроить параметры модуля.
 
   * acceptor-class - символ, который определяет какой класс должен использоваться для создания
@@ -50,7 +50,7 @@ API Reference
 
   Реинициализирует диспетчер запросов. Обычно в непосредственном вызове данной
   функции нет необходимости, посольку при выполнении (:execute) макросов
-  :macro:`restas:mount-submodule` и :macro:`restas:define-route` она вызывается
+  :macro:`restas:mount-module` и :macro:`restas:define-route` она вызывается
   автоматически.
 
 Специальные переменные
@@ -65,9 +65,9 @@ API Reference
 
   В этой переменной сохраняется набор распарсенных переменных маршрута.
 
-.. defvar:: restas:*submodule*
+.. defvar:: restas:*module*
 
-  Активный submodule, которому принадлежит обрабатываемый маршрут
+  Активный модуль, которому принадлежит обрабатываемый маршрут
 
 .. defvar:: restas:*route*
    :args: foo bar
@@ -192,7 +192,7 @@ API Reference
 .. defun:: restas:initialize-module-instance
   :args: (module context) 
 
-  Generic-функция, вызывается при подключении модуля с помощью :macro:`restas:mount-submodule`.
+  Generic-функция, вызывается при подключении модуля с помощью :macro:`restas:mount-module`.
   Может использваться, например, для дополнительной настройки контекста
   субмодуля. Должна находиться внутри пакета, определённого с помощью
   :macro:`restas:define-module`.
@@ -200,13 +200,13 @@ API Reference
 .. defun:: restas:finalize-module-instance
   :args: (module context)
 
-  Generic-функция, вызывается при повторном вычислении :macro:`restas:mount-submodule` и может
+  Generic-функция, вызывается при повторном вычислении :macro:`restas:mount-module` и может
   использоваться, например, для освобождении ресрсов, выделенных при инциализации субмодуля.
 
 Субмодули
 =========
 
-.. defmacro:: restas:mount-submodule
+.. defmacro:: restas:mount-module
   :args: name (module &rest decorators) &rest bindings
 
   Определяет субмодуль, который становится частью модуля, в пакете которого
@@ -226,34 +226,14 @@ API Reference
 
   .. code-block:: common-lisp
 
-    (restas:mount-submodule tmp (#:restas.directory-publisher)
+    (restas:mount-module tmp (#:restas.directory-publisher)
       (restas.directory-publisher:*baseurl* '("tmp"))
       (restas.directory-publisher:*directory* #P"/tmp/"))
 
-
-.. defun:: restas:submodule-symbol
-  :args: submodule
-
-  Возвращает :hs:`symbol`, связанный с объектом-субмодулем (например, во время
-  обработки запроса такой объект связан  с переменной :var:`restas:*submodule*`).
-
-
-.. defun:: restas:submodule-module
-  :args: submodule
-
-  Возвращает `package designator`_, связанный с объектом-субмодулем
-
-.. defun:: restas:submodule-parent
-  :args: submodule
-
-  Возвращает субмодуль, к которому присоединён переданный субмодуль. С помощью
-  макроса :macro:`restas:mount-submodule` можно создавать целые иерархии
-  субмодулей.
-
-.. defmacro:: restas:with-submodule-context
+.. defmacro:: restas:with-module
   :args: submodule &body body
 
-  Позволяет произвольный выполнить код в окружении контекста указанного субмодуля.
+  Позволяет произвольный выполнить код в окружении контекста указанного модуля.
 
 Отображение
 ===========
