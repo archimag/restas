@@ -227,7 +227,7 @@
              (collect :render-method into pkgtraits)
              (collect `(alexandria:named-lambda make-render-method () ,(second option)) into pkgtraits))
             ((:export-route-symbols :content-type)
-             (collect :export-route-symbols into pkgtraits)
+             (collect (first option) into pkgtraits)
              (collect (second option) into pkgtraits))
             (otherwise
              (collect option into pkgoptions)))
