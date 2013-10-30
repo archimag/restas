@@ -130,13 +130,11 @@
   (destructuring-bind (&key content-type headers method requirement render-method decorators
                             variables additional-variables &allow-other-keys)
       (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes (symbol-package symbol))))
-    (cond
-      (content-type 
-       (setf (getf headers :content-type) content-type))
-      ((not (getf headers :content-type))
-       (setf (getf headers :content-type)
-             (or "text/html"))))
-
+    (setf (getf headers :content-type)
+          (or content-type
+              (getf headers :content-type)
+              (gethash :content-type (find-pkgmodule-traits (symbol-package symbol)))
+              "text/html"))
     (apply-decorators (make-instance 'route
                                      :template (route-template-from-symbol symbol module)
                                      :symbol symbol
