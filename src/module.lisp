@@ -77,9 +77,12 @@
 
 (defparameter *pkgmodules-traits* (make-hash-table))
 
+(defun find-pkgmodule-traits (package)
+  (gethash (find-package package) *pkgmodules-traits*))
+
 (defun register-pkgmodule-traits (package &rest traits &key &allow-other-keys)
   (let ((dict (alexandria:plist-hash-table traits))
-        (old (gethash (find-package package) *pkgmodules-traits*)))
+        (old (find-pkgmodule-traits package)))
     (cond
       (old
        (iter (for key in '(:modules :routes :references))
@@ -91,9 +94,6 @@
              (gethash :references dict) nil)))
     (setf (gethash (find-package package) *pkgmodules-traits*)
           dict)))
-
-(defun find-pkgmodule-traits (package)
-  (gethash (find-package package) *pkgmodules-traits*))
 
 (defun distribute-route (route-symbol)
   (let ((package (symbol-package route-symbol)))
@@ -108,17 +108,20 @@
         (distribute-all-routes (find-package (car value)))))
 
 (defun pkgmodule-traits-routes (package)
-  (gethash :routes (gethash (find-package package) *pkgmodules-traits*)))
+  (gethash :routes (find-pkgmodule-traits package)))
 
 (defun pkgmodule-traits-modules (package)
-  (gethash :modules (gethash (find-package package) *pkgmodules-traits*)))
+  (gethash :modules (find-pkgmodule-traits package)))
 
 (defun pkgmodule-traits-references (package)
-  (gethash :references (gethash (find-package package) *pkgmodules-traits*)))
+  (gethash :references (find-pkgmodule-traits package)))
+
+(defun pkgmodule-traits-content-type (package)
+  (gethash :content-type (find-pkgmodule-traits package)))
 
 (defun pkgmodule-traits-append-reference (package reference)
-  (alexandria:ensure-gethash :references (gethash (find-package package) *pkgmodules-traits*))
-  (pushnew reference (gethash :references (gethash (find-package package) *pkgmodules-traits*))))
+  (alexandria:ensure-gethash :references (find-pkgmodule-traits package))
+  (pushnew reference (gethash :references (find-pkgmodule-traits package))))
 
 (defun register-route-traits (route-symbol traits)
   (let* ((package (symbol-package route-symbol))

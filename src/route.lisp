@@ -133,7 +133,7 @@
     (setf (getf headers :content-type)
           (or content-type
               (getf headers :content-type)
-              (gethash :content-type (find-pkgmodule-traits (symbol-package symbol)))
+              (pkgmodule-traits-content-type (symbol-package symbol))
               "text/html"))
     (apply-decorators (make-instance 'route
                                      :template (route-template-from-symbol symbol module)
