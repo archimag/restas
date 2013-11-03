@@ -203,7 +203,8 @@
 (defmethod initialize-module-instance ((module pkgmodule) context)  
   (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
         (initialize-module-instance child (module-context child)))
-  (initialize-module-instance (find-package (slot-value module 'package)) context))
+  (let ((*module* module))
+    (initialize-module-instance (find-package (slot-value module 'package)) context)))
 
 (defmethod finalize-module-instance ((module pkgmodule) context)  
   (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
