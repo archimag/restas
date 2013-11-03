@@ -200,11 +200,11 @@
   (iter (for route in (alexandria:hash-table-values (slot-value module 'routes)))
         (routes:connect mapper route)))
     
-(defmethod initialize-module-instance ((module pkgmodule) context)  
-  (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
-        (initialize-module-instance child (module-context child)))
-  (let ((*module* module))
-    (initialize-module-instance (find-package (slot-value module 'package)) context)))
+(defmethod initialize-module-instance ((module pkgmodule) context)
+  (with-module module
+    (initialize-module-instance (find-package (slot-value module 'package)) context)
+    (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
+          (initialize-module-instance child (module-context child)))))
 
 (defmethod finalize-module-instance ((module pkgmodule) context)  
   (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
