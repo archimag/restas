@@ -132,6 +132,12 @@
       (export route-symbol package))
     (distribute-route route-symbol)))
 
+(defmethod module-context ((module symbol))
+  "Get the context for a mounted module.
+
+MODULE should be the name used for mount-module."
+  (second (gethash module (pkgmodule-traits-modules *package*))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pkgmodules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
