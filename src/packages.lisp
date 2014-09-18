@@ -73,4 +73,6 @@
            #:*nginx-internal-alias*
            #:*nginx-internal-root*
            
-           #:@apache-xsendfile))
+           #:@apache-xsendfile
+
+           #:delete-route))

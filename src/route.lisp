@@ -113,6 +113,22 @@
                                                  (collect value))))))
          (reconnect-all-routes)))))
 
+(defun get-ref-syms (route-symbol &optional syms)
+  (iter (for pkg in (pkgmodule-traits-references (symbol-package route-symbol)))
+    (iter (for (key nil) in-hashtable (pkgmodule-traits-modules pkg))
+      (push (alexandria:format-symbol pkg "~A.~A" key route-symbol) syms)
+      (setf syms (get-ref-syms (first syms) syms))))
+  syms)
+
+(defun delete-route (route-symbol &aux package)
+  (setf package (symbol-package route-symbol))
+  (when package 
+    (remhash route-symbol (pkgmodule-traits-routes package))
+    (mapcar (lambda (sym)
+              (unintern sym (symbol-package sym)))
+            (get-ref-syms route-symbol))
+    (unintern route-symbol (symbol-package route-symbol))))
+
 (defun route-template-from-symbol (symbol module)
   (flet ((call-in-context-wrap (fun)
            (alexandria:named-lambda parse-in-context (value)
