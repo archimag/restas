@@ -62,9 +62,11 @@
                  (,interface-method ,policy-var ,@simple-args))))))
       (eval defun-expr))))
 
-(defun %define-policy (name methods
-                       &key interface-package interface-method-template
-                         internal-package internal-function-template)
+(defun %define-policy (name methods &key
+                                      interface-package
+                                      (interface-method-template "~A")
+                                      internal-package
+                                      (internal-function-template "~A"))
   (let* ((%interface-package (if interface-package
                                  (or (find-package interface-package)
                                      (make-package interface-package))
@@ -83,12 +85,10 @@
       (setf (symbol-value %obj-symbol) nil))
 
     (iter (for (method lambda-list docstring) in methods)
-          (for interface-name = (intern (format nil (or interface-method-template
-                                                        "~A")
+          (for interface-name = (intern (format nil interface-method-template
                                                 (string method))
                                         %interface-package))
-          (for internal-name = (intern (format nil (or internal-function-template
-                                                       "~A")
+          (for internal-name = (intern (format nil internal-function-template
                                                (string method))
                                        %internal-package))
           (when (eql interface-name internal-name)
