@@ -15,8 +15,10 @@
 (defclass route (routes:route)
   ((symbol :initarg :symbol :reader route-symbol)
    (module :initarg :module :initform nil :reader route-module)
-   (required-method :initarg :required-method :initform nil :reader route-required-method)
-   (arbitrary-requirement :initarg :arbitrary-requirement :initform nil :reader route-arbitrary-requirement)
+   (required-method :initarg :required-method :initform nil
+                    :reader route-required-method)
+   (arbitrary-requirement :initarg :arbitrary-requirement :initform nil
+                          :reader route-arbitrary-requirement)
    (render-method :initarg :render-method :initform #'identity)
    (headers :initarg :headers :initform nil :reader route-headers)
    (variables :initarg :variables :initarg nil)
@@ -27,7 +29,8 @@
       (module-render-method (route-module route))
       #'identity))
 
-(defmethod routes:route-check-conditions :around ((route routes:base-route) bindings)
+(defmethod routes:route-check-conditions :around ((route routes:base-route)
+                                                  bindings)
   (let ((*route* route))
     (with-module (route-module route)
       (call-next-method))))
@@ -58,14 +61,17 @@
               value)))
   (let ((*route* route)
         (rsymbol (route-symbol route)))
-    (render-object (route-render-method route)
-                   (catch 'route-done
-                     (apply rsymbol
-                            (append (iter (for item in (slot-value route 'variables))
-                                          (collect (cdr (assoc item bindings :test #'string=))))
-                                    (iter (for (key fun) in (slot-value route 'additional-variables))
-                                          (collect key)
-                                          (collect (funcall fun)))))))))
+    (render-object
+     (route-render-method route)
+     (catch 'route-done
+       (apply rsymbol
+              (append (iter (for item in (slot-value route 'variables))
+                            (collect (cdr (assoc item bindings
+                                                 :test #'string=))))
+                      (iter (for (key fun) in
+                                 (slot-value route 'additional-variables))
+                            (collect key)
+                            (collect (funcall fun)))))))))
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
@@ -78,11 +84,14 @@
 ;;;; define-route
 
 (defmacro define-route (name (template &key method content-type) &body body)
-  (multiple-value-bind (declarations-map real-body) (split-code-declarations body)
+  (multiple-value-bind (declarations-map real-body)
+      (split-code-declarations body)
     (let* ((route-traits (make-hash-table))
-           (variables (routes:template-variables (routes:parse-template template)))
-           (arglist (mapcar (alexandria:compose #'intern #'symbol-name) variables)))
-      
+           (variables (routes:template-variables
+                       (routes:parse-template template)))
+           (arglist (mapcar (alexandria:compose #'intern #'symbol-name)
+                            variables)))
+
       (setf (gethash :template route-traits) template
             (gethash :method route-traits) (or method :get)
             (gethash :content-type route-traits) content-type
@@ -97,20 +106,23 @@
                               route-traits)
 
       (setf (gethash :variables route-traits) `',arglist)
-      
+
       `(progn
-         (defun ,name (,@arglist ,@(gethash :additional-variables-arglist route-traits))
+         (defun ,name (,@arglist
+                       ,@(gethash :additional-variables-arglist route-traits))
            ,@real-body)
 
-         (register-route-traits ',name
-                                (alexandria:plist-hash-table
-                                 (list ,@(iter (for type in '(:template :method :content-type :render-method
-                                                              :parse-vars :requirement :decorators
-                                                              :additional-variables :variables))
-                                               (for value = (gethash type route-traits))
-                                               (when value
-                                                 (collect type)
-                                                 (collect value))))))
+         (register-route-traits
+          ',name
+          (alexandria:plist-hash-table
+           (list ,@(iter (for type in
+                              '(:template :method :content-type :render-method
+                                :parse-vars :requirement :decorators
+                                :additional-variables :variables))
+                         (for value = (gethash type route-traits))
+                         (when value
+                           (collect type)
+                           (collect value))))))
          (reconnect-all-routes)))))
 
 (defun get-ref-syms (route-symbol &optional syms)
@@ -122,7 +134,7 @@
 
 (defun delete-route (route-symbol &aux package)
   (setf package (symbol-package route-symbol))
-  (when package 
+  (when package
     (remhash route-symbol (pkgmodule-traits-routes package))
     (mapcar (lambda (sym)
               (unintern sym (symbol-package sym)))
@@ -134,25 +146,30 @@
            (alexandria:named-lambda parse-in-context (value)
              (with-module module
                (funcall fun value)))))
-    (let ((traits (gethash symbol (pkgmodule-traits-routes (symbol-package symbol)))))
+    (let ((traits (gethash symbol
+                           (pkgmodule-traits-routes (symbol-package symbol)))))
       (concatenate 'list
                    (module-real-url module)
-                   (routes:parse-template (gethash :template traits) 
-                                          (iter (for tail on (gethash :parse-vars traits) by #'cddr)
-                                                (collect (first tail))
-                                                (collect (call-in-context-wrap (second tail)))))))))
+                   (routes:parse-template
+                    (gethash :template traits)
+                    (iter (for tail on (gethash :parse-vars traits) by #'cddr)
+                          (collect (first tail))
+                          (collect (call-in-context-wrap (second tail)))))))))
 
 (defun create-route-from-symbol (symbol module)
-  (destructuring-bind (&key content-type headers method requirement render-method decorators
-                            variables additional-variables &allow-other-keys)
-      (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes (symbol-package symbol))))
+  (destructuring-bind (&key content-type headers method requirement render-method
+                            decorators variables additional-variables
+                            &allow-other-keys)
+      (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes
+                                                    (symbol-package symbol))))
     (setf (getf headers :content-type)
           (or content-type
               (getf headers :content-type)
               (pkgmodule-traits-content-type (symbol-package symbol))
               "text/html"))
     (apply-decorators (make-instance 'route
-                                     :template (route-template-from-symbol symbol module)
+                                     :template (route-template-from-symbol
+                                                symbol module)
                                      :symbol symbol
                                      :required-method method
                                      :arbitrary-requirement requirement
@@ -164,13 +181,15 @@
                       (append (module-decorators module)
                               decorators))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; generate url by route
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun route-symbol-template (route-symbol)
-  (routes:parse-template (gethash :template (gethash route-symbol (pkgmodule-traits-routes (symbol-package route-symbol))))))
-
+  (routes:parse-template (gethash :template
+                                  (gethash route-symbol
+                                           (pkgmodule-traits-routes
+                                            (symbol-package route-symbol))))))
 
 (defmethod make-route-url ((tmpl list) args)
   (let* ((uri (make-instance 'puri:uri))
@@ -184,7 +203,8 @@
                                        (write-to-string value))))))
          (query-part (set-difference bindings
                                      (routes:template-variables tmpl)
-                                     :test (alexandria:named-lambda known-variable-p (pair var)
+                                     :test (alexandria:named-lambda
+                                               known-variable-p (pair var)
                                              (eql (car pair) var)))))
     (setf (puri:uri-parsed-path uri)
           (cons :absolute
@@ -198,7 +218,8 @@
 
 (defmethod make-route-url ((route symbol) args)
   (if *module*
-      (make-route-url (or (find-route route) (error "Unknown route: ~A" route)) args)
+      (make-route-url (or (find-route route)
+                          (error "Unknown route: ~A" route)) args)
       (make-route-url (route-symbol-template route) args)))
 
 (defmethod make-route-url ((route route) args)
@@ -215,9 +236,9 @@
                                   "localhost"))
     (puri:render-uri url nil)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; redirect
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun apply-format-aux (format args)
   (if (symbolp format)
@@ -227,7 +248,7 @@
           format)))
 
 (defun redirect (route-symbol &rest args)
-  (hunchentoot:redirect 
+  (hunchentoot:redirect
    (hunchentoot:url-decode
     (apply-format-aux route-symbol
                       (mapcar #'(lambda (s)
@@ -236,26 +257,28 @@
                                       s))
                               args)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; parse url for route
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun parse-route-url (url route-symbol)
   (let ((mapper (make-instance 'routes:mapper))
         (module *module*))
     (routes:connect mapper
                     (make-instance 'route
-                                   :template (routes:route-template (module-find-route module route-symbol))
+                                   :template
+                                   (routes:route-template (module-find-route
+                                                           module route-symbol))
                                    ;;(route-template-from-symbol route-symbol module)
                                    :module module))
     (multiple-value-bind (route bindings) (routes:match mapper url)
       (if route
           (alexandria:alist-plist bindings)))))
-  
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; proxy route
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod process-route ((route routes:proxy-route) bindings)
   (process-route (routes:proxy-route-target route)
