@@ -40,16 +40,19 @@
                                 :port port)
                  *vhosts*))))
 
-(defgeneric add-toplevel-module (module hostname port &key context url render-method decorators))
+(defgeneric add-toplevel-module (module hostname port &key context url
+                                                        render-method decorators))
 
-(defmethod add-toplevel-module ((module symbol) hostname port &key context url render-method decorators)
+(defmethod add-toplevel-module ((module symbol) hostname port
+                                &key context url render-method decorators)
   (add-toplevel-module (find-package module) hostname port
                        :context context
                        :url url
                        :render-method render-method
                        :decorators decorators))
 
-(defmethod add-toplevel-module ((package package) hostname port &key context url render-method decorators)
+(defmethod add-toplevel-module ((package package) hostname port
+                                &key context url render-method decorators)
   (let ((vhost (ensure-vhost-exist hostname port))
         (module (make-instance 'pkgmodule
                                :package package
@@ -63,7 +66,7 @@
       (initialize-module-instance module (module-context module))
       ))
   (values))
-  
+
 (defun reconnect-all-routes ()
   (iter (for vhost in *vhosts*)
         (let ((mapper (slot-value vhost 'mapper)))

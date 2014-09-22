@@ -9,8 +9,9 @@
   (:export #:rest))
 
 (in-package :restas)
-       
-(defun make-internal-function (name policy-var interface-method lambda-list &optional documentation)
+
+(defun make-internal-function (name policy-var interface-method lambda-list
+                               &optional documentation)
   (let (simple-args optional-args key-args rest-args)
     (iter (for item in lambda-list)
           (cond
@@ -35,30 +36,35 @@
     (setf rest-args
           (cdr rest-args))
 
-    (let ((defun-expr (cond
-                        (optional-args
-                         `(defun ,name ,lambda-list
-                            ,documentation
-                            (,interface-method ,policy-var ,@simple-args ,@optional-args)))
-                        (rest-args
-                         `(defun ,name ,lambda-list
-                            ,documentation
-                            (apply ',interface-method ,policy-var ,@simple-args ,(car rest-args))))
-                        ((and key-args (member '&allow-other-keys key-args))
-                         `(defun ,name (,@simple-args &rest restas.policy.internal:rest &key &allow-other-keys)
-                            (apply ',interface-method ,policy-var ,@simple-args restas.policy.internal:rest)))
-                        (key-args
-                         `(defun ,name ,lambda-list
-                            ,documentation
-                            (,interface-method ,policy-var ,@simple-args ,@key-args)))
-                        (t
-                         `(defun ,name ,lambda-list
-                            ,documentation
-                            (,interface-method ,policy-var ,@simple-args))))))
+    (let ((defun-expr
+           (cond
+             (optional-args
+              `(defun ,name ,lambda-list
+                 ,documentation
+                 (,interface-method ,policy-var ,@simple-args ,@optional-args)))
+             (rest-args
+              `(defun ,name ,lambda-list
+                 ,documentation
+                 (apply ',interface-method ,policy-var
+                        ,@simple-args ,(car rest-args))))
+             ((and key-args (member '&allow-other-keys key-args))
+              `(defun ,name (,@simple-args &rest restas.policy.internal:rest
+                             &key &allow-other-keys)
+                 (apply ',interface-method ,policy-var
+                        ,@simple-args restas.policy.internal:rest)))
+             (key-args
+              `(defun ,name ,lambda-list
+                 ,documentation
+                 (,interface-method ,policy-var ,@simple-args ,@key-args)))
+             (t
+              `(defun ,name ,lambda-list
+                 ,documentation
+                 (,interface-method ,policy-var ,@simple-args))))))
       (eval defun-expr))))
 
 (defun %define-policy (name methods
-                       &key interface-package interface-method-template internal-package internal-function-template)
+                       &key interface-package interface-method-template
+                         internal-package internal-function-template)
   (let* ((%interface-package (if interface-package
                                  (or (find-package interface-package)
                                      (make-package interface-package))
@@ -67,8 +73,9 @@
                                 (or (find-package internal-package)
                                     (make-package internal-package))
                                 *package*))
-         (%obj-symbol (intern (format nil "*~A*" (string name)) %internal-package)))
-    
+         (%obj-symbol (intern (format nil "*~A*" (string name))
+                              %internal-package)))
+
     (when internal-package
       (export %obj-symbol %internal-package))
     (proclaim (list 'special %obj-symbol))
@@ -76,9 +83,13 @@
       (setf (symbol-value %obj-symbol) nil))
 
     (iter (for (method lambda-list docstring) in methods)
-          (for interface-name = (intern (format nil (or interface-method-template "~A") (string method))
+          (for interface-name = (intern (format nil (or interface-method-template
+                                                        "~A")
+                                                (string method))
                                         %interface-package))
-          (for internal-name = (intern (format nil (or internal-function-template "~A") (string method))
+          (for internal-name = (intern (format nil (or internal-function-template
+                                                       "~A")
+                                               (string method))
                                        %internal-package))
           (when (eql interface-name internal-name)
             (error "Internal and external names must be different"))
@@ -91,8 +102,9 @@
           (ensure-generic-function interface-name
                                    :lambda-list (cons name lambda-list)
                                    :documentation docstring)
-          
-          (make-internal-function internal-name %obj-symbol interface-name lambda-list docstring))))
+
+          (make-internal-function internal-name %obj-symbol interface-name
+                                  lambda-list docstring))))
 
 (defmacro define-policy (name &body body)
   (let (methods
@@ -114,7 +126,7 @@
                 (push (cdr item) methods))
                (t
                 (error "Unknown DEFINE-POLICY option: ~A" item))))))
-    `(eval-when (:compile-toplevel :load-toplevel :execute) 
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
        (%define-policy ',name ',methods
                        :interface-package ',interface-package
                        :interface-method-template ,interface-method-template

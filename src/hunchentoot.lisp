@@ -13,7 +13,8 @@
           (if (hunchentoot:acceptor-ssl-p (hunchentoot:request-acceptor request))
               :https
               :http))
-    (ppcre:register-groups-bind  (host port) ("([^:]+)(?=:(.+))?" (hunchentoot:host request))
+    (ppcre:register-groups-bind  (host port) ("([^:]+)(?=:(.+))?"
+                                              (hunchentoot:host request))
       (setf (puri:uri-host uri)
             host)
       (unless (or (null port)
@@ -23,12 +24,13 @@
     uri))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-request
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass restas-request (hunchentoot:request)
-  ((substitutions :initarg substitutions :initform routes:+no-bindings+ :accessor restas-request-bindings)))
+  ((substitutions :initarg substitutions :initform routes:+no-bindings+
+                  :accessor restas-request-bindings)))
 
 (defmethod hunchentoot:process-request :around ((request restas-request))
   (let ((*standard-special-page-p* t))
@@ -38,13 +40,13 @@
   (or (hunchentoot:header-in :x-forwarded-host request)
       (call-next-method)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-acceptor
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass restas-acceptor-mixin () ())
-   
-(defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin) 
+
+(defclass restas-acceptor (hunchentoot:acceptor restas-acceptor-mixin)
   ()
   (:default-initargs
    :request-class 'restas-request
@@ -53,7 +55,7 @@
    :message-log-destination nil))
 
 #-hunchentoot-no-ssl
-(defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin) 
+(defclass restas-ssl-acceptor (hunchentoot:ssl-acceptor restas-acceptor-mixin)
   ()
   (:default-initargs
    :request-class 'restas-request
@@ -61,7 +63,9 @@
    :access-log-destination nil
    :message-log-destination nil))
 
-(defmethod hunchentoot:acceptor-status-message :around ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
+(defmethod hunchentoot:acceptor-status-message
+    :around ((acceptor restas-acceptor-mixin) http-status-code
+             &key &allow-other-keys)
   (if *standard-special-page-p*
       (call-next-method)))
 
@@ -86,28 +90,32 @@
                      hunchentoot:+HTTP-NOT-FOUND+)
                (hunchentoot:abort-request-handler))))
       (not-found-if-null vhost)
-      (multiple-value-bind (route bindings) (routes:match (slot-value vhost 'mapper)
-                                              (hunchentoot:request-uri*))
+      (multiple-value-bind (route bindings)
+          (routes:match (slot-value vhost 'mapper)
+            (hunchentoot:request-uri*))
         (not-found-if-null route)
         (handler-bind ((error #'maybe-invoke-debugger))
           (let ((result (process-route route bindings)))
             (cond
               ((pathnamep result)
-               (hunchentoot:handle-static-file result
-                                               (or (hunchentoot:mime-type result)
-                                                   (hunchentoot:content-type hunchentoot:*reply*))))
+               (hunchentoot:handle-static-file
+                result
+                (or (hunchentoot:mime-type result)
+                    (hunchentoot:content-type hunchentoot:*reply*))))
               (t result))))))))
 
-(defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-acceptor) request)
+(defmethod hunchentoot:acceptor-dispatch-request
+    ((acceptor restas-acceptor) request)
   (restas-dispatch-request acceptor request))
 
 #-hunchentoot-no-ssl
-(defmethod hunchentoot:acceptor-dispatch-request ((acceptor restas-ssl-acceptor) request)
+(defmethod hunchentoot:acceptor-dispatch-request
+    ((acceptor restas-ssl-acceptor) request)
   (restas-dispatch-request acceptor request))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; start
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun start (module
               &key

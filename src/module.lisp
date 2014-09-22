@@ -71,9 +71,9 @@
       ;;                   (cdr decorators))
       route))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; *pkgmodules-traits*
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *pkgmodules-traits* (make-hash-table))
 
@@ -99,7 +99,8 @@
   (let ((package (symbol-package route-symbol)))
     (iter (for pkg in (pkgmodule-traits-references package))
           (iter (for (key thing) in-hashtable (pkgmodule-traits-modules pkg))
-                (distribute-route (alexandria:format-symbol pkg "~A.~A" key route-symbol))))))
+                (distribute-route (alexandria:format-symbol pkg "~A.~A" key
+                                                            route-symbol))))))
 
 (defun distribute-all-routes (package)
   (iter (for (key value) in-hashtable (pkgmodule-traits-routes package))
@@ -138,16 +139,17 @@
 MODULE should be the name used for mount-module."
   (second (gethash module (pkgmodule-traits-modules *package*))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pkgmodules
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass pkgmodule ()
   ((symbol :initarg :symbol :initform nil :reader module-symbol)
    (context :initarg :context :initform (make-context) :reader module-context)
    (parent :initarg :parent :initform nil :reader module-parent)
    (mount-url :initarg :url :initform nil :reader module-mount-url)
-   (render-method :initarg :render-method :initform nil :reader module-render-method)
+   (render-method :initarg :render-method :initform nil :reader
+                  module-render-method)
    (decorators :initarg :decorators :initform nil)
    (package :initarg :package)
    (children :initform (make-hash-table))
@@ -166,54 +168,64 @@ MODULE should be the name used for mount-module."
   (with-slots (package children routes render-method) module
     (clrhash children)
     (clrhash routes)
-    
+
     (let ((traits (find-pkgmodule-traits package)))
 
       (unless render-method
         (let ((fun (gethash :render-method traits)))
           (setf render-method
                 (if fun (funcall fun)))))
-      
+
       (iter (for (key thing) in-hashtable (gethash :modules traits))
             (destructuring-bind (pkg ctxt child-traits) thing
               (setf (gethash key children)
                     (make-instance 'pkgmodule
                                    :symbol key
-                                   :context (let ((context (copy-restas-context ctxt)))
-                                              (when (gethash :inherit-parent-context child-traits)
-                                                (setf (context-prototype context)
-                                                      (module-context module)))
-                                              context)
+                                   :context
+                                   (let ((context (copy-restas-context ctxt)))
+                                     (when (gethash :inherit-parent-context
+                                                    child-traits)
+                                       (setf (context-prototype context)
+                                             (module-context module)))
+                                     context)
                                    :parent module
                                    :package pkg
-                                   :url (routes:parse-template (gethash :url child-traits ""))
-                                   :render-method (gethash :render-method child-traits)
-                                   :decorators (gethash :decorators child-traits)))))
+                                   :url (routes:parse-template
+                                         (gethash :url child-traits ""))
+                                   :render-method (gethash :render-method
+                                                           child-traits)
+                                   :decorators (gethash :decorators
+                                                        child-traits)))))
 
       (iter (for rsymbol in (alexandria:hash-table-keys (gethash :routes traits)))
             (setf (gethash (find-symbol (string rsymbol) package)  routes)
-                  (create-route-from-symbol (find-symbol (symbol-name rsymbol) package)
+                  (create-route-from-symbol (find-symbol (symbol-name rsymbol)
+                                                         package)
                                             module)))
 
       (iter (for (child-key child) in-hashtable (slot-value module 'children))
             (for child-routes = (slot-value child 'routes))
             (iter (for (route-key route) in-hashtable (slot-value child 'routes))
-                  (for key = (alexandria:format-symbol package "~A.~A" child-key route-key))
+                  (for key = (alexandria:format-symbol package "~A.~A"
+                                                       child-key route-key))
                   (setf (gethash key routes)
                         route))))))
 
 (defmethod connect-module ((module pkgmodule) mapper)
   (iter (for route in (alexandria:hash-table-values (slot-value module 'routes)))
         (routes:connect mapper route)))
-    
+
 (defmethod initialize-module-instance ((module pkgmodule) context)
   (with-module module
-    (initialize-module-instance (find-package (slot-value module 'package)) context)
-    (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
+    (initialize-module-instance (find-package (slot-value module 'package))
+                                context)
+    (iter (for child in (alexandria:hash-table-values (slot-value module
+                                                                  'children)))
           (initialize-module-instance child (module-context child)))))
 
-(defmethod finalize-module-instance ((module pkgmodule) context)  
-  (iter (for child in (alexandria:hash-table-values (slot-value module 'children)))
+(defmethod finalize-module-instance ((module pkgmodule) context)
+  (iter (for child in (alexandria:hash-table-values (slot-value module
+                                                                'children)))
         (finalize-module-instance child  (module-context child)))
   (finalize-module-instance (find-package (slot-value module 'package)) context))
 
@@ -225,9 +237,9 @@ MODULE should be the name used for mount-module."
 (defmethod module-find-child-module ((module pkgmodule) module-symbol)
   (gethash module-symbol (slot-value module 'children)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; define-module
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro define-module (name &body options)
   (let (defpackage-options traits)
@@ -235,7 +247,8 @@ MODULE should be the name used for mount-module."
           (case (car option)
             (:render-method
              (collect :render-method into pkgtraits)
-             (collect `(alexandria:named-lambda make-render-method () ,(second option)) into pkgtraits))
+             (collect `(alexandria:named-lambda make-render-method ()
+                         ,(second option)) into pkgtraits))
             ((:export-route-symbols :content-type)
              (collect (first option) into pkgtraits)
              (collect (second option) into pkgtraits))
@@ -249,16 +262,17 @@ MODULE should be the name used for mount-module."
        (register-pkgmodule-traits ',name ,@traits)
        (reconnect-all-routes))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mount-module
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro mount-module (name (module) &body body)
   (multiple-value-bind (declarations context) (split-code-declarations body)
     (let ((bindings (iter (for (symbol value) in context)
                           (collect `(cons ',symbol ,value))))
           (traits (parse-all-declarations declarations
-                                          '(:decorators :url :render-method :inherit-parent-context))))
+                                          '(:decorators :url :render-method
+                                            :inherit-parent-context))))
     `(progn
        (setf (gethash ',name (pkgmodule-traits-modules *package*))
              (list ',module

@@ -30,7 +30,8 @@
                       (collect (find var variables :test #'string=))
                       (collect `(data-sift:compile-parse-rule ,rule)))))))
 
-(defmethod parse-declarations ((type (eql :additional-variables)) declarations traits)
+(defmethod parse-declarations ((type (eql :additional-variables))
+                               declarations traits)
   (iter (for (var handler default) in declarations)
         (collect (if default
                      (list var default)
@@ -54,7 +55,8 @@
   (setf (gethash type traits)
         (first declarations)))
 
-(defmethod parse-declarations ((type (eql :apply-render-method)) declarations traits)
+(defmethod parse-declarations ((type (eql :apply-render-method))
+                               declarations traits)
   (when (cdr declarations)
     (error "Multiple instances of ~A declaration" type))
   (setf (gethash :render-method traits)
@@ -86,7 +88,8 @@
   (setf (gethash :url traits)
         (first declarations)))
 
-(defmethod parse-declarations ((type (eql :inherit-parent-context)) declarations traits)
+(defmethod parse-declarations ((type (eql :inherit-parent-context))
+                               declarations traits)
   (when (cdr declarations)
     (error "Multiple instances of ~A declaration" type))
   (setf (gethash :inherit-parent-context traits)
@@ -101,4 +104,3 @@
             (t
              (error "Unknown declaration type: ~A" key))))
     traits))
-
