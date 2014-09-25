@@ -11,6 +11,7 @@
   (:export #:*default-host-redirect*
            #:*route*
            #:*module*
+           #:*ignore-trailing-slashes*
 
            ;; acceptors
            #:restas-acceptor
