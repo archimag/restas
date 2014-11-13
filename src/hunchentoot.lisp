@@ -129,6 +129,11 @@
                 decorators)
   (unless (find-package module)
     (error "Package ~A not found" module) )
+  (add-toplevel-module module hostname port
+                       :context context
+                       :url url
+                       :render-method render-method
+                       :decorators decorators)
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start
            (if ssl-certificate-file
@@ -142,11 +147,6 @@
                               :address address
                               :port port)))
           *acceptors*))
-  (add-toplevel-module module hostname port
-                       :context context
-                       :url url
-                       :render-method render-method
-                       :decorators decorators)
   (values))
 
 (defun stop-all (&key soft)
