@@ -21,7 +21,7 @@
 
 (defmethod render-object :before (designer (code integer))
   (setf *standard-special-page-p* nil
-        (hunchentoot:return-code*) code))
+        (return-code*) code))
 
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
@@ -39,7 +39,7 @@
   octets)
 
 (defmethod render-object (designer (obj (eql nil)))
-  (render-object designer hunchentoot:+http-not-found+))
+  (render-object designer +http-not-found+))
 
 (defmethod render-object (designer object)
   (error "Unknown as render ~A via ~A" object designer))
@@ -52,21 +52,21 @@
   (render-object nil
                  (funcall designer object)))
 
-(defmethod render-object ((designer function) (code integer))
-  (declare (ignore designer))
-  (render-object nil code))
+;; (defmethod render-object ((designer function) (code integer))
+;;   (declare (ignore designer))
+;;   (render-object nil code))
 
-(defmethod render-object ((designer function) (file pathname))
-  (declare (ignore designer))
-  (render-object nil file))
+;; (defmethod render-object ((designer function) (file pathname))
+;;   (declare (ignore designer))
+;;   (render-object nil file))
 
-(defmethod render-object ((designer function) (string string))
-  (declare (ignore designer))
-  (render-object nil string))
+;; (defmethod render-object ((designer function) (string string))
+;;   (declare (ignore designer))
+;;   (render-object nil string))
 
-(defmethod render-object ((designer function) (octets vector))
-  (declare (ignore designer))
-  (render-object nil octets))
+;; (defmethod render-object ((designer function) (octets vector))
+;;   (declare (ignore designer))
+;;   (render-object nil octets))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; render via symbol as function

@@ -5,7 +5,19 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas)
+(in-package :restas.hunchentoot)
+
+(defvar *catch-errors-p* t)
+
+(defparameter *max-debugging-threads* 5
+  "Maximum number of simultaneous active calls invoke-debuger")
+
+(defvar *debugging-threads* nil
+  "List debugged threads")
+
+(defvar *debugging-threads-lock* (bt:make-lock "debugging threads lock")
+  "A global lock to prevent two threads from modifying *debugging-threads* at
+the same time")
 
 (defun kill-all-debugging-threads ()
   "Used for destroy all debugging threads"

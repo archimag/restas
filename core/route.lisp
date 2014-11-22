@@ -38,7 +38,7 @@
 (defmethod routes:route-check-conditions ((route route) bindings)
   (with-slots (required-method arbitrary-requirement) route
     (and (if required-method
-             (eql (hunchentoot:request-method*) required-method)
+             (eql (request-method*) required-method)
              t)
          (if arbitrary-requirement
              (if (listp arbitrary-requirement)
@@ -55,7 +55,7 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (hunchentoot:header-out name)
+    (setf (header-out name)
           (if (functionp value)
               (funcall value)
               value)))
@@ -75,10 +75,10 @@
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
-    (setf (hunchentoot:return-code*) return-code
+    (setf (return-code*) return-code
           *standard-special-page-p* nil))
   (when content-type
-    (setf (hunchentoot:content-type*) content-type))
+    (setf (content-type*) content-type))
   (throw 'route-done obj))
 
 ;;;; define-route
@@ -231,8 +231,8 @@
 (defun genurl* (route-symbol &rest args &key &allow-other-keys)
   (let ((url (make-route-url route-symbol args)))
     (setf (puri:uri-scheme url) :http
-          (puri:uri-host url) (if (boundp 'hunchentoot:*request*)
-                                  (hunchentoot:host)
+          (puri:uri-host url) (if (boundp '*request*)
+                                  (host)
                                   "localhost"))
     (puri:render-uri url nil)))
 
@@ -242,20 +242,23 @@
 
 (defun apply-format-aux (format args)
   (if (symbolp format)
-      (apply #'restas:genurl format args)
+      (apply #'genurl format args)
       (if args
           (apply #'format nil (cons format args))
           format)))
 
 (defun redirect (route-symbol &rest args)
-  (hunchentoot:redirect
-   (hunchentoot:url-decode
+  (redirect-url
+   (url-decode
     (apply-format-aux route-symbol
                       (mapcar #'(lambda (s)
                                   (if (stringp s)
-                                      (hunchentoot:url-encode s)
+                                      (url-encode s)
                                       s))
                               args)))))
+
+(defun redirect-url (url)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; parse url for route

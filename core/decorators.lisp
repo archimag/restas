@@ -14,9 +14,9 @@
 (defclass no-cache-route (routes:proxy-route) ())
 
 (defmethod process-route :before ((route no-cache-route) bindings)
-  (setf (hunchentoot:header-out :expires)
-        (hunchentoot:rfc-1123-date))
-  (setf (hunchentoot:header-out :cache-control)
+  (setf (header-out :expires)
+        (rfc-1123-date))
+  (setf (header-out :cache-control)
         "max-age=0, no-store, no-cache, must-revalidate"))
 
 (defun @no-cache (route)
@@ -44,10 +44,10 @@
   (let ((result (call-next-method)))
     (cond
       ((pathnamep result)
-       (setf (hunchentoot:header-out :content-type)
-             (or (hunchentoot:mime-type result)
-                 (hunchentoot:content-type*)))
-       (setf (hunchentoot:header-out :x-accel-redirect)
+       (setf (header-out :content-type)
+             (or (mime-type result)
+                 (content-type*)))
+       (setf (header-out :x-accel-redirect)
              (or (and *nginx-internal-root*
                       (cffi-sys:native-namestring
                        (merge-pathnames
@@ -79,10 +79,10 @@
   (let ((result (call-next-method)))
     (cond
       ((pathnamep result)
-       (setf (hunchentoot:header-out :content-type)
-             (or (hunchentoot:mime-type result)
-                 (hunchentoot:content-type*)))
-       (setf (hunchentoot:header-out :x-sendfile)
+       (setf (header-out :content-type)
+             (or (mime-type result)
+                 (content-type*)))
+       (setf (header-out :x-sendfile)
              (cffi-sys:native-namestring result))
        "")
       (t result))))

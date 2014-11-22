@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas)
+(in-package :restas.hunchentoot)
 
 (defun request-full-uri (&optional (request hunchentoot:*request*))
   (let ((uri (puri:parse-uri (hunchentoot:request-uri request))))
@@ -33,7 +33,7 @@
                   :accessor restas-request-bindings)))
 
 (defmethod hunchentoot:process-request :around ((request restas-request))
-  (let ((*standard-special-page-p* t))
+  (let ((restas::*standard-special-page-p* t))
     (call-next-method)))
 
 (defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
@@ -66,7 +66,7 @@
 (defmethod hunchentoot:acceptor-status-message
     :around ((acceptor restas-acceptor-mixin) http-status-code
              &key &allow-other-keys)
-  (if *standard-special-page-p*
+  (if restas::*standard-special-page-p*
       (call-next-method)))
 
 (defun request-hostname-port (acceptor request)
@@ -79,11 +79,13 @@
 
 
 (defun restas-dispatch-request (acceptor request)
-  (let ((vhost (find-vhost (request-hostname-port acceptor request)))
-        (hunchentoot:*request* request))
-    (when (and (not vhost) *default-host-redirect*)
+  (let ((vhost (restas::find-vhost (request-hostname-port acceptor request)))
+        (hunchentoot:*request* request)
+        (restas:*request* request)
+        (restas:*reply* hunchentoot:*reply*))
+    (when (and (not vhost) restas::*default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
-                            :host *default-host-redirect*))
+                            :host restas::*default-host-redirect*))
     (flet ((not-found-if-null (thing)
              (unless thing
                (setf (hunchentoot:return-code*)
@@ -91,7 +93,7 @@
                (hunchentoot:abort-request-handler))))
       (not-found-if-null vhost)
       (multiple-value-bind (route bindings)
-          (routes:match (slot-value vhost 'mapper)
+          (routes:match (slot-value vhost 'restas::mapper)
             (hunchentoot:request-uri*))
         (not-found-if-null route)
         (handler-bind ((error #'maybe-invoke-debugger))
@@ -117,6 +119,8 @@
 ;; start
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defparameter *acceptors* nil)
+
 (defun start (module
               &key
                 ssl-certificate-file ssl-privatekey-file ssl-privatekey-password
@@ -129,7 +133,7 @@
                 decorators)
   (unless (find-package module)
     (error "Package ~A not found" module) )
-  (add-toplevel-module module hostname port
+  (restas::add-toplevel-module module hostname port
                        :context context
                        :url url
                        :render-method render-method
@@ -150,7 +154,7 @@
   (values))
 
 (defun stop-all (&key soft)
-  (setf *vhosts* nil)
+  (setf restas::*vhosts* nil)
   (iter (for acceptor in *acceptors*)
         (hunchentoot:stop acceptor :soft soft))
   (setf *acceptors* nil))
