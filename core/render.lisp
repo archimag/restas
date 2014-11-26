@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas)
+(in-package #:restas)
 
 (defgeneric render-object (designer object)
   (:documentation "Render object via designer"))
@@ -19,15 +19,12 @@
   (declare (ignore designer))
   file)
 
-(defmethod render-object :before (designer (code integer))
-  (setf *standard-special-page-p* nil
-        (return-code*) code))
-
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
-  (declare (ignore designer))
-  (setf *standard-special-page-p* t)
-  "")
+  (setf (return-code*)
+        code)
+  (restas-status-message code))
+  
 
 (defmethod render-object (designer (string string))
   "Default handler for string"

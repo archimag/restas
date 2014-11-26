@@ -32,13 +32,11 @@
   ((substitutions :initarg substitutions :initform routes:+no-bindings+
                   :accessor restas-request-bindings)))
 
-(defmethod hunchentoot:process-request :around ((request restas-request))
-  (let ((restas::*standard-special-page-p* t))
-    (call-next-method)))
 
-(defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
-  (or (hunchentoot:header-in :x-forwarded-host request)
-      (call-next-method)))
+;; WTF?
+;; (defmethod hunchentoot:header-in ((name (eql :host)) (request restas-request))
+;;   (or (hunchentoot:header-in :x-forwarded-host request)
+;;       (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restas-acceptor
@@ -63,11 +61,9 @@
    :access-log-destination nil
    :message-log-destination nil))
 
-(defmethod hunchentoot:acceptor-status-message
-    :around ((acceptor restas-acceptor-mixin) http-status-code
-             &key &allow-other-keys)
-  (if restas::*standard-special-page-p*
-      (call-next-method)))
+
+(defmethod hunchentoot:acceptor-status-message ((acceptor restas-acceptor-mixin) http-status-code &key &allow-other-keys)
+  (restas:restas-status-message http-status-code))
 
 (defun request-hostname-port (acceptor request)
   (let ((host (cdr (assoc :host (hunchentoot:headers-in request)))))
@@ -90,7 +86,8 @@
              (unless thing
                (setf (hunchentoot:return-code*)
                      hunchentoot:+HTTP-NOT-FOUND+)
-               (hunchentoot:abort-request-handler))))
+               (hunchentoot:abort-request-handler
+                (restas-status-message hunchentoot:+HTTP-NOT-FOUND+)))))
       (not-found-if-null vhost)
       (multiple-value-bind (route bindings)
           (routes:match (slot-value vhost 'restas::mapper)
@@ -102,7 +99,7 @@
               ((pathnamep result)
                (hunchentoot:handle-static-file
                 result
-                (or (hunchentoot:mime-type result)
+                (or (restas:mime-type result)
                     (hunchentoot:content-type hunchentoot:*reply*))))
               (t result))))))))
 

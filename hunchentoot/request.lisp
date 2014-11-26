@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas.hunchentoot)
+(in-package #:restas.hunchentoot)
 
 (defun encoding-hunchentoot-external-format (encoding)
   (case encoding
@@ -51,3 +51,6 @@
                              :external-format (encoding-hunchentoot-external-format encoding)
                              :force-text force-text
                              :force-binary force-binary))
+
+(defmethod restas:request-listener ((request hunchentoot:request))
+  (hunchentoot:request-acceptor request))

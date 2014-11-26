@@ -20,9 +20,8 @@
            #:stop-all
            #|-------------------------|#
            ;; debug
-           ;; #:*max-debugging-threads*
-           ;; #:debug-mode-on
-           ;; #:debug-mode-off
+           #:debug-mode-on
+           #:debug-mode-off
            #|-------------------------|#
            ;; misc
            ;; #:request-full-uri

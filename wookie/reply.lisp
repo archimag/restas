@@ -7,44 +7,32 @@
 
 (in-package :restas.wookie)
 
-(defmethod restas:headers-out ((reply wookie:response))
-  (alexandria:plist-alist (wookie:response-headers reply)))
+(defclass reply ()
+  ((origin :initarg :origin
+           :reader origin-response)
+   (return-code :initform restas:+http-ok+
+                :accessor restas:return-code)
+   (headers-out :initform nil
+                :accessor restas:headers-out)))
 
-(defmethod (setf restas:headers-out) (newvalue (reply wookie:response))
-  ;; (setf (slot-value reply 'hunchentoot:headers-out)
-  ;;       newvalue)
-  nil
-  )
+(defmethod restas:header-out (name (reply wookie:response))
+  (cdr (assoc name (restas:headers-out reply))))
 
-(defmethod restas:content-length ((reply wookie:response))
-  ;;(hunchentoot:content-length reply)
-  nil
-  )
+(defmethod (setf restas:header-out) (new-value name (reply reply))
+   (let ((entry (assoc name (restas:headers-out reply))))
+     (if entry
+       (setf (cdr entry) new-value)
+       (setf (slot-value reply 'headers-out)
+             (acons name new-value (restas:headers-out reply))))
+     new-value))
 
-(defmethod restas:content-type ((reply wookie:response))
-  nil
-  ;;(hunchentoot:content-type reply)
-  )
-
-(defmethod restas:cookies-out ((reply wookie:response))
-  ;;(hunchentoot:cookies-out reply)
-  nil
-  )
+;; (defmethod restas:cookies-out ((reply wookie:response))
+;;   (hunchentoot:cookies-out reply))
 
 ;; (defmethod (setf restas:cookies-out) (newvalue (reply wookie:response))
 ;;   (setf (hunchentoot:cookies-out reply)
 ;;         newvalue))
 
-(defmethod restas:return-code ((reply wookie:response))
-  ;;(hunchentoot:return-code reply)
-  restas:+http-ok+
-  )
-
-(defmethod (setf restas:return-code) (newvalue (reply wookie:response))
-  ;; (setf (hunchentoot:return-code reply)
-  ;;       newvalue)
-  newvalue
-  )
 
 ;; (defmethod restas:reply-external-format ((reply wookie:response))
 ;;   (hunchentoot-external-format-encoding (wookie:response-external-format reply)))
@@ -53,3 +41,11 @@
 ;;   (hunchentoot-external-format-encoding 
 ;;    (setf (wookie:response-external-format reply)
 ;;          (encoding-hunchentoot-external-format newvalue))))
+
+
+(defun send-reply (reply body)
+  (let ((response (origin-response reply)))
+    (wookie:send-response response
+                          :status (restas:return-code reply)
+                          :body body
+                          :headers (list* (alist-plist (restas:headers-out reply))))))

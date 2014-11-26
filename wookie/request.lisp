@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas.wookie)
+(in-package #:restas.wookie)
 
 (defmethod restas:get-parameters ((request wookie:request))
   (let ((params (gethash :get (wookie:request-plugin-data request))))
@@ -82,3 +82,8 @@
   ;;                            :external-format (encoding-hunchentoot-external-format encoding)
   ;;                            :force-text force-text
   ;;                            :force-binary force-binary))
+
+
+
+(defmethod restas:request-listener ((request wookie:request))
+  *listener*)

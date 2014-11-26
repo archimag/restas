@@ -5,7 +5,7 @@
 ;;;;
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
-(in-package :restas)
+(in-package #:restas)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; request protocol
@@ -46,6 +46,9 @@
 
 (defgeneric raw-post-data (request &key encoding force-text force-binary &allow-other-keys)
   (:documentation "Returns the content sent by the client in the request body if there was any (unless the content type was multipart/form-data in which case NIL is returned)."))
+
+(defgeneric request-listener (request)
+  (:documentation "The listener which created this request object."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; request interface

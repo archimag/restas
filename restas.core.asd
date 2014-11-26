@@ -6,38 +6,30 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defsystem #:restas.core
-  :depends-on (#:bordeaux-threads #:routes #:alexandria #:data-sift #:cl-base64 #:cl-fad #:cffi)
+  :depends-on (#:bordeaux-threads #:routes #:alexandria #:data-sift #:cl-base64 #:cl-fad #:cffi #:cl-walker)
   :pathname "core"
   :serial t
   :components ((:file "packages")
                (:file "util")
                (:file "special")
 
-
-
-               ;; (:file "rfc2388")
                (:file "http-codes")
                (:file "mime-types")
-
-               ;; (:file "util")
                (:file "known-words")
 
-
+               (:file "codewalker")
                (:file "declarations")
-               
-               ;; (:file "errors" :depends-on ("special"))
-               
+
+               (:file "listener")
                (:file "request")
                (:file "reply")
-
                
+               (:file "status")
                (:file "render" )
                (:file "context")
                (:file "module")
                (:file "route")
                (:file "decorators" )
                (:file "vhost")
-               
-               ;; (:file "hunchentoot" :depends-on ("vhost" "module" "errors"))
                
                (:file "policy")))

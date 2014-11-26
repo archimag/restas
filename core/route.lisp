@@ -55,7 +55,7 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (header-out name)
+    (setf (header-out* name)
           (if (functionp value)
               (funcall value)
               value)))
@@ -75,8 +75,7 @@
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
-    (setf (return-code*) return-code
-          *standard-special-page-p* nil))
+    (setf (return-code*) return-code))
   (when content-type
     (setf (content-type*) content-type))
   (throw 'route-done obj))
@@ -91,27 +90,32 @@
                        (routes:parse-template template)))
            (arglist (mapcar (alexandria:compose #'intern #'symbol-name)
                             variables)))
-
+      #|----------------------------------------------------------------------|#
       (setf (gethash :template route-traits) template
             (gethash :method route-traits) (or method :get)
             (gethash :content-type route-traits) content-type
             (gethash :variables route-traits) variables)
-
+      #|----------------------------------------------------------------------|#
       (parse-all-declarations declarations-map
                               '(:sift-variables :additional-variables
                                 :render-method :apply-render-method
                                 :content-type :http-method
                                 :requirement
-                                :decorators)
+                                :decorators
+                                :keep-context-transformation)
                               route-traits)
-
+      #|----------------------------------------------------------------------|#
       (setf (gethash :variables route-traits) `',arglist)
-
+      #|----------------------------------------------------------------------|#
       `(progn
+         #|-------------------------------------------------------------------|#
          (defun ,name (,@arglist
                        ,@(gethash :additional-variables-arglist route-traits))
-           ,@real-body)
-
+           ,@(if (gethash :keep-context-transformation route-traits)
+                 `((with-keep-restas-context-transformation
+                      ,@real-body))
+                 real-body))
+         #|-------------------------------------------------------------------|#
          (register-route-traits
           ',name
           (alexandria:plist-hash-table
@@ -123,6 +127,7 @@
                          (when value
                            (collect type)
                            (collect value))))))
+         #|-------------------------------------------------------------------|#
          (reconnect-all-routes)))))
 
 (defun get-ref-syms (route-symbol &optional syms)
@@ -160,13 +165,14 @@
   (destructuring-bind (&key content-type headers method requirement render-method
                             decorators variables additional-variables
                             &allow-other-keys)
-      (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes
-                                                    (symbol-package symbol))))
+      (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes (symbol-package symbol))))
+    #|------------------------------------------------------------------------|#
     (setf (getf headers :content-type)
           (or content-type
               (getf headers :content-type)
               (pkgmodule-traits-content-type (symbol-package symbol))
               "text/html"))
+    #|------------------------------------------------------------------------|#
     (apply-decorators (make-instance 'route
                                      :template (route-template-from-symbol
                                                 symbol module)

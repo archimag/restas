@@ -12,5 +12,3 @@
 (defvar *route* nil)
 
 (defvar *module* nil)
-
-(defvar *standard-special-page-p*)

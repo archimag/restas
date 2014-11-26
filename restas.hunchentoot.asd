@@ -11,6 +11,7 @@
     :pathname "hunchentoot"
     :components ((:file "package")
                  (:file "errors")
+                 (:file "listener")
                  (:file "request")
                  (:file "reply")
                  (:file "hunchentoot")))

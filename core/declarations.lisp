@@ -95,6 +95,11 @@
   (setf (gethash :inherit-parent-context traits)
         (first declarations)))
 
+(defmethod parse-declarations ((type (eql :keep-context-transformation)) declarations traits)
+  (setf (gethash :keep-context-transformation traits)
+        (eql t (first declarations))))
+  
+
 (defun parse-all-declarations (declarations allowed-types &optional traits)
   (let ((traits (or traits (make-hash-table))))
     (iter (for (key value) in-hashtable declarations)

@@ -40,6 +40,7 @@
            
            ;; render
            #:render-object
+           #:restas-status-message
 
            ;; policy
            #:define-policy
@@ -62,6 +63,10 @@
            
            #:@apache-xsendfile
 
+           ;; listener
+           #:listener-port
+           #:listener-address
+
            ;; request
            #:get-parameters
            #:post-parameters
@@ -75,6 +80,7 @@
            #:remote-port
            #:script-name
            #:raw-post-data
+           #:request-listener
 
            #:*request*
 
@@ -103,8 +109,6 @@
 
            ;; reply
            #:headers-out
-           #:content-length
-           #:content-type
            #:cookies-out
            #:return-code
            #:reply-external-format
@@ -164,6 +168,9 @@
            #:+http-service-unavailable+
            #:+http-gateway-time-out+
            #:+http-version-not-supported+
+
+           ;; misc
+           #:mime-type
            ))
 
 ;; (defpackage #:restas.rfc2388

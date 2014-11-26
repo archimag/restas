@@ -16,15 +16,12 @@
 (defmethod restas:headers-out ((reply hunchentoot:reply))
   (hunchentoot:headers-out reply))
 
-(defmethod (setf restas:headers-out) (newvalue (reply hunchentoot:reply))
-  (setf (slot-value reply 'hunchentoot:headers-out)
-        newvalue))
+(defmethod restas:header-out (name (reply hunchentoot:reply))
+  (hunchentoot:header-out name reply))
 
-(defmethod restas:content-length ((reply hunchentoot:reply))
-  (hunchentoot:content-length reply))
-
-(defmethod restas:content-type ((reply hunchentoot:reply))
-  (hunchentoot:content-type reply))
+(defmethod (setf header-out) (new-value name (reply hunchentoot:reply))
+  (setf (hunchentoot:header-out name reply)
+        new-value))
 
 (defmethod restas:cookies-out ((reply hunchentoot:reply))
   (hunchentoot:cookies-out reply))
