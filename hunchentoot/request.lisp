@@ -7,12 +7,6 @@
 
 (in-package #:restas.hunchentoot)
 
-(defun encoding-hunchentoot-external-format (encoding)
-  (case encoding
-    (:utf-8 hunchentoot::+utf-8+)
-    (:latin1 hunchentoot::+latin-1+)
-    (otherwise encoding)))
-
 (defmethod restas:get-parameters ((request hunchentoot:request))
   (hunchentoot:get-parameters request))
 
@@ -46,11 +40,9 @@
 (defmethod restas:script-name ((request hunchentoot:request))
   (hunchentoot:script-name request))
 
-(defmethod restas:raw-post-data ((request hunchentoot:request) &key encoding force-text force-binary &allow-other-keys)
-  (hunchentoot:raw-post-data :request request
-                             :external-format (encoding-hunchentoot-external-format encoding)
-                             :force-text force-text
-                             :force-binary force-binary))
+(defmethod restas:raw-post-data ((request hunchentoot:request))
+  (or (hunchentoot:raw-post-data :request request :force-binary t)
+      (make-array 0 :element-type '(unsigned-byte 8))))
 
 (defmethod restas:request-listener ((request hunchentoot:request))
   (hunchentoot:request-acceptor request))

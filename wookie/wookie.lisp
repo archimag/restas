@@ -46,7 +46,7 @@
              ((pathnamep result)
               (handle-static-file request reply result))
              #|---------------------------------------------------------------|#
-             ((and (string= result "") (not (= (restas:return-code reply) restas:+http-ok+)))
+             ((and (stringp result) (string= result "") (not (= (restas:return-code reply) restas:+http-ok+)))
               (send-reply reply
                           (restas:restas-status-message (restas:return-code reply))))
              #|---------------------------------------------------------------|#
@@ -69,6 +69,13 @@
 
 (defparameter *port-thread-map* (make-hash-table))
 
+(defun  store-request-body-hook (request)
+  (let* ((headers (wookie:request-headers request))
+         (content-type (getf headers :content-type)))
+    (unless (or (search "application/x-www-form-urlencoded" content-type)
+                (search "multipart/form-data;" content-type))
+      (setf (http-parse:http-store-body (wookie:request-http request)) t))))
+
 (defun start (module &key hostname (port 80) (separate-thread t))
   (restas::add-toplevel-module module
                                hostname
@@ -80,6 +87,8 @@
                  (*listener* (make-instance 'wookie:listener :port port)))
              #|---------------------------------------------------------------|#
              (wookie:load-plugins)
+             #|---------------------------------------------------------------|#
+             (wookie:add-hook :parsed-headers 'store-request-body-hook)
              #|---------------------------------------------------------------|#
              (wookie:defroute (:* ".*") (req res)
                (restas-dispatch-request req (make-instance 'reply :origin res)))

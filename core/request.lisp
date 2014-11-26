@@ -44,7 +44,7 @@
 (defgeneric script-name (request)
   (:documentation "Returns the file name of the REQUEST object request. That's the requested URI without the query string (i.e the GET parameters)."))
 
-(defgeneric raw-post-data (request &key encoding force-text force-binary &allow-other-keys)
+(defgeneric raw-post-data (request)
   (:documentation "Returns the content sent by the client in the request body if there was any (unless the content type was multipart/form-data in which case NIL is returned)."))
 
 (defgeneric request-listener (request)
@@ -174,3 +174,17 @@ same name exist the GET parameter is returned.  Search is
 case-sensitive."
   (or (get-parameter name request)
       (post-parameter name request)))
+
+(defun binary-post-data (&optional (request *request*))
+  "Returns the content sent by the client in the request body if there
+was any (unless the content type was multipart/form-data in which case
+NIL is returned)."
+  (raw-post-data request))
+
+(defun text-post-data (&optional (encoding :utf-8) (request *request*))
+  "Returns the content sent by the client in the request body if there
+was any (unless the content type was multipart/form-data in which case
+NIL is returned)."
+  (babel:octets-to-string (raw-post-data request) :encoding encoding))
+    
+  

@@ -106,6 +106,8 @@
            #:get-parameter
            #:post-parameter
            #:parameter
+           #:binary-post-data
+           #:text-post-data
 
            ;; reply
            #:headers-out

@@ -73,17 +73,8 @@
 (defmethod restas:script-name ((request wookie:request))
   (puri:uri-path (wookie:request-uri request)))
 
-(defmethod restas:raw-post-data ((request wookie:request) &key &allow-other-keys)
-  nil)
-
-;; (defmethod restas:raw-post-data (request &key encoding force-text force-binary &allow-other-keys)
-;;   nil)
-  ;; (hunchentoot:raw-post-data :request request
-  ;;                            :external-format (encoding-hunchentoot-external-format encoding)
-  ;;                            :force-text force-text
-  ;;                            :force-binary force-binary))
-
-
+(defmethod restas:raw-post-data ((request wookie:request))
+  (http-parse:http-body (wookie:request-http request)))
 
 (defmethod restas:request-listener ((request wookie:request))
   *listener*)
