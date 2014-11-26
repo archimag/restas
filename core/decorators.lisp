@@ -14,9 +14,9 @@
 (defclass no-cache-route (routes:proxy-route) ())
 
 (defmethod process-route :before ((route no-cache-route) bindings)
-  (setf (header-out :expires)
+  (setf (header-out* :expires)
         (rfc-1123-date))
-  (setf (header-out :cache-control)
+  (setf (header-out* :cache-control)
         "max-age=0, no-store, no-cache, must-revalidate"))
 
 (defun @no-cache (route)
@@ -44,10 +44,10 @@
   (let ((result (call-next-method)))
     (cond
       ((pathnamep result)
-       (setf (header-out :content-type)
+       (setf (header-out* :content-type)
              (or (mime-type result)
                  (content-type*)))
-       (setf (header-out :x-accel-redirect)
+       (setf (header-out* :x-accel-redirect)
              (or (and *nginx-internal-root*
                       (cffi-sys:native-namestring
                        (merge-pathnames
@@ -79,10 +79,10 @@
   (let ((result (call-next-method)))
     (cond
       ((pathnamep result)
-       (setf (header-out :content-type)
+       (setf (header-out* :content-type)
              (or (mime-type result)
                  (content-type*)))
-       (setf (header-out :x-sendfile)
+       (setf (header-out* :x-sendfile)
              (cffi-sys:native-namestring result))
        "")
       (t result))))

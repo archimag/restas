@@ -15,8 +15,8 @@
 
                (:file "http-codes")
                (:file "mime-types")
-               (:file "known-words")
-
+               ;; (:file "known-words")
+               
                (:file "codewalker")
                (:file "declarations")
 
