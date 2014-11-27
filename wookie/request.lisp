@@ -44,14 +44,20 @@
         (hash-table-alist params)
         nil)))
 
+(defun request-uri (request)
+  (let ((uri (wookie:request-uri request)))
+    (if (typep uri 'puri:uri)
+        uri
+        (puri:parse-uri (quri:render-uri uri)))))
+
 (defmethod restas:query-string ((request wookie:request))
-  (puri:uri-query (wookie:request-uri request)))
+  (puri:uri-query (request-uri request)))
 
 (defmethod restas:request-method ((request wookie:request))
   (wookie:request-method request))
 
 (defmethod restas:request-uri ((request wookie:request))
-  (puri:render-uri (wookie:request-uri request) nil))
+  (puri:render-uri (request-uri request) nil))
 
 (defmethod restas:server-protocol ((request wookie:request))
   (format nil
@@ -71,7 +77,7 @@
   nil)
 
 (defmethod restas:script-name ((request wookie:request))
-  (puri:uri-path (wookie:request-uri request)))
+  (puri:uri-path (request-uri request)))
 
 (defmethod restas:raw-post-data ((request wookie:request))
   (http-parse:http-body (wookie:request-http request)))
