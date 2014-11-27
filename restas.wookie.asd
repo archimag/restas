@@ -6,7 +6,7 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defsystem #:restas.wookie
-    :depends-on (#:restas.core #:wookie)
+    :depends-on (#:restas.core #:wookie #:blackbird)
     :serial t
     :pathname "wookie"
     :components ((:file "package")
@@ -15,4 +15,5 @@
                  (:file "reply")
                  (:file "static")
                  (:file "debug")
+                 (:file "render")
                  (:file "wookie")))

@@ -12,3 +12,6 @@
 
 (defmethod restas:listener-address ((listener hunchentoot:acceptor))
   (hunchentoot:acceptor-address listener))
+
+(defmethod restas:listener-ssl-p ((listener hunchentoot:acceptor))
+  (hunchentoot:acceptor-ssl-p listener))

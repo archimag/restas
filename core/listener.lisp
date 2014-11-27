@@ -16,3 +16,6 @@
 
 (defgeneric listener-address (listener)
   (:documentation "The address the listener is listening on."))
+
+(defgeneric listener-ssl-p (listener)
+  (:documentation "Returns a true value if the listener uses SSL connections."))

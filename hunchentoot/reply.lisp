@@ -7,12 +7,6 @@
 
 (in-package :restas.hunchentoot)
 
-(defun hunchentoot-external-format-encoding (external-format)
-  (cond
-    ((eql external-format hunchentoot::+utf-8+ ) :utf-8)
-    ((eql external-format hunchentoot::+latin-1+ ) :latin1)
-    (t external-format)))
-
 (defmethod restas:headers-out ((reply hunchentoot:reply))
   (hunchentoot:headers-out reply))
 
@@ -37,13 +31,22 @@
   (setf (hunchentoot:return-code reply)
         newvalue))
 
-(defmethod restas:reply-external-format ((reply hunchentoot:reply))
-  (hunchentoot-external-format-encoding (hunchentoot:reply-external-format reply)))
+;; (defun hunchentoot-external-format-encoding (external-format)
+;;   (cond
+;;     ((eql external-format hunchentoot::+utf-8+ ) :utf-8)
+;;     ((eql external-format hunchentoot::+latin-1+ ) :latin1)
+;;     (t external-format)))
 
-(defmethod (setf restas:reply-external-format) (newvalue (reply hunchentoot:reply))
-  (hunchentoot-external-format-encoding 
-   (setf (hunchentoot:reply-external-format reply)
-         (encoding-hunchentoot-external-format newvalue))))
+;; (defmethod restas:reply-external-format ((reply hunchentoot:reply))
+;;   (hunchentoot-external-format-encoding (hunchentoot:reply-external-format reply)))
+
+;; (defmethod (setf restas:reply-external-format) (newvalue (reply hunchentoot:reply))
+;;   (hunchentoot-external-format-encoding 
+;;    (setf (hunchentoot:reply-external-format reply)
+;;          (encoding-hunchentoot-external-format newvalue))))
 
 ;; (defmethod hunchentoot::stringify-cookie ((cookie restas:cookie))
 ;;   (restas:stringify-cookie cookie))
+
+(defmethod hunchentoot::stringify-cookie ((cookie restas:cookie))
+  (restas::stringify-cookie cookie))

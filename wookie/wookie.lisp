@@ -7,25 +7,20 @@
 
 (in-package #:restas.wookie)
 
-(defmethod restas:render-object :around (designer (future asf:future))
-  (let ((result (asf:make-future)))
-    (asf:future-handler-case
-     (asf:alet ((object future))
-       (asf:finish result (restas:render-object designer object)))
-     (t (e)
-        (asf:signal-error result e)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; dispatch request
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun restas-dispatch-request (request reply)
   (flet ((not-found-if-null (thing)
            (unless thing
+             #|---------------------------------------------------------------|#
              (setf (restas:return-code reply)
                    restas:+http-not-found+)
+             #|---------------------------------------------------------------|#
+             (setf (restas:content-type* reply)
+                  "text/html")
+             #|---------------------------------------------------------------|#
              (send-reply reply
                          (restas:restas-status-message restas:+http-not-found+))
+             #|---------------------------------------------------------------|#
              (return-from restas-dispatch-request))))
     #|------------------------------------------------------------------------|#
     (let ((vhost (car restas::*vhosts*))
@@ -39,14 +34,16 @@
         #|--------------------------------------------------------------------|#
         (not-found-if-null route)
         #|--------------------------------------------------------------------|#
-        (asf:future-handler-case
-         (asf:alet ((result (restas:process-route route bindings)))
+        (bb:promise-handler-case
+         (bb:alet ((result (restas:process-route route bindings)))
            (cond
              #|---------------------------------------------------------------|#
              ((pathnamep result)
               (handle-static-file request reply result))
              #|---------------------------------------------------------------|#
-             ((and (stringp result) (string= result "") (not (= (restas:return-code reply) restas:+http-ok+)))
+             ((and (stringp result)
+                   (string= result "")
+                   (not (= (restas:return-code reply) restas:+http-ok+)))
               (send-reply reply
                           (restas:restas-status-message (restas:return-code reply))))
              #|---------------------------------------------------------------|#
@@ -59,6 +56,9 @@
             #|----------------------------------------------------------------|#
             (setf (restas:return-code reply)
                   restas:+http-internal-server-error+)
+            #|----------------------------------------------------------------|#
+            (setf (restas:content-type* reply)
+                  "text/html")
             #|----------------------------------------------------------------|#
             (send-reply reply
                         (restas:restas-status-message restas:+http-internal-server-error+))))))))

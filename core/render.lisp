@@ -23,6 +23,8 @@
   "Default handler for HTTP status code"
   (setf (return-code*)
         code)
+  (setf (content-type*)
+        "text/html")
   (restas-status-message code))
   
 
@@ -49,21 +51,21 @@
   (render-object nil
                  (funcall designer object)))
 
-;; (defmethod render-object ((designer function) (code integer))
-;;   (declare (ignore designer))
-;;   (render-object nil code))
+(defmethod render-object ((designer function) (code integer))
+  (declare (ignore designer))
+  (render-object nil code))
 
-;; (defmethod render-object ((designer function) (file pathname))
-;;   (declare (ignore designer))
-;;   (render-object nil file))
+(defmethod render-object ((designer function) (file pathname))
+  (declare (ignore designer))
+  (render-object nil file))
 
-;; (defmethod render-object ((designer function) (string string))
-;;   (declare (ignore designer))
-;;   (render-object nil string))
+(defmethod render-object ((designer function) (string string))
+  (declare (ignore designer))
+  (render-object nil string))
 
-;; (defmethod render-object ((designer function) (octets vector))
-;;   (declare (ignore designer))
-;;   (render-object nil octets))
+(defmethod render-object ((designer function) (octets vector))
+  (declare (ignore designer))
+  (render-object nil octets))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; render via symbol as function

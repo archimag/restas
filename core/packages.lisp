@@ -66,6 +66,7 @@
            ;; listener
            #:listener-port
            #:listener-address
+           #:listener-ssl-p
 
            ;; request
            #:get-parameters
@@ -127,6 +128,22 @@
            #:header-out
            #:cookie-out
 
+           ;; cookie
+           #:cookie
+           #:cookie-domain
+           #:cookie-expires
+           #:cookie-http-only
+           #:cookie-in
+           #:cookie-max-age
+           #:cookie-name
+           #:cookie-out
+           #:cookie-path
+           #:cookie-secure
+           #:cookie-value
+           #:set-cookie
+           #:set-cookie*
+           #:stringify-cookie
+
            ;; http constant
            #:+http-continue+
            #:+http-switching-protocols+
@@ -173,25 +190,5 @@
 
            ;; misc
            #:mime-type
+           #:escape-for-html
            ))
-
-;; (defpackage #:restas.rfc2388
-;;   (:use :common-lisp)
-;;   (:export
-;;    #:parse-header
-;;    #:header
-;;    #:header-name
-;;    #:header-value
-;;    #:header-parameters
-
-;;    #:content-type
-;;    #:find-header
-;;    #:find-parameter
-;;    #:find-content-disposition-header
-;;    #:get-file-name
-
-;;    #:parse-mime
-;;    #:mime-part
-;;    #:mime-part-contents
-;;    #:mime-part-headers
-;;    #:make-mime-part))

@@ -10,12 +10,11 @@
   :pathname "core"
   :serial t
   :components ((:file "packages")
-               (:file "util")
                (:file "special")
+               (:file "util")
 
                (:file "http-codes")
                (:file "mime-types")
-               ;; (:file "known-words")
                
                (:file "codewalker")
                (:file "declarations")
@@ -23,6 +22,7 @@
                (:file "listener")
                (:file "request")
                (:file "reply")
+               (:file "cookie")
                
                (:file "status")
                (:file "render" )

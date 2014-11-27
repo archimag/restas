@@ -54,8 +54,6 @@
 ;;; request interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *request*)
-
 (defun script-name* (&optional (request *request*))
   "Returns the file name of the REQUEST object REQUEST. That's the
 requested URI without the query string \(i.e the GET parameters)."

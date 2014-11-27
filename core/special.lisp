@@ -9,6 +9,10 @@
 
 (defparameter *default-host-redirect* nil)
 
-(defvar *route* nil)
+(defvar *route*)
 
 (defvar *module* nil)
+
+(defvar *request*)
+
+(defvar *reply*)

@@ -44,8 +44,6 @@
 ;;; reply interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *reply*)
-
 (defun headers-out* (&optional (reply *reply*))
   "Returns an alist of the outgoing headers associated with the
 REPLY object REPLY."
@@ -113,3 +111,45 @@ handle are defined in specials.lisp."
   "Returns the current value of the outgoing cookie named
 NAME. Search is case-sensitive."
   (cdr (assoc name (cookies-out reply) :test #'string=)))
+
+
+(defun ssl-p ()
+  (listener-ssl-p (request-listener restas:*request*)))
+
+(defun starts-with-scheme-p (string)
+  "Checks whether the string STRING represents a URL which starts with
+a scheme, i.e. something like 'https://' or 'mailto:'."
+  (loop with scheme-char-seen-p = nil
+        for c across string
+        when (or (char-not-greaterp #\a c #\z)
+                 (digit-char-p c)
+                 (member c '(#\+ #\- #\.) :test #'char=))
+        do (setq scheme-char-seen-p t)
+        else return (and scheme-char-seen-p
+                         (char= c #\:))))
+
+(defun redirect-url (target &key (host (host *request*))
+                          port
+                          (protocol (if (ssl-p) :https :http))
+                          (code +http-moved-temporarily+))
+  "Redirects the browser to TARGET which should be a string.  If
+TARGET is a full URL starting with a scheme, HOST, PORT and PROTOCOL
+are ignored.  Otherwise, TARGET should denote the path part of a URL,
+PROTOCOL must be one of the keywords :HTTP or :HTTPS, and the URL to
+redirect to will be constructed from HOST, PORT, PROTOCOL, and TARGET.
+Adds a session ID if ADD-SESSION-ID is true.  If CODE is a 3xx
+redirection code, it will be sent as status code."
+  (check-type code (integer 300 399))
+  (let ((url (if (starts-with-scheme-p target)
+               target
+               (format nil "~A://~A~@[:~A~]~A"
+                       (ecase protocol
+                         ((:http) "http")
+                         ((:https) "https"))
+                       (if port                         
+                         (first (ppcre:split ":" (or host "")))
+                         host)
+                       port target))))
+    (setf (header-out* :location) url
+          (return-code*) code)
+    (abort-route-handler nil)))

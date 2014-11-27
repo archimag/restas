@@ -13,9 +13,11 @@
    (return-code :initform restas:+http-ok+
                 :accessor restas:return-code)
    (headers-out :initform nil
-                :accessor restas:headers-out)))
+                :accessor restas:headers-out)
+   (cookies-out :initform nil
+                :accessor restas:cookies-out)))
 
-(defmethod restas:header-out (name (reply wookie:response))
+(defmethod restas:header-out (name (reply reply))
   (cdr (assoc name (restas:headers-out reply))))
 
 (defmethod (setf restas:header-out) (new-value name (reply reply))
@@ -25,14 +27,6 @@
        (setf (slot-value reply 'headers-out)
              (acons name new-value (restas:headers-out reply))))
      new-value))
-
-;; (defmethod restas:cookies-out ((reply wookie:response))
-;;   (hunchentoot:cookies-out reply))
-
-;; (defmethod (setf restas:cookies-out) (newvalue (reply wookie:response))
-;;   (setf (hunchentoot:cookies-out reply)
-;;         newvalue))
-
 
 ;; (defmethod restas:reply-external-format ((reply wookie:response))
 ;;   (hunchentoot-external-format-encoding (wookie:response-external-format reply)))
@@ -48,4 +42,9 @@
     (wookie:send-response response
                           :status (restas:return-code reply)
                           :body body
-                          :headers (list* (alist-plist (restas:headers-out reply))))))
+                          :headers (append
+                                    (alist-plist (restas:headers-out reply))
+                                    (iter (for (nil . cookie) in (restas:cookies-out reply))
+                                          (collect :set-cookie)
+                                          (collect (restas:stringify-cookie cookie)))))))
+

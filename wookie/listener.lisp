@@ -14,3 +14,6 @@
 
 (defmethod restas:listener-address ((listener wookie:listener))
   (wookie:listener-bind listener))
+
+(defmethod restas:listener-ssl-p ((listener wookie:listener))
+  (typep *listener* 'wookie:ssl-listener))

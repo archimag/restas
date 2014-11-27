@@ -39,9 +39,10 @@
     params))
 
 (defmethod restas:cookies-in ((request wookie:request))
-  ;;(hunchentoot:cookies-in request)
-  nil
-  )
+  (let ((params (gethash :cookie (wookie:request-plugin-data request))))
+    (if params
+        (hash-table-alist params)
+        nil)))
 
 (defmethod restas:query-string ((request wookie:request))
   (puri:uri-query (wookie:request-uri request)))
@@ -50,25 +51,24 @@
   (wookie:request-method request))
 
 (defmethod restas:request-uri ((request wookie:request))
-  (wookie:request-uri request))
+  (puri:render-uri (wookie:request-uri request) nil))
 
 (defmethod restas:server-protocol ((request wookie:request))
-  ;;(hunchentoot:server-protocol request)
-  :http
-  )
+  (format nil
+          "~A/~A"
+          (if (typep *listener* 'wookie:ssl-listener)
+              "https"
+              "http")
+          (http-parse:http-version (wookie:request-http request))))
 
 (defmethod restas:headers-in ((request wookie:request))
   (alexandria:plist-alist (wookie:request-headers request)))
 
 (defmethod restas:remote-address ((request wookie:request))
-  ;;(hunchentoot:remote-addr request)
-  "127.0.0.1"
-  )
+  nil)
 
 (defmethod restas:remote-port ((request wookie:request))
-  ;;(hunchentoot:remote-port request)
-  8080
-  )
+  nil)
 
 (defmethod restas:script-name ((request wookie:request))
   (puri:uri-path (wookie:request-uri request)))
