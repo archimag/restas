@@ -10,10 +10,10 @@
     :serial t
     :pathname "wookie"
     :components ((:file "package")
+                 (:file "debug")                 
                  (:file "listener")
                  (:file "request")
                  (:file "reply")
                  (:file "static")
-                 (:file "debug")
                  (:file "render")
                  (:file "wookie")))

@@ -7,7 +7,6 @@
 
 (in-package #:restas.wookie)
 
-
 (defun restas-dispatch-request (request reply)
   (flet ((not-found-if-null (thing)
            (unless thing
@@ -39,7 +38,7 @@
            (cond
              #|---------------------------------------------------------------|#
              ((pathnamep result)
-              (handle-static-file request reply result))
+              (handle-static-file route request reply result))
              #|---------------------------------------------------------------|#
              ((and (stringp result)
                    (string= result "")
@@ -50,6 +49,7 @@
              (t
               (send-reply reply result))))
          (t (e)
+            (log-route-error route e)
             #|----------------------------------------------------------------|#
             (when *debug-mode*
               (break "~A" e))

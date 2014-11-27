@@ -7,7 +7,7 @@
 
 (in-package #:restas.wookie)
 
-(defun handle-static-file (request reply path)
+(defun handle-static-file (route request reply path)
   (declare (ignore request))
   (let* ((response (origin-response reply))
          (buffer (make-array 1024 :element-type '(unsigned-byte 8)))
@@ -15,11 +15,14 @@
                                         :headers (list :content-type (or (restas:mime-type path)
                                                                          (restas:content-type* reply)
                                                                          "application/octet-stream")))))
-    (with-open-file (fstream path :element-type '(unsigned-byte 8))
-      (iter (for n = (read-sequence buffer fstream))
-            (while (< 0 n))
-            (write-sequence (subseq buffer 0 n) stream)
-            (force-output stream)))
+    (handler-case 
+        (with-open-file (fstream path :element-type '(unsigned-byte 8))  
+          (iter (for n = (read-sequence buffer fstream))
+                (while (< 0 n))
+                (write-sequence (subseq buffer 0 n) stream)
+                (force-output stream)))
+      (error (err)
+        (log-route-error route err)))
     (wookie:finish-response response)))
   
   
