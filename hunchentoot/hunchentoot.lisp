@@ -79,28 +79,39 @@
         (hunchentoot:*request* request)
         (restas:*request* request)
         (restas:*reply* hunchentoot:*reply*))
+    #|------------------------------------------------------------------------|#
     (when (and (not vhost) restas::*default-host-redirect*)
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host restas::*default-host-redirect*))
+    #|------------------------------------------------------------------------|#
+    (setf (restas:reply-external-format*) :utf-8)
+    #|------------------------------------------------------------------------|#
     (flet ((not-found-if-null (thing)
              (unless thing
                (setf (hunchentoot:return-code*)
                      hunchentoot:+HTTP-NOT-FOUND+)
                (hunchentoot:abort-request-handler
                 (restas-status-message hunchentoot:+HTTP-NOT-FOUND+)))))
+      #|----------------------------------------------------------------------|#
       (not-found-if-null vhost)
+      #|----------------------------------------------------------------------|#
       (multiple-value-bind (route bindings)
-          (routes:match (slot-value vhost 'restas::mapper)
-            (hunchentoot:request-uri*))
+          (routes:match (slot-value vhost 'restas::mapper) (hunchentoot:request-uri*))
+        #|--------------------------------------------------------------------|#
         (not-found-if-null route)
+        #|--------------------------------------------------------------------|#
         (handler-bind ((error #'maybe-invoke-debugger))
           (let ((result (process-route route bindings)))
             (cond
+              #|--------------------------------------------------------------|#
               ((pathnamep result)
-               (hunchentoot:handle-static-file
-                result
-                (or (restas:mime-type result)
-                    (hunchentoot:content-type hunchentoot:*reply*))))
+               (hunchentoot:handle-static-file result
+                                               (or (restas:mime-type result)
+                                                   (hunchentoot:content-type hunchentoot:*reply*))))
+              #|--------------------------------------------------------------|#
+              ((stringp result)
+               (babel:string-to-octets result :encoding (reply-external-format*)))
+              #|--------------------------------------------------------------|#
               (t result))))))))
 
 (defmethod hunchentoot:acceptor-dispatch-request

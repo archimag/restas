@@ -114,6 +114,7 @@
            #:headers-out
            #:cookies-out
            #:return-code
+           #:abort-request-handler
            #:reply-external-format
 
            #:*reply*

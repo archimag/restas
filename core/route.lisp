@@ -73,13 +73,6 @@
                             (collect key)
                             (collect (funcall fun)))))))))
 
-(defun abort-route-handler (obj &key return-code content-type)
-  (when return-code
-    (setf (return-code*) return-code))
-  (when content-type
-    (setf (content-type*) content-type))
-  (throw 'route-done obj))
-
 ;;;; define-route
 
 (defmacro define-route (name (template &key method content-type) &body body)

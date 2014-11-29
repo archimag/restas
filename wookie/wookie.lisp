@@ -40,12 +40,6 @@
              ((pathnamep result)
               (handle-static-file route request reply result))
              #|---------------------------------------------------------------|#
-             ((and (stringp result)
-                   (string= result "")
-                   (not (= (restas:return-code reply) restas:+http-ok+)))
-              (send-reply reply
-                          (restas:restas-status-message (restas:return-code reply))))
-             #|---------------------------------------------------------------|#
              (t
               (send-reply reply result))))
          (t (e)

@@ -26,13 +26,17 @@
 (defgeneric (setf return-code) (newvalue reply)
   (:documentation "Set the http return code of reply."))
 
-;; TODO
-
 (defgeneric cookies-out (reply)
   (:documentation "Return an alist of the outgoing cookies associated with the REPLY object reply."))
 
 (defgeneric (setf cookies-out) (newvalue reply)
   (:documentation "Set an alist of the outgoing cookies associated with the REPLY object reply."))
+
+(defgeneric abort-request-handler (reply result)
+  (:documentation "This function can be called by a request handler at
+any time to immediately abort handling the request.  This works as if
+the handler had returned RESULT.  See the source code of REDIRECT for
+an example."))
 
 (defgeneric reply-external-format (reply)
   (:documentation "Get the external format of reply which is used for character output."))
@@ -153,3 +157,13 @@ redirection code, it will be sent as status code."
     (setf (header-out* :location) url
           (return-code*) code)
     (abort-route-handler nil)))
+
+
+(defun abort-route-handler (obj &key return-code content-type)
+  (when return-code
+    (setf (return-code* *reply*) return-code))
+  (when content-type
+    (setf (content-type* *reply*) content-type))
+  (abort-request-handler *reply* obj))
+
+

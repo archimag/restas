@@ -10,12 +10,16 @@
 (defclass reply ()
   ((origin :initarg :origin
            :reader origin-response)
+   (external-format :initform :utf-8
+                    :accessor restas:reply-external-format)   
    (return-code :initform restas:+http-ok+
                 :accessor restas:return-code)
    (headers-out :initform nil
                 :accessor restas:headers-out)
    (cookies-out :initform nil
-                :accessor restas:cookies-out)))
+                :accessor restas:cookies-out)
+   (alredy-send-p :initform nil
+                  :accessor alredy-send-p)))
 
 (defmethod restas:header-out (name (reply reply))
   (cdr (assoc name (restas:headers-out reply))))
@@ -28,23 +32,33 @@
              (acons name new-value (restas:headers-out reply))))
      new-value))
 
-;; (defmethod restas:reply-external-format ((reply wookie:response))
-;;   (hunchentoot-external-format-encoding (wookie:response-external-format reply)))
-
-;; (defmethod (setf restas:reply-external-format) (newvalue (reply wookie:response))
-;;   (hunchentoot-external-format-encoding 
-;;    (setf (wookie:response-external-format reply)
-;;          (encoding-hunchentoot-external-format newvalue))))
-
+(defmethod restas:abort-request-handler ((reply reply) result)
+  (send-reply reply result)
+  nil)
 
 (defun send-reply (reply body)
-  (let ((response (origin-response reply)))
-    (wookie:send-response response
-                          :status (restas:return-code reply)
-                          :body body
-                          :headers (append
-                                    (alist-plist (restas:headers-out reply))
-                                    (iter (for (nil . cookie) in (restas:cookies-out reply))
-                                          (collect :set-cookie)
-                                          (collect (restas:stringify-cookie cookie)))))))
+  (unless (alredy-send-p reply)
+    #|------------------------------------------------------------------------|#
+    (setf (alredy-send-p reply) t)
+    #|------------------------------------------------------------------------|#
+    (let ((response (origin-response reply))
+          (code (restas:return-code reply))
+          (content body))
+      (when (and (emptyp body) (not (eql code restas:+http-ok+)))
+        (setf content 
+              (restas:restas-status-message (restas:return-code reply)))
+        (setf (restas:content-type* reply)
+              "text/html"))
+      (when (stringp content)
+        (setf content
+              (babel:string-to-octets content
+                                      :encoding (restas:reply-external-format reply))))
+      (wookie:send-response response
+                            :status code
+                            :body content
+                            :headers (append
+                                      (alist-plist (restas:headers-out reply))
+                                      (iter (for (nil . cookie) in (restas:cookies-out reply))
+                                            (collect :set-cookie)
+                                            (collect (restas:stringify-cookie cookie))))))))
 

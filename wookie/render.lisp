@@ -20,7 +20,9 @@
                     (restas:with-module module
                       (restas:render-object designer object)))))
      (t (e)
-        (bb:signal-error result e)))))
+        (bb:signal-error result e)))
+    #|------------------------------------------------------------------------|#
+    result))
 
 (defmethod restas:render-object :around (designer (promise bb:promise))
   (let ((request restas:*request*)
@@ -36,4 +38,6 @@
                     (restas:with-module module
                       (restas:render-object designer object)))))
      (t (e)
-        (bb:signal-error result e)))))
+        (bb:signal-error result e)))
+    #|------------------------------------------------------------------------|#
+    result))

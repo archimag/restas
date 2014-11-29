@@ -31,22 +31,16 @@
   (setf (hunchentoot:return-code reply)
         newvalue))
 
-;; (defun hunchentoot-external-format-encoding (external-format)
-;;   (cond
-;;     ((eql external-format hunchentoot::+utf-8+ ) :utf-8)
-;;     ((eql external-format hunchentoot::+latin-1+ ) :latin1)
-;;     (t external-format)))
+(defmethod restas:abort-request-handler ((reply hunchentoot:reply) result)
+  (throw 'restas::route-done result))
 
-;; (defmethod restas:reply-external-format ((reply hunchentoot:reply))
-;;   (hunchentoot-external-format-encoding (hunchentoot:reply-external-format reply)))
+(defmethod restas:reply-external-format ((reply hunchentoot:reply))
+  (hunchentoot:reply-external-format reply))
 
-;; (defmethod (setf restas:reply-external-format) (newvalue (reply hunchentoot:reply))
-;;   (hunchentoot-external-format-encoding 
-;;    (setf (hunchentoot:reply-external-format reply)
-;;          (encoding-hunchentoot-external-format newvalue))))
-
-;; (defmethod hunchentoot::stringify-cookie ((cookie restas:cookie))
-;;   (restas:stringify-cookie cookie))
+(defmethod (setf restas:reply-external-format) (newvalue (reply hunchentoot:reply))
+  (setf (hunchentoot:reply-external-format reply)
+        newvalue))
 
 (defmethod hunchentoot::stringify-cookie ((cookie restas:cookie))
   (restas::stringify-cookie cookie))
+
