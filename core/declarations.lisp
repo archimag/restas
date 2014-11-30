@@ -19,8 +19,9 @@
                         (gethash (car form) declarations-map))))
     (values declarations-map code)))
 
-(defmethod parse-declarations (type declarations traits)
-  (error "Unknown type of declaration: ~A" type))
+(defgeneric parse-declarations (type declarations traits)
+  (:method (type declarations traits)
+    (error "Unknown type of declaration: ~A" type)))
 
 (defmethod parse-declarations ((type (eql :sift-variables)) declarations traits)
   (let ((variables (gethash :variables traits)))
@@ -94,11 +95,6 @@
     (error "Multiple instances of ~A declaration" type))
   (setf (gethash :inherit-parent-context traits)
         (first declarations)))
-
-(defmethod parse-declarations ((type (eql :keep-context-transformation)) declarations traits)
-  (setf (gethash :keep-context-transformation traits)
-        (eql t (first declarations))))
-  
 
 (defun parse-all-declarations (declarations allowed-types &optional traits)
   (let ((traits (or traits (make-hash-table))))

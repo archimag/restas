@@ -112,7 +112,7 @@ replaced."
   (and universal-time
        (rfc-1123-date universal-time)))
 
-(defmethod stringify-cookie ((cookie cookie))
+(defun stringify-cookie (cookie)
   "Converts the COOKIE object COOKIE to a string suitable for a
 'Set-Cookie' header to be sent to the client."
   (format nil

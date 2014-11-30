@@ -26,6 +26,7 @@
            #:parse-route-url
            #:abort-route-handler
            #:delete-route
+           #:route-module
 
            #:process-route
            
@@ -37,6 +38,10 @@
            #:find-mounted-module
            #:with-module
            #:module-context
+
+           ;; context
+           #:context-all-vars
+           #:context-all-values
            
            ;; render
            #:render-object

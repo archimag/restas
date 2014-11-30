@@ -23,6 +23,8 @@
            #:debug-mode-on
            #:debug-mode-off
            #|-------------------------|#
+           ;; decorators
+           #:@keep-context
            ;; misc
            ;; #:request-full-uri
            ))

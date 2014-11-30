@@ -94,8 +94,7 @@
                                 :render-method :apply-render-method
                                 :content-type :http-method
                                 :requirement
-                                :decorators
-                                :keep-context-transformation)
+                                :decorators)
                               route-traits)
       #|----------------------------------------------------------------------|#
       (setf (gethash :variables route-traits) `',arglist)
@@ -104,10 +103,7 @@
          #|-------------------------------------------------------------------|#
          (defun ,name (,@arglist
                        ,@(gethash :additional-variables-arglist route-traits))
-           ,@(if (gethash :keep-context-transformation route-traits)
-                 `((with-keep-restas-context-transformation
-                      ,@real-body))
-                 real-body))
+           ,@real-body)
          #|-------------------------------------------------------------------|#
          (register-route-traits
           ',name

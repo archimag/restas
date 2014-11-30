@@ -6,7 +6,7 @@
 ;;;; Author: Moskvitin Andrey <archimag@gmail.com>
 
 (defsystem #:restas.core
-  :depends-on (#:bordeaux-threads #:routes #:alexandria #:data-sift #:cl-base64 #:cl-fad #:cffi #:cl-walker)
+  :depends-on (#:bordeaux-threads #:routes #:alexandria #:data-sift #:cl-base64 #:cl-fad #:cffi)
   :pathname "core"
   :serial t
   :components ((:file "packages")
@@ -16,7 +16,6 @@
                (:file "http-codes")
                (:file "mime-types")
                
-               (:file "codewalker")
                (:file "declarations")
 
                (:file "listener")

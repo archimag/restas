@@ -16,4 +16,5 @@
                  (:file "reply")
                  (:file "static")
                  (:file "render")
+                 (:file "decorators")
                  (:file "wookie")))
