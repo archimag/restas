@@ -14,6 +14,8 @@
                (:file "util")
 
                (:file "http-codes")
+
+               (:static-file "mime.types")
                (:file "mime-types")
                
                (:file "declarations")
