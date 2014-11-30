@@ -56,7 +56,7 @@
   (let ((vhost (ensure-vhost-exist hostname port))
         (module (make-instance 'pkgmodule
                                :package package
-                               :context context
+                               :context (or context (restas:make-context))
                                :url (if url (routes:parse-template url))
                                :render-method render-method
                                :decorators decorators)))

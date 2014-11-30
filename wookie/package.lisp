@@ -18,6 +18,9 @@
            ;; start/stop
            #:start
            #:stop-all
+
+           #:init-wookie-state
+           #:*listener*
            #|-------------------------|#
            ;; debug
            #:debug-mode-on

@@ -70,23 +70,26 @@
                 (search "multipart/form-data;" content-type))
       (setf (http-parse:http-store-body (wookie:request-http request)) t))))
 
+
+(defun init-wookie-state ()
+  (let ((wookie:*state* (make-instance 'wookie:wookie-state)))
+    #|------------------------------------------------------------------------|#
+    (wookie:add-hook :parsed-headers 'store-request-body-hook)
+    #|------------------------------------------------------------------------|#
+    (wookie:defroute (:* ".*") (req res)
+      (restas-dispatch-request req (make-instance 'reply :origin res)))
+    #|------------------------------------------------------------------------|#
+    (wookie:load-plugins)
+    #|------------------------------------------------------------------------|#
+    wookie:*state*))
+    
+
 (defun start (module &key hostname (port 80) (separate-thread t))
-  (restas::add-toplevel-module module
-                               hostname
-                               port
-                               :context (restas:make-context))
+  (restas:add-toplevel-module module hostname port)
   #|--------------------------------------------------------------------------|#
   (flet ((event-loop ()
-           (let ((wookie:*state* (make-instance 'wookie:wookie-state))
+           (let ((wookie:*state* (init-wookie-state))
                  (*listener* (make-instance 'wookie:listener :port port)))
-             #|---------------------------------------------------------------|#
-             (wookie:load-plugins)
-             #|---------------------------------------------------------------|#
-             (wookie:add-hook :parsed-headers 'store-request-body-hook)
-             #|---------------------------------------------------------------|#
-             (wookie:defroute (:* ".*") (req res)
-               (restas-dispatch-request req (make-instance 'reply :origin res)))
-             #|---------------------------------------------------------------|#
              (as:with-event-loop ()
                (wookie:start-server *listener*)))))
     (cond

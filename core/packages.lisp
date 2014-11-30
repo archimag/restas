@@ -38,6 +38,7 @@
            #:find-mounted-module
            #:with-module
            #:module-context
+           #:add-toplevel-module
 
            ;; context
            #:context-all-vars
