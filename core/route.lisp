@@ -93,7 +93,7 @@
                               '(:variables :additional-variables
                                 :render-method :apply-render-method
                                 :content-type :http-method
-                                :requirement
+                                :require
                                 :decorators)
                               route-traits)
       #|----------------------------------------------------------------------|#
@@ -110,7 +110,7 @@
           (alexandria:plist-hash-table
            (list ,@(iter (for type in
                               '(:template :method :content-type :render-method
-                                :parse-vars :requirement :decorators
+                                :parse-vars :require :decorators
                                 :additional-variables :variables))
                          (for value = (gethash type route-traits))
                          (when value
@@ -151,7 +151,7 @@
                           (collect (call-in-context-wrap (second tail)))))))))
 
 (defun create-route-from-symbol (symbol module)
-  (destructuring-bind (&key content-type headers method requirement render-method
+  (destructuring-bind (&key content-type headers method require render-method
                             decorators variables additional-variables
                             &allow-other-keys)
       (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes (symbol-package symbol))))
@@ -167,7 +167,7 @@
                                                 symbol module)
                                      :symbol symbol
                                      :required-method method
-                                     :arbitrary-requirement requirement
+                                     :arbitrary-requirement require
                                      :render-method render-method
                                      :module module
                                      :headers headers

@@ -80,7 +80,7 @@
   (setf (gethash :method traits)
         (first declarations)))
 
-(defmethod parse-declarations ((type (eql :requirement)) declarations traits)
+(defmethod parse-declarations ((type (eql :require)) declarations traits)
   (setf (gethash type traits) (cons 'list declarations)))
 
 (defmethod parse-declarations ((type (eql :url)) declarations traits)
