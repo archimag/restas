@@ -1,0 +1,109 @@
+.. -*- rst -*-
+
+.. _reply-reference:
+
+=====
+Reply
+=====
+
+.. defvar:: restas:*reply*
+
+  The current REPLY object while in the context of a request.          
+
+.. defun:: restas:headers-out*
+  :args: &optional (reply restas:*reply*)
+
+  Returns an alist of the outgoing headers associated with the REPLY
+  object REPLY.
+
+.. defun:: restas:header-out-set-p
+  :args: name &optional (reply restas:*reply*)
+         
+  Returns a true value if the outgoing http header named NAME has been
+  specified already.  NAME should be a keyword or a string.
+
+.. defun:: restas:header-out*
+  :args: name &optional (reply restas:*reply*)
+         
+  Returns the current value of the outgoing http header named NAME.
+  NAME should be a keyword or a string.
+
+.. defun:: restas:(setf header-out*)
+  :args: new-value name &optional (reply restas:*reply*)
+         
+  Changes the current value of the outgoing http header named NAME
+
+.. defun:: restas:cookies-out*
+  :args: &optional (reply restas:*reply*)
+         
+  Returns an alist of the outgoing cookies associated with the REPLY
+  object REPLY.
+
+.. defun:: restas:(setf cookies-out*)
+  :args: new-value &optional (reply restas:*reply*)
+         
+  Sets the alist of the outgoing cookies associated with the REPLY
+  object REPLY.
+
+.. defun:: restas:content-type*
+  :args: &optional (reply restas:*reply*)
+         
+  The outgoing 'Content-Type' http header of REPLY.
+
+.. defun:: restas:(setf content-type*)
+  :args: new-value &optional (reply restas:*reply*)
+         
+  Sets the outgoing 'Content-Type' http header of REPLY.
+
+.. defun:: restas:content-length*
+  :args: &optional (reply restas:*reply*)
+         
+  The outgoing 'Content-Length' http header of REPLY.
+
+.. defun:: restas:(setf content-length*)
+  :args: new-value &optional (reply restas:*reply*)
+         
+  Sets the outgoing 'Content-Length' http header of REPLY.
+
+.. defun:: restas:return-code*
+  :args: &optional (reply restas:*reply*)
+         
+  The http return code of REPLY.  The return codes Hunchentoot can
+  handle are defined in specials.lisp.
+
+.. defun:: restas:(setf return-code*)
+  :args: new-value &optional (reply restas:*reply*)
+         
+  Sets the http return code of REPLY.
+
+.. defun:: restas:reply-external-format*
+  :args: &optional (reply restas:*reply*)
+         
+  The external format of REPLY which is used for character output.
+
+.. defun:: restas:(setf reply-external-format*)
+  :args: new-value &optional (reply restas:*reply*)
+         
+  Sets the external format of REPLY.
+
+.. defun:: restas:cookie-out
+  :args: name &optional (reply restas:*reply*)
+         
+  Returns the current value of the outgoing cookie named NAME. Search
+  is case-sensitive.
+
+.. defun:: restas:redirect-url
+  :args: target &key (host (host *request*)) port protocol (code +http-moved-temporarily+)
+         
+  Redirects the browser to TARGET which should be a string. If TARGET
+  is a full URL starting with a scheme, HOST, PORT and PROTOCOL are
+  ignored.  Otherwise, TARGET should denote the path part of a URL,
+  PROTOCOL must be one of the keywords :HTTP or :HTTPS, and the URL to
+  redirect to will be constructed from HOST, PORT, PROTOCOL, and
+  TARGET. Adds a session ID if ADD-SESSION-ID is true.  If CODE is a
+  3xx redirection code, it will be sent as status code.
+
+.. defun:: restas:abort-route-handler
+  :args: obj &key return-code content-type
+         
+  WRITE DOC THERE

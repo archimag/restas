@@ -1,0 +1,28 @@
+/* style.css */
+
+.footer {
+    width: 100%;
+    border-top: 1px solid #ccc;
+    margin-top: 20px;
+    padding-top: 10px;
+    min-height: 70px;
+}
+
+//a.headerlink { margin-left: 0.2em; text-decoration: none; color: #8b2323; visibility: hidden; }
+a.headerlink { visibility: hidden; }
+
+h1:hover > a.headerlink,
+h2:hover > a.headerlink,
+h3:hover > a.headerlink,
+h4:hover > a.headerlink,
+h5:hover > a.headerlink,
+h6:hover > a.headerlink,
+dt:hover > a.headerlink
+{ 
+    visibility: visible;
+}
+
+
+/* section { */
+/*     padding-top: 30px; */
+/* } */

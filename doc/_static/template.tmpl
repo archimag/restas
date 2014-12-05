@@ -1,0 +1,96 @@
+<!DOCTYPE html>{\n}
+<html>
+    <head>
+        <title>{$title}</title>
+
+        <link rel="stylesheet" type="text/css" href="{staticHref('flatly.css')}" />
+        <link rel="stylesheet" type="text/css" href="{staticHref('prettify.css')}" />
+        <link rel="stylesheet" type="text/css" href="{staticHref('style.css')}" />
+    </head>
+
+    <body>
+        <div id="nabvar" class="navbar navbar-default navbar-static-top">
+                <div class="container">
+                    /*
+                    <button class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    */
+
+                    <a class="navbar-brand" href="{$contents[0].href}">RESTAS</a>
+
+                    <ul class="nav navbar-nav">
+                        {foreach $item in $contents}
+                            {if index($item) > 0}
+                                {if $item.childs}
+                                    <li class="dropdown">
+                                        {let $id="'nav-drop-' + index($item)"}
+                                            <a class="dropdown-toggle" id="$id" data-toggle="dropdown" href="#">
+                                                {$item.title}
+                                                <b class="caret"></b>
+                                            </a>
+
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="{$id}">
+                                                {foreach $item2 in $item.childs}
+                                                    <li>
+                                                        <a href="{$item2.href or '#'}" {if not $item2.href}class="active"{/if}>
+                                                        {$item2.title}
+                                                        </a>
+                                                    </li>
+                                                {/foreach}
+                                            </ul>
+                                        {/let}
+                                    </li>
+                                {else}
+                                    <li>
+                                        <a href="{$item.href or '#'}" {if not $item.href}class="active"{/if}>
+                                        {$item.title}
+                                        </a>
+
+                                    </li>
+                                {/if}
+                            {/if}
+                        {/foreach}
+                    </ul>
+                </div>
+        </div>        
+
+        <!-- <div class="restas-docs-header"> -->
+        <!--     <div class="container"> -->
+        <!--         <div class="row"> -->
+        <!--             <h1> -->
+        <!--                 RESTAS -->
+        <!--                 <br /> -->
+        <!--                 Easy way to build web application on Common Lisp -->
+        <!--             </h1> -->
+        <!--         </div> -->
+        <!--     </div> -->
+        <!-- </div> -->
+
+        
+        <div class="container" >
+            <div class="row">
+                <div class="col-md-9">
+                    {$content |noAutoescape}
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p class="pull-right">
+                    <a href="#">Back to top</a>
+                </p>
+                <p>
+                    &copy; Copyright 2009-2014.<br/>
+                </p>
+            </div>
+        </footer>
+
+        <script src="{staticHref('jquery.js')}"></script>
+        <script src="{staticHref('bootstrap.js')}"></script>
+    </body>
+</html>
+

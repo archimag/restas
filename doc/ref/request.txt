@@ -1,0 +1,156 @@
+.. -*- rst -*-
+
+.. _request-reference:
+
+=======
+Request
+=======
+
+.. defvar:: restas:*request*
+
+   The current REQUEST object while in the context of a request.
+   
+.. defun:: restas:script-name*
+  :args: &optional (request restas:*request*)
+
+  Returns the file name of the REQUEST object REQUEST. That's the
+  requested URI without the query string (i.e the GET parameters).
+
+.. defun:: restas:query-string*
+  :args: &optional (request *request*)
+         
+  Returns the query string of the REQUEST object REQUEST. That's the
+  part behind the question mark (i.e. the GET parameters).
+
+
+.. defun:: restas:get-parameters*
+  :args: &optional (request *request*)
+         
+  Returns an alist of the GET parameters associated with the REQUEST
+  object REQUEST.
+
+.. defun:: restas:post-parameters*
+  :args: &optional (request *request*)
+         
+  Returns an alist of the POST parameters associated with the REQUEST
+  object REQUEST.
+
+.. defun:: restas:headers-in*
+  :args: &optional (request *request*)
+         
+  Returns an alist of the incoming headers associated with the REQUEST
+  object REQUEST.
+
+.. defun:: restas:cookies-in*
+  :args: &optional (request *request*)
+         
+  Returns an alist of all cookies associated with the REQUEST object
+  REQUEST.
+
+.. defun:: restas:header-in
+  :args: name request
+         
+  Returns the incoming header with name NAME.  NAME can be a keyword
+  (recommended) or a string.
+
+.. defun:: restas:header-in*
+  :args: name &optional (request *request*)
+         
+  Returns the incoming header with name NAME.  NAME can be a keyword
+  (recommended) or a string.
+
+.. defun:: restas:authorization
+  :args: &optional (request *request*)
+         
+  Returns as two values the user and password (if any) as encoded in
+  the 'AUTHORIZATION' header.  Returns NIL if there is no such header.
+
+.. defun:: restas:remote-address*
+  :args: &optional (request *request*)
+         
+  Returns the address the current request originated from.
+
+.. defun:: restas:remote-port*
+  :args: &optional (request *request*)
+         
+  Returns the port the current request originated from.
+
+.. defun:: restas:real-remote-address
+  :args: &optional (request *request*)
+         
+  Returns the 'X-Forwarded-For' incoming http header as the second
+  value in the form of a list of IP addresses and the first element of
+  this list as the first value if this header exists. Otherwise
+  returns the value of REMOTE-ADDR as the only value.
+
+.. defun:: restas:host
+  :args: &optional (request *request*)
+         
+  Returns the 'Host' incoming http header value.
+
+.. defun:: restas:request-uri*
+  :args: &optional (request *request*)
+         
+  Returns the request URI.
+
+.. defun:: restas:request-method*
+  :args: &optional (request *request*)
+         
+  Returns the request method as a Lisp keyword.
+
+.. defun:: restas:server-protocol*
+  :args: &optional (request *request*)
+         
+  Returns the request protocol as a Lisp keyword.
+
+.. defun:: restas:user-agent
+  :args: &optional (request *request*)
+         
+  Returns the 'User-Agent' http header.
+
+.. defun:: restas:cookie-in
+  :args: name &optional (request *request*)
+         
+  Returns the cookie with the name NAME (a string) as sent by the
+  browser - or NIL if there is none.
+
+.. defun:: restas:referer
+  :args: &optional (request *request*)
+         
+  Returns the 'Referer' (sic!) http header.
+
+.. defun:: restas:get-parameter
+  :args: name &optional (request *request*)
+         
+  Returns the GET parameter with name NAME (a string) - or NIL if
+  there is none.  Search is case-sensitive.
+
+.. defun:: restas:post-parameter
+  :args: name &optional (request *request*)
+         
+  Returns the POST parameter with name NAME (a string) - or NIL if
+  there is none.  Search is case-sensitive.
+
+.. defun:: restas:parameter
+  :args: name &optional (request *request*)
+         
+  Returns the GET or the POST parameter with name NAME (a string) -
+  or NIL if there is none.  If both a GET and a POST parameter with
+  the same name exist the GET parameter is returned.  Search is
+  case-sensitive.
+
+.. defun:: restas:binary-post-data
+  :args: &optional (request *request*)
+         
+  Returns the content sent by the client in the request body if there
+  was any (unless the content type was multipart/form-data in which
+  case NIL is returned).
+
+
+.. defun:: restas:text-post-data
+  :args: &optional (encoding :utf-8) (request *request*)
+         
+  Returns the content sent by the client in the request body if there
+  was any (unless the content type was multipart/form-data in which
+  case NIL is returned).
+

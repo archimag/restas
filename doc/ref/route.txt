@@ -1,0 +1,104 @@
+.. -*- rst -*-
+
+.. _route-reference:
+
+Routes
+======
+
+.. defmacro:: restas:define-route
+  :args: name (template &key (method :get) content-type) &body body
+
+  Creates new route in the current module
+
+  * name - unique :hs:`symbol`, serving as route identifier. The same
+    :hs:`symbol` cannot be used for different routes.
+
+  * template - URL template for matching a route and a request on its basis.
+    It can contain variables which will be directly available in the body of
+    the route.
+
+  * method - HTTP method to be handled, possible values are :GET :POST,
+    :PUT, :DELETE.
+
+  * content-type - result **Content-Type** HTTP header.
+
+  * body - handler body can contain arbitrary code; its result is returned
+    to the client (after processing it with :fun:`restas:render-object`).
+
+  In the beginning of the route body can be used declarations that are
+  special forms, starting with :hs:`keyword`:
+
+  * :headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
+
+  * :render-method - object, used by call to :fun:`restas:render-object` for processing of
+    the result of route handler before serving it to client.
+
+  * :apply-render-method - analogous to :render-method, but is called using
+    :fun:`apply` and not :fun:`funcall`.
+
+  * :requirement - arbitrary function called for checking whether a route and a request match
+    each other. If result is :hs:`NIL` then route is regarded as not satisfying the request.
+
+  ..
+     * :sift-variables - the list of the lists that consist of the
+       variable name and `data-sift`_ parsing rule (e.g. function).
+
+  * :decorators - list of decorators. See :ref:`manual-decorators`.
+
+  * :additional-variables - declaration with an effect of
+    :macro:`let`, adding to the function :hs:`keyword` parameters to
+    simplify REPL experiments with it.
+
+  Example of definition of a trivial route:
+
+  .. code-block:: common-lisp
+
+    (restas:define-route main ("")
+      "<h1>Hello world!</h1>")
+
+  For more details about route definition, see :ref:`manual-routes`
+
+.. defun:: restas:route-symbol
+  :args: route
+
+  Returns :hs:`symbol`, bound to route object (for example, during request
+  processing such object is bound to :var:`restas:*route*`).
+
+.. defun:: restas:genurl
+  :args: route-symbol &rest args
+
+  Computes URL of the route on the basis of identifying :hs:`symbol` and the
+  set of values of variables of its URL template (see :macro:`restas:define-route`)
+
+  * route-symbol - route identifier
+
+  * args - sequence (in the *plist* format) of route variable names and their values.
+
+  Example:
+
+  .. code-block:: common-lisp
+
+    (restas:genurl 'my-route
+                   :arg1 "foo"
+                   :arg2 "bar")
+
+.. defun:: restas:genurl*
+  :args: route &rest args
+
+  This function is analogous to :fun:`restas:genurl` except that the generated URL
+  also includes the host name.
+
+.. defun:: restas:redirect
+  :args: route-symbol &rest args
+
+  Redirects the request with :fun:`hunchentoot:redirect` for URL computed with
+  :fun:`restas:genurl`. The parameters are analogous to those of function :fun:`restas:genurl`.
+
+.. defun:: restas:abort-route-handler
+   :args: obj &key return-code content-typе
+
+   Immediately abort handling the route and pass *OBJ* to :fun:`restas:render-object`
+   to render a response. If the keyword argument *RETURN-CODE* is specified
+   then it used to set the HTTP response status to allow you to return a special
+   page (500, 404, etc.) with arbitrary content (by default these pages are formed in
+   a uniform way, regardless of the result returned by the handler).

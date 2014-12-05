@@ -1,0 +1,8 @@
+.. -*- rst -*-
+
+.. _index:
+
+Welcome to RESTAS
+=================
+
+Welcome to RESTAS's documentation.

@@ -1,0 +1,52 @@
+.symbol { color : #770055; background-color : transparent; border: 0px; margin: 0px;}*
+a.symbol:link { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { color : #FF5000; background-color : inherit; }
+.keyword { color : #770000; background-color : inherit; }
+.comment { color : #007777; background-color : inherit; }
+.string { color : #777777; background-color : inherit; }
+.character { color : #0055AA; background-color : inherit; }
+.syntaxerror { color : #FF0000; background-color : inherit; }
+
+
+div.prettyprint {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 20px;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  background-color: #f5f5f5; 
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+.prettyprint {
+  padding: 8px;
+  background-color: #f7f7f9; 
+  border: 1px solid #e1e1e8; 
+}
+
+
+.prettyprint.linenums {
+  -webkit-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+     -moz-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+          box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+}
+
+
+ol.linenums {
+    padding: 0;
+    margin: 0 0 0 33px; 
+}
+
+ol.linenums li {
+  padding-left: 12px;
+  line-height: 20px;
+  text-shadow: 0 1px 0 #fff;
+}

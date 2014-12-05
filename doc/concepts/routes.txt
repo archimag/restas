@@ -1,0 +1,182 @@
+.. -*- rst -*-
+
+.. _manual-routes:
+
+========
+ Routes
+========
+
+RESTAS's dispatching system is based on routes. A route allows to
+define a URL template and to bind it to application's action.
+
+An application registers many different routes in the internal map. A
+request handler (an internal part of RESTAS) searches for a route in
+this map that best matches the request and calls a corresponding code
+for handling.
+
+The :macro:`restas:define-route` macro is used to create a route. The
+basic skeleton of the :macro:`restas:define-route` looks like this:
+
+.. code-block:: common-lisp
+
+  (restas:define-route name (template :method http-method :content-type content-type)
+    (:some-declaration ...)*
+    "Optional documentation string."
+    body-form*)
+
+Each route description should include the name and the template. HTTP
+method and Content-Type is a optional keyword arguments.
+
+For the sake of readability there is a special syntax which can be
+useful to specify advanced parameters of route -
+declarations. Declaration must be placed before any code and must
+begin with keyword.
+
+Here are some basic examples:
+
+.. code-block:: common-lisp
+
+  (restas:define-route index ("/")
+    "Index Page")
+
+  (restas:define-route hello ("/hello" :content-type "text/plain")
+    "Hello World")
+
+  (restas:define-route form-handler ("/form" :method :post)
+    (:render-method (lambda (str) (format nil "Your input: ~A" str)))
+    "Handle a user input"
+    (restas:post-parameter "message"))
+
+  (restas:define-route user-profile ("/user/:username")
+    "Show the user profile for that user"
+    (format nil "User ~A" username))
+
+A Route Is A Function
+---------------------
+
+When you define a route then you also define a function with the same
+name. An argument list of this function consists from template
+variables (a wildcard presents as a list). A body of this function is
+a body of route.
+
+For example, for the route:
+
+.. code-block:: common-lisp
+
+  (restas:define-route archive ("/archives/:year/:month/:day")
+    "Display messages for a particular day"
+    (find-and-format-messages year month day))
+
+the equvailent function is:
+
+.. code-block:: common-lisp
+
+  (defun archive (year month day)
+    "Display messages for a particular day"
+    (find-and-format-messages year month day))
+
+Of course, you can call this function from REPL. It's fun and
+useful for a debuging.
+
+URL Templates
+-------------
+
+A template corresponds to a URL path:
+
+::
+
+  /index.html
+  /forum/feed.rss
+
+To add variable parts to a URL you can mark these special sections as
+``:variable-name`` or ``:(variable-name)``:
+
+::
+
+  /user/:username
+  /post/:(post-id).html
+
+To add wildcard variable (no more one in a template) you must mark
+this variable as ``*variable``.
+
+::
+  
+  /static/*items
+  /*path/feed.:(type)
+
+Template Variables
+------------------
+
+Optionally a converter can be used for a transformation a variable by
+specifying a rule via ``:variables`` declaration. Here are some example:
+
+.. code-block:: common-lisp
+
+  (restas:define-route template-variables ("/:digit/:(name).:(type)")
+    (:variables (digit #'parse-integer)
+                (name #'string-upcase))
+    (format nil "[~A] ~A - ~A" digit name type))
+
+Here *digit* is parsed as integer, ``name`` is transformed to
+uppercase. If a parse function returns :hs:`NIL` or generates an
+error, then the route is considered as not meeting the condition and
+is skipped. In the case of success, a route body has the access to
+already parsed parameter's value, as returned by specified function.
+
+
+Additional Variables
+--------------------
+
+Declaration ``:additional-variables`` can be used to specify
+additional variables which will pass to a call of route function as
+keyword arguments.
+
+For example, for the route:
+
+.. code-block:: common-lisp
+
+  (restas:define-route handle-form ("/form" :method :post)
+    (:additional-variables (author (restas:post-parameter "author"))
+                           (message (restas:post-parameter "message")))
+    ..)
+
+the equvailent function is:
+
+.. code-block:: common-lisp
+
+  (defun handle-form (&key author message)
+    ..)
+
+With help of ``:additional-variables`` might eliminate a dependency of
+route function from a request context. It's useful for debugging and
+testing.
+
+
+Arbitrary Restriction
+---------------------
+
+With ``:require`` declaration you can specify an arbitrary function to
+be called when the route is checked. If it returns :hs:`NIL` then the
+route is considered as not meeting the condition and is skipped.
+
+For example, for processing of editing form of wiki page
+can be used the next code:
+
+
+.. code-block:: common-lisp
+
+   (define-route edit-wiki-page/preview ("edit/:page" :method :post)
+     (:require (lambda () (hunchentoot:post-parameter "preview")))
+     ...)
+
+   (define-route edit-wiki-page/cancel ("edit/:page" :method :post)
+     (:require (lambda () (hunchentoot:post-parameter "cancel")))
+     ...)
+     
+   (define-route edit-wiki-page/save ("edit/:page" :method :post)
+     (:require (lambda () (hunchentoot:post-parameter "save")))
+     ...)
+
+Here the routes ``edit-wiki-page/preview``, ``edit-wiki-page/cancel``,
+and ``edit-wiki-page/save`` handle a pressing of form buttons Preview,
+Cancel, and Save accordingly.
