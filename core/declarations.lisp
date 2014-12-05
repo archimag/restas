@@ -23,7 +23,7 @@
   (:method (type declarations traits)
     (error "Unknown type of declaration: ~A" type)))
 
-(defmethod parse-declarations ((type (eql :sift-variables)) declarations traits)
+(defmethod parse-declarations ((type (eql :variables)) declarations traits)
   (let ((variables (gethash :variables traits)))
     (setf (gethash :parse-vars traits)
           (cons 'list

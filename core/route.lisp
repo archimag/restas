@@ -90,7 +90,7 @@
             (gethash :variables route-traits) variables)
       #|----------------------------------------------------------------------|#
       (parse-all-declarations declarations-map
-                              '(:sift-variables :additional-variables
+                              '(:variables :additional-variables
                                 :render-method :apply-render-method
                                 :content-type :http-method
                                 :requirement
