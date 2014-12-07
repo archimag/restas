@@ -1,0 +1,73 @@
+.. -*- rst -*-
+
+.. _module-reference:
+
+Module
+======
+
+.. defmacro:: restas:define-module
+  :args: name &rest options
+
+  Initializes a new module, creates new :hs:`package`, adds certain service variables to it, and conducts its initialization.
+
+.. defun:: restas:initialize-module-instance
+  :args: (module context) 
+
+  It is a generic function that calling  when the module is mounted with :macro:`restas:mount-submodule`
+  and can be used, for example, for additional adjustment of submodule context.
+  It should be placed in the package, defined with aid of :macro:`restas:define-module`.
+
+.. defun:: restas:finalize-module-instance
+  :args: (module context)
+
+  Is is a generic function that called at the repeated evaluation of :macro:`restas:mount-submodule`
+  and can be used e.g. for freeing resources allocated at submodule initialization.
+
+.. defmacro:: restas:mount-module
+  :args: name (module &rest decorators) &rest bindings
+
+  Defines a submodule.
+
+  * name - identifyer (:hs:`symbol`) of a submodule.
+
+  * module - `package designator`_  of the mounted module.
+
+  * decorators - list of decorators. See :ref:`manual-decorators`.
+
+  * bindings - the set of variables and their values defining the context of
+    submodule. The processing of routes from this submodule will be conducted
+    in this context by using :hs:`progv`.
+
+  Example:
+
+  .. code-block:: common-lisp
+
+    (restas:mount-submodule tmp (#:restas.directory-publisher)
+      (restas.directory-publisher:*baseurl* '("tmp"))
+      (restas.directory-publisher:*directory* #P"/tmp/"))
+
+
+.. defun:: restas:submodule-symbol
+  :args: submodule
+
+  Returns the :hs:`symbol` bound to the submodule object (e.g., at request processing
+  time such object is bound to :var:`restas:*submodule*`).
+
+.. defun:: restas:submodule-module
+  :args: submodule
+
+  Returns the `package designator`_ associated with submodule object.
+
+.. defun:: restas:submodule-parent
+  :args: submodule
+
+  Returns a submoudle to which the passed submodule is mounted. With aid of macro
+  :macro:`restas:mount-submodule` you can create entire hierarchies of submodules.
+
+.. defmacro:: restas:with-submodule-context
+  :args: submodule &body body
+
+  Lets you execute an arbitrary code at the context of the specified submodule.
+
+
+.. _package designator: http://www.lispworks.com/documentation/HyperSpec/Body/26_glo_p.htm#package_designator

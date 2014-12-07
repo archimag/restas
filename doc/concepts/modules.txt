@@ -5,3 +5,97 @@
 =======
 Modules
 =======
+
+A module unites routes together. It allows to manage a group of routes
+as a single component. The :macro:`restas:define-module` is used to
+create a module. A trivial example of defining a module looks like this:
+
+.. code-block:: common-lisp
+
+  (restas:define-module module-name
+    (:use #:cl))
+
+You can use a module to start your application. E.g.:
+
+.. code-block:: common-lisp
+
+  (restas.hunchentoot:start '#:module-name :port 8080)
+
+A Module Is a Package
+---------------------
+
+From Common Lisp point of view, a module is a :hs:`package`.
+:macro:`restas:define-module` allows any options that allows
+:hs:`defpackage`. :macro:`restas:define-module` creates a package with
+corresponding name and performs some additional initialization.
+
+Any form :macro:`restas:define-route` must be placed after
+:hs:`in-package` that used name of package which was defined by
+:macro:`restas:define-module`. A name of route must be `:internal` or
+`:exernal` symbol (see :hs:`find-symbol`) in that :hs:`package`.
+
+A Module Context
+----------------
+
+Each module that is a part of web-application, has some context. This
+allows binding one or more dynamic variables before to call a route
+handler (that uses :hs:`progv` for implementation). So it may be used
+for parameterization a behavior of module's routes.
+
+There are few ways for initialization of module context. First one is
+:fun:`restas:initialize-module-instance` which can be used for default
+initialization. E.g.:
+
+.. code-block:: common-lisp
+
+  (defmethod restas:initialize-module-instance :before ((module (eql #.*package*)) context)
+    (unless (restas:context-has-variable context '*dynamic-variable-name*)
+      (restas:context-add-variable context '*dynamic-variable-name* value)))
+
+Mounting
+--------
+
+Modules provide the ability to reuse of code in web-applications. For
+using a module as part of another module you can use
+:macro:`restas:mount-module` that allows to mount a module with a
+relative URL and with a specified context.
+
+For example, you can publish your home directory with
+restas-directory-publisher_ like this:
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:homesite
+    (:use #:cl))
+
+  (in-package #:homesite)
+
+  (restas:mount-module -homedir- (#:restas.directory-publisher)
+    (:url "/home/")
+    (restas.directory-publisher:*directory* (user-homedir-pathname))
+    (restas.directory-publisher:*autoindex* t))
+
+  (restas.hunchentoot:start '#:homesite :port 8080)
+
+You can mount the same module many times with a different relative URL
+and with a different context.
+
+Building URLs
+-------------
+
+You can use the :fun:`restas:genurl`/:fun:`restas:genurl*` functions
+with mounted moudles just like you normally would do just that you
+prefix the route name with the name of the mounted module and a dot
+(.):
+
+.. code-block:: common-lisp
+
+  (restas:define-route index ("/")
+    (restas:genurl* '-homedir-.route :path '("")))
+
+  (restas:mount-module -homedir- (#:restas.directory-publisher)
+    (:url "/home/")
+    (restas.directory-publisher:*directory* (user-homedir-pathname))
+    (restas.directory-publisher:*autoindex* t))
+
+.. _restas-directory-publisher: https://github.com/archimag/restas-directory-publisher/
