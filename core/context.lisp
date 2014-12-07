@@ -19,6 +19,12 @@
                  :values (copy-list (context-values rc))
                  :prototype (context-prototype rc)))
 
+(defun context-has-varialbe (context symbol)
+  (or (member symbol (context-vars context))
+      (let ((prototype (context-prototype context)))
+        (if prototype
+            (context-has-varialbe prototype symbol)))))
+
 (defun context-add-variable (context symbol &optional value)
     (push symbol
           (context-vars context))

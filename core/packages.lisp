@@ -39,10 +39,6 @@
            #:with-module
            #:module-context
            #:add-toplevel-module
-
-           ;; context
-           #:context-all-vars
-           #:context-all-values
            
            ;; render
            #:render-object
@@ -53,11 +49,14 @@
            
            ;; context
            #:make-context
+           #:context-has-varialbe           
            #:context-add-variable
            #:context-remove-variable
            #:context-symbol-value
            #:with-context
            #:copy-restas-context
+           #:context-all-vars
+           #:context-all-values
            
            ;; decorators
            #:@no-cache
