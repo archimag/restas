@@ -13,7 +13,7 @@
          (buffer (make-array 1024 :element-type '(unsigned-byte 8)))
          (stream (wookie:start-response response
                                         :headers (list :content-type (or (restas:mime-type path)
-                                                                         (restas:content-type* reply)
+                                                                         (restas:content-type reply)
                                                                          "application/octet-stream")))))
     (handler-case 
         (with-open-file (fstream path :element-type '(unsigned-byte 8))  

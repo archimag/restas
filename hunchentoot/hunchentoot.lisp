@@ -84,7 +84,7 @@
       (hunchentoot:redirect (hunchentoot:request-uri*)
                             :host restas::*default-host-redirect*))
     #|------------------------------------------------------------------------|#
-    (setf (restas:reply-external-format*) :utf-8)
+    (setf (restas:external-format) :utf-8)
     #|------------------------------------------------------------------------|#
     (flet ((not-found-if-null (thing)
              (unless thing
@@ -110,7 +110,7 @@
                                                    (hunchentoot:content-type hunchentoot:*reply*))))
               #|--------------------------------------------------------------|#
               ((stringp result)
-               (babel:string-to-octets result :encoding (reply-external-format*)))
+               (babel:string-to-octets result :encoding (external-format)))
               #|--------------------------------------------------------------|#
               (t result))))))))
 

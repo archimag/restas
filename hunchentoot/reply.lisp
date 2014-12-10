@@ -7,27 +7,27 @@
 
 (in-package :restas.hunchentoot)
 
-(defmethod restas:headers-out ((reply hunchentoot:reply))
+(defmethod restas:reply-headers-out ((reply hunchentoot:reply))
   (hunchentoot:headers-out reply))
 
-(defmethod restas:header-out (name (reply hunchentoot:reply))
+(defmethod restas:reply-header-out (name (reply hunchentoot:reply))
   (hunchentoot:header-out name reply))
 
-(defmethod (setf header-out) (new-value name (reply hunchentoot:reply))
+(defmethod (setf restas:reply-header-out) (new-value name (reply hunchentoot:reply))
   (setf (hunchentoot:header-out name reply)
         new-value))
 
-(defmethod restas:cookies-out ((reply hunchentoot:reply))
+(defmethod restas:reply-cookies-out ((reply hunchentoot:reply))
   (hunchentoot:cookies-out reply))
 
-(defmethod (setf restas:cookies-out) (newvalue (reply hunchentoot:reply))
+(defmethod (setf restas:reply-cookies-out) (newvalue (reply hunchentoot:reply))
   (setf (hunchentoot:cookies-out reply)
         newvalue))
 
-(defmethod restas:return-code ((reply hunchentoot:reply))
+(defmethod restas:reply-return-code ((reply hunchentoot:reply))
   (hunchentoot:return-code reply))
 
-(defmethod (setf restas:return-code) (newvalue (reply hunchentoot:reply))
+(defmethod (setf restas:reply-return-code) (newvalue (reply hunchentoot:reply))
   (setf (hunchentoot:return-code reply)
         newvalue))
 

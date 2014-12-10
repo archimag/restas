@@ -38,7 +38,7 @@
 (defmethod routes:route-check-conditions ((route route) bindings)
   (with-slots (required-method arbitrary-requirement) route
     (and (if required-method
-             (eql (request-method*) required-method)
+             (eql (request-method) required-method)
              t)
          (if arbitrary-requirement
              (if (listp arbitrary-requirement)
@@ -55,7 +55,7 @@
 
 (defmethod process-route ((route route) bindings)
   (alexandria:doplist (name value (route-headers route))
-    (setf (header-out* name)
+    (setf (header-out name)
           (if (functionp value)
               (funcall value)
               value)))
@@ -227,7 +227,7 @@
   (let ((url (make-route-url route-symbol args)))
     (setf (puri:uri-scheme url) :http
           (puri:uri-host url) (if (boundp '*request*)
-                                  (host)
+                                  (request-host)
                                   "localhost"))
     (puri:render-uri url nil)))
 

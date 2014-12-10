@@ -7,40 +7,40 @@
 
 (in-package #:restas.hunchentoot)
 
-(defmethod restas:get-parameters ((request hunchentoot:request))
+(defmethod restas:request-get-parameters ((request hunchentoot:request))
   (hunchentoot:get-parameters request))
 
-(defmethod restas:post-parameters ((request hunchentoot:request))
+(defmethod restas:request-post-parameters ((request hunchentoot:request))
   (hunchentoot:post-parameters request))
 
-(defmethod restas:cookies-in ((request hunchentoot:request))
+(defmethod restas:request-cookies-in ((request hunchentoot:request))
   (hunchentoot:cookies-in request))
 
-(defmethod restas:query-string ((request hunchentoot:request))
+(defmethod restas:request-query-string ((request hunchentoot:request))
   (hunchentoot:query-string request))
 
-(defmethod restas:request-method ((request hunchentoot:request))
+(defmethod restas:request-request-method ((request hunchentoot:request))
   (hunchentoot:request-method request))
 
-(defmethod restas:request-uri ((request hunchentoot:request))
+(defmethod restas:request-request-uri ((request hunchentoot:request))
   (hunchentoot:request-uri request))
 
-(defmethod restas:server-protocol ((request hunchentoot:request))
+(defmethod restas:request-server-protocol ((request hunchentoot:request))
   (hunchentoot:server-protocol request))
 
-(defmethod restas:headers-in ((request hunchentoot:request))
+(defmethod restas:request-headers-in ((request hunchentoot:request))
   (hunchentoot:headers-in request))
 
-(defmethod restas:remote-address ((request hunchentoot:request))
+(defmethod restas:request-remote-address ((request hunchentoot:request))
   (hunchentoot:remote-addr request))
 
-(defmethod restas:remote-port ((request hunchentoot:request))
+(defmethod restas:request-remote-port ((request hunchentoot:request))
   (hunchentoot:remote-port request))
 
-(defmethod restas:script-name ((request hunchentoot:request))
+(defmethod restas:request-script-name ((request hunchentoot:request))
   (hunchentoot:script-name request))
 
-(defmethod restas:raw-post-data ((request hunchentoot:request))
+(defmethod restas:request-raw-post-data ((request hunchentoot:request))
   (or (hunchentoot:raw-post-data :request request :force-binary t)
       (make-array 0 :element-type '(unsigned-byte 8))))
 

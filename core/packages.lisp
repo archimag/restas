@@ -74,38 +74,37 @@
            #:listener-ssl-p
 
            ;; request
-           #:get-parameters
-           #:post-parameters
-           #:cookies-in
-           #:query-string
-           #:request-method
-           #:request-uri
-           #:server-protocol
-           #:headers-in
-           #:remote-address
-           #:remote-port
-           #:script-name
-           #:raw-post-data
+           #:request-get-parameters
+           #:request-post-parameters
+           #:request-cookies-in
+           #:request-query-string
+           #:request-request-method
+           #:request-request-uri
+           #:request-server-protocol
+           #:request-headers-in
+           #:request-remote-address
+           #:request-remote-port
+           #:request-script-name
+           #:request-raw-post-data
            #:request-listener
 
            #:*request*
 
-           #:script-name*
-           #:query-string*
-           #:get-parameters*
-           #:post-parameters*
-           #:headers-in*
-           #:cookies-in*
+           #:script-name
+           #:query-string
+           #:get-parameters
+           #:post-parameters
+           #:headers-in
+           #:cookies-in
            #:header-in
-           #:header-in*
            #:authorization
-           #:remote-address*
-           #:remote-port*
+           #:remote-address
+           #:remote-port
            #:real-remote-address
-           #:host
-           #:request-uri*
-           #:request-method*
-           #:server-protocol*
+           #:request-host
+           #:request-uri
+           #:request-method
+           #:server-protocol
            #:user-agent
            #:cookie-in
            #:referer
@@ -116,20 +115,21 @@
            #:text-post-data
 
            ;; reply
-           #:headers-out
-           #:cookies-out
-           #:return-code
+           #:reply-headers-out
+           #:reply-header-out
+           #:reply-cookies-out
+           #:reply-return-code
            #:abort-request-handler
            #:reply-external-format
 
            #:*reply*
            
-           #:headers-out*
-           #:cookies-out*
-           #:content-type*
-           #:content-length*
-           #:return-code*
-           #:reply-external-format*
+           #:headers-out
+           #:cookies-out
+           #:content-type
+           #:content-length
+           #:return-code
+           #:external-format
            #:header-out-set-p
            #:header-out
            #:cookie-out

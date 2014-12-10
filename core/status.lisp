@@ -29,7 +29,7 @@
     ((= code +http-not-found+)
      (format nil
              "<p>The requested URL ~A was not found on this server.</p>"
-             (request-uri*)))
+             (request-uri)))
     ((= code +http-internal-server-error+)
      "<p>The server encountered an internal error or misconfiguration and was unable to complete your request.</p>")
     (t
@@ -38,7 +38,7 @@
 (defun status-page-server-info ()
   (format nil
           "RESTAS at ~A"
-          (host)))
+          (request-host)))
       
 (defun restas-status-message (code)
   (format nil

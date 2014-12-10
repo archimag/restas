@@ -7,37 +7,19 @@
 
 (in-package #:restas.wookie)
 
-(defmethod restas:render-object :around (designer (future asf:future))
-  (let ((request restas:*request*)
-        (reply restas:*reply*)
-        (module restas:*module*)
-        (result (bb:make-promise)))
-    (asf:future-handler-case
-     (asf:alet ((object future))
-       (bb:finish result
-                  (let ((restas:*request* request)
-                        (restas:*reply* reply))
-                    (restas:with-module module
-                      (restas:render-object designer object)))))
-     (t (e)
-        (bb:signal-error result e)))
-    #|------------------------------------------------------------------------|#
-    result))
-
 (defmethod restas:render-object :around (designer (promise bb:promise))
   (let ((request restas:*request*)
         (reply restas:*reply*)
-        (module restas:*module*)
-        (result (bb:make-promise)))
+        (module restas:*module*))
     #|------------------------------------------------------------------------|#
-    (bb:promise-handler-case
-     (bb:alet ((object promise))
-       (bb:finish result
-                  (let ((restas:*request* request)
+    (bb:with-promise (resolve reject)
+      (bb:catcher
+       (bb:alet ((object promise))
+         (resolve (let ((restas:*request* request)
                         (restas:*reply* reply))
                     (restas:with-module module
                       (restas:render-object designer object)))))
-     (t (e)
-        (bb:signal-error result e)))
-    #|------------------------------------------------------------------------|#
-    result))
+       (t (e)
+          (reject e))))))
+
+

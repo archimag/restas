@@ -14,7 +14,7 @@
              (setf (restas:return-code reply)
                    restas:+http-not-found+)
              #|---------------------------------------------------------------|#
-             (setf (restas:content-type* reply)
+             (setf (restas:content-type reply)
                   "text/html")
              #|---------------------------------------------------------------|#
              (send-reply reply
@@ -33,7 +33,7 @@
         #|--------------------------------------------------------------------|#
         (not-found-if-null route)
         #|--------------------------------------------------------------------|#
-        (bb:promise-handler-case
+        (bb:catcher
          (bb:alet ((result (restas:process-route route bindings)))
            (cond
              #|---------------------------------------------------------------|#
@@ -51,7 +51,7 @@
             (setf (restas:return-code reply)
                   restas:+http-internal-server-error+)
             #|----------------------------------------------------------------|#
-            (setf (restas:content-type* reply)
+            (setf (restas:content-type reply)
                   "text/html")
             #|----------------------------------------------------------------|#
             (send-reply reply

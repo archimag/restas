@@ -11,40 +11,40 @@
 ;;; request protocol
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defgeneric get-parameters (request)
+(defgeneric request-get-parameters (request)
   (:documentation "Returns an alist of all GET parameters (as provided via the request URI). The car of each element of this list is the parameter's name while the cdr is its value (as a string). The elements of this list are in the same order as they were within the request URI."))
 
-(defgeneric post-parameters (request)
+(defgeneric request-post-parameters (request)
   (:documentation "Returns an alist of all POST parameters (as provided via the request's body). The car of each element of this list is the parameter's name while the cdr is its value. The elements of this list are in the same order as they were within the request's body."))
 
-(defgeneric cookies-in (request)
+(defgeneric request-cookies-in (request)
   (:documentation "Returns an alist of all cookies associated with the REQUEST object request."))
 
-(defgeneric query-string (request)
+(defgeneric request-query-string (request)
   (:documentation "Returns the query string of the REQUEST object request. That's the part behind the question mark (i.e. the GET parameters)."))
 
-(defgeneric request-method (request)
+(defgeneric request-request-method (request)
   (:documentation "Returns the request method as a Lisp keyword."))
 
-(defgeneric request-uri (request)
+(defgeneric request-request-uri (request)
   (:documentation "Returns the request URI."))
 
-(defgeneric server-protocol (request)
+(defgeneric request-server-protocol (request)
   (:documentation "Returns the request protocol as a Lisp keyword."))
 
-(defgeneric headers-in (request)
+(defgeneric request-headers-in (request)
   (:documentation "Returns the incoming header with name name. name can be a keyword (recommended) or a string."))
 
-(defgeneric remote-address (request)
+(defgeneric request-remote-address (request)
   (:documentation "Returns the address the current request originated from."))
 
-(defgeneric remote-port (request)
+(defgeneric request-remote-port (request)
   (:documentation "Returns the port the current request originated from."))
 
-(defgeneric script-name (request)
+(defgeneric request-script-name (request)
   (:documentation "Returns the file name of the REQUEST object request. That's the requested URI without the query string (i.e the GET parameters)."))
 
-(defgeneric raw-post-data (request)
+(defgeneric request-raw-post-data (request)
   (:documentation "Returns the content sent by the client in the request body if there was any (unless the content type was multipart/form-data in which case NIL is returned)."))
 
 (defgeneric request-listener (request)
@@ -54,46 +54,40 @@
 ;;; request interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun script-name* (&optional (request *request*))
+(defun script-name (&optional (request *request*))
   "Returns the file name of the REQUEST object REQUEST. That's the
 requested URI without the query string \(i.e the GET parameters)."
-  (script-name request))
+  (request-script-name request))
 
-(defun query-string* (&optional (request *request*))
+(defun query-string (&optional (request *request*))
   "Returns the query string of the REQUEST object REQUEST. That's
 the part behind the question mark \(i.e. the GET parameters)."
-  (query-string request))
+  (request-query-string request))
 
-(defun get-parameters* (&optional (request *request*))
+(defun get-parameters (&optional (request *request*))
   "Returns an alist of the GET parameters associated with the REQUEST
 object REQUEST."
-  (get-parameters request))
+  (request-get-parameters request))
 
-(defun post-parameters* (&optional (request *request*))
+(defun post-parameters (&optional (request *request*))
   "Returns an alist of the POST parameters associated with the REQUEST
 object REQUEST."
-  (post-parameters request))
+  (request-post-parameters request))
 
-(defun headers-in* (&optional (request *request*))
+(defun headers-in (&optional (request *request*))
   "Returns an alist of the incoming headers associated with the
 REQUEST object REQUEST."
-  (headers-in request))
+  (request-headers-in request))
 
-(defun cookies-in* (&optional (request *request*))
+(defun cookies-in (&optional (request *request*))
   "Returns an alist of all cookies associated with the REQUEST object
 REQUEST."
-  (cookies-in request))
+  (request-cookies-in request))
 
-(defgeneric header-in (name request)
-  (:documentation "Returns the incoming header with name NAME.  NAME
-can be a keyword \(recommended) or a string.")
-  (:method (name request)
-   (cdr (assoc* name (headers-in request)))))
-
-(defun header-in* (name &optional (request *request*))
+(defun header-in (name &optional (request *request*))
   "Returns the incoming header with name NAME.  NAME can be a keyword
 \(recommended) or a string."
-  (header-in name request))
+  (cdr (assoc* name (request-headers-in request))))
 
 (defun authorization (&optional (request *request*))
   "Returns as two values the user and password \(if any) as encoded in
@@ -108,13 +102,13 @@ the 'AUTHORIZATION' header.  Returns NIL if there is no such header."
           (ppcre:split ":" (base64:base64-string-to-string (subseq authorization start)))
         (values user password)))))
 
-(defun remote-address* (&optional (request *request*))
+(defun remote-address (&optional (request *request*))
   "Returns the address the current request originated from."
-  (remote-address request))
+  (request-remote-address request))
 
-(defun remote-port* (&optional (request *request*))
+(defun remote-port (&optional (request *request*))
   "Returns the port the current request originated from."
-  (remote-port request))
+  (request-remote-port request))
 
 (defun real-remote-address (&optional (request *request*))
   "Returns the 'X-Forwarded-For' incoming http header as the
@@ -126,21 +120,21 @@ Otherwise returns the value of REMOTE-ADDR as the only value."
                              (values (first addresses) addresses)))
           (t (remote-address request)))))
 
-(defun host (&optional (request *request*))
+(defun request-host (&optional (request *request*))
   "Returns the 'Host' incoming http header value."
   (header-in :host request))
 
-(defun request-uri* (&optional (request *request*))
+(defun request-uri (&optional (request *request*))
   "Returns the request URI."
-  (request-uri request))
+  (request-request-uri request))
 
-(defun request-method* (&optional (request *request*))
+(defun request-method (&optional (request *request*))
   "Returns the request method as a Lisp keyword."
-  (request-method request))
+  (request-request-method request))
 
-(defun server-protocol* (&optional (request *request*))
+(defun server-protocol (&optional (request *request*))
   "Returns the request protocol as a Lisp keyword."
-  (server-protocol request))
+  (request-server-protocol request))
 
 (defun user-agent (&optional (request *request*))
   "Returns the 'User-Agent' http header."
@@ -177,12 +171,12 @@ case-sensitive."
   "Returns the content sent by the client in the request body if there
 was any (unless the content type was multipart/form-data in which case
 NIL is returned)."
-  (raw-post-data request))
+  (request-raw-post-data request))
 
 (defun text-post-data (&optional (encoding :utf-8) (request *request*))
   "Returns the content sent by the client in the request body if there
 was any (unless the content type was multipart/form-data in which case
 NIL is returned)."
-  (babel:octets-to-string (raw-post-data request) :encoding encoding))
+  (babel:octets-to-string (request-raw-post-data request) :encoding encoding))
     
   

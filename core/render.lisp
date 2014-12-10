@@ -21,9 +21,9 @@
 
 (defmethod render-object (designer (code integer))
   "Default handler for HTTP status code"
-  (setf (return-code*)
+  (setf (return-code)
         code)
-  (setf (content-type*)
+  (setf (content-type)
         "text/html")
   (restas-status-message code))
   
