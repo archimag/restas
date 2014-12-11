@@ -19,14 +19,14 @@
                     :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil
                           :reader route-arbitrary-requirement)
-   (render-method :initarg :render-method :initform #'identity)
+   (renderer :initarg :renderer :initform #'identity)
    (headers :initarg :headers :initform nil :reader route-headers)
    (variables :initarg :variables :initarg nil)
    (additional-variables :initarg :additional-variables :initform nil)))
 
-(defun route-render-method (route)
-  (or (slot-value route 'render-method)
-      (module-render-method (route-module route))
+(defun route-renderer (route)
+  (or (slot-value route 'renderer)
+      (module-renderer (route-module route))
       #'identity))
 
 (defmethod routes:route-check-conditions :around ((route routes:base-route)
@@ -62,7 +62,7 @@
   (let ((*route* route)
         (rsymbol (route-symbol route)))
     (render-object
-     (route-render-method route)
+     (route-renderer route)
      (catch 'route-done
        (apply rsymbol
               (append (iter (for item in (slot-value route 'variables))
@@ -91,7 +91,7 @@
       #|----------------------------------------------------------------------|#
       (parse-all-declarations declarations-map
                               '(:variables :additional-variables
-                                :render-method :apply-render-method
+                                :renderer :apply-renderer
                                 :content-type :http-method
                                 :require
                                 :decorators)
@@ -109,7 +109,7 @@
           ',name
           (alexandria:plist-hash-table
            (list ,@(iter (for type in
-                              '(:template :method :content-type :render-method
+                              '(:template :method :content-type :renderer
                                 :parse-vars :require :decorators
                                 :additional-variables :variables))
                          (for value = (gethash type route-traits))
@@ -151,7 +151,7 @@
                           (collect (call-in-context-wrap (second tail)))))))))
 
 (defun create-route-from-symbol (symbol module)
-  (destructuring-bind (&key content-type headers method require render-method
+  (destructuring-bind (&key content-type headers method require renderer
                             decorators variables additional-variables
                             &allow-other-keys)
       (alexandria:hash-table-plist (gethash symbol (pkgmodule-traits-routes (symbol-package symbol))))
@@ -168,7 +168,7 @@
                                      :symbol symbol
                                      :required-method method
                                      :arbitrary-requirement require
-                                     :render-method render-method
+                                     :renderer renderer
                                      :module module
                                      :headers headers
                                      :variables variables

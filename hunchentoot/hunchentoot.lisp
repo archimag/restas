@@ -137,14 +137,14 @@
                 acceptor-class
                 (context (make-context))
                 url
-                render-method
+                renderer
                 decorators)
   (unless (find-package module)
     (error "Package ~A not found" module) )
   (restas::add-toplevel-module module hostname port
                        :context context
                        :url url
-                       :render-method render-method
+                       :renderer renderer
                        :decorators decorators)
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start

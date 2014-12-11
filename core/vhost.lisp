@@ -41,24 +41,24 @@
                  *vhosts*))))
 
 (defgeneric add-toplevel-module (module hostname port &key context url
-                                                        render-method decorators))
+                                                        renderer decorators))
 
 (defmethod add-toplevel-module ((module symbol) hostname port
-                                &key context url render-method decorators)
+                                &key context url renderer decorators)
   (add-toplevel-module (find-package module) hostname port
                        :context context
                        :url url
-                       :render-method render-method
+                       :renderer renderer
                        :decorators decorators))
 
 (defmethod add-toplevel-module ((package package) hostname port
-                                &key context url render-method decorators)
+                                &key context url renderer decorators)
   (let ((vhost (ensure-vhost-exist hostname port))
         (module (make-instance 'pkgmodule
                                :package package
                                :context (or context (restas:make-context))
                                :url (if url (routes:parse-template url))
-                               :render-method render-method
+                               :renderer renderer
                                :decorators decorators)))
     (push module (slot-value vhost 'modules))
     (let ((*module* module))

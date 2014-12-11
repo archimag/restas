@@ -19,7 +19,7 @@
 (defgeneric module-mount-url (module)
   (:documentation "Return URL where the MODULE is mounted"))
 
-(defgeneric module-render-method (module)
+(defgeneric module-renderer (module)
   (:documentation "Return MODULE render method"))
 
 (defgeneric initialize-module-instance (module context)
@@ -148,8 +148,8 @@ MODULE should be the name used for mount-module."
    (context :initarg :context :initform (make-context) :reader module-context)
    (parent :initarg :parent :initform nil :reader module-parent)
    (mount-url :initarg :url :initform nil :reader module-mount-url)
-   (render-method :initarg :render-method :initform nil :reader
-                  module-render-method)
+   (renderer :initarg :renderer :initform nil :reader
+                  module-renderer)
    (decorators :initarg :decorators :initform nil)
    (package :initarg :package)
    (children :initform (make-hash-table))
@@ -165,15 +165,15 @@ MODULE should be the name used for mount-module."
   (when (alexandria:emptyp (alexandria:lastcar (module-mount-url module)))
     (setf (slot-value module 'mount-url)
           (butlast (module-mount-url module))))
-  (with-slots (package children routes render-method) module
+  (with-slots (package children routes renderer) module
     (clrhash children)
     (clrhash routes)
 
     (let ((traits (find-pkgmodule-traits package)))
 
-      (unless render-method
-        (let ((fun (gethash :render-method traits)))
-          (setf render-method
+      (unless renderer
+        (let ((fun (gethash :renderer traits)))
+          (setf renderer
                 (if fun (funcall fun)))))
 
       (iter (for (key thing) in-hashtable (gethash :modules traits))
@@ -192,7 +192,7 @@ MODULE should be the name used for mount-module."
                                    :package pkg
                                    :url (routes:parse-template
                                          (gethash :url child-traits ""))
-                                   :render-method (gethash :render-method
+                                   :renderer (gethash :renderer
                                                            child-traits)
                                    :decorators (gethash :decorators
                                                         child-traits)))))
@@ -245,9 +245,9 @@ MODULE should be the name used for mount-module."
   (let (defpackage-options traits)
     (iter (for option in options)
           (case (car option)
-            (:render-method
-             (collect :render-method into pkgtraits)
-             (collect `(alexandria:named-lambda make-render-method ()
+            (:renderer
+             (collect :renderer into pkgtraits)
+             (collect `(alexandria:named-lambda make-renderer ()
                          ,(second option)) into pkgtraits))
             ((:export-route-symbols :content-type)
              (collect (first option) into pkgtraits)
@@ -271,7 +271,7 @@ MODULE should be the name used for mount-module."
     (let ((bindings (iter (for (symbol value) in context)
                           (collect `(cons ',symbol ,value))))
           (traits (parse-all-declarations declarations
-                                          '(:decorators :url :render-method
+                                          '(:decorators :url :renderer
                                             :inherit-parent-context))))
     `(progn
        (setf (gethash ',name (pkgmodule-traits-modules *package*))

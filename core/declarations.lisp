@@ -50,18 +50,18 @@
          (setf (gethash :additional-variables-arglist traits) (cons '&key arglist)
                (gethash :additional-variables traits) (cons 'list handlers)))))
 
-(defmethod parse-declarations ((type (eql :render-method)) declarations traits)
+(defmethod parse-declarations ((type (eql :renderer)) declarations traits)
   (when (cdr declarations)
     (error "Multiple instances of ~A declaration" type))
   (setf (gethash type traits)
         (first declarations)))
 
-(defmethod parse-declarations ((type (eql :apply-render-method))
+(defmethod parse-declarations ((type (eql :apply-renderer))
                                declarations traits)
   (when (cdr declarations)
     (error "Multiple instances of ~A declaration" type))
-  (setf (gethash :render-method traits)
-        `(alexandria:named-lambda apply-render-method (data)
+  (setf (gethash :renderer traits)
+        `(alexandria:named-lambda apply-renderer (data)
            (apply ,(first declarations) data))))
 
 (defmethod parse-declarations ((type (eql :content-type)) declarations traits)
