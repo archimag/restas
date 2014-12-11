@@ -5,3 +5,119 @@
 =========
 Renderers
 =========
+
+Such features of :macro:`restas:define-route` as
+:ref:`route-rule-variables` and :ref:`route-additional-variables`
+allows to separate a route handler from a request context. Renderers
+allows to sepparate a route handler from a view logic.
+
+The generic function :fun:`restas:render-object` 
+
+.. code-block:: common-lisp
+
+  (defgenric restas:render-object (renderer object)
+    (:documentationt "Render object via renderer"))
+
+is called for processing a data (``object``) returned by a route handler.
+
+Setting
+-------
+
+You can set a ``renderer`` for each route in a :ref:`module
+<concept-modules>` by specifying ``:renderer`` declarations in
+:macro:`restas:define-module`. Example:
+
+.. code-block:: common-lisp
+
+  (restas:define-module #:json-api-module
+    (:use #:cl)
+    (:renderer #'json:encode-json-plist-to-string)
+    (:content-type "application/json"))
+
+  (in-package #:json-api-module)
+
+  (restas:define-route request-info ("/request-info")
+    (list :get-parameters (restas:get-parameters)
+          :post-parameters (restas:post-parameters)
+          :headers-in (restas:headers-in)
+          :cookies-in (restas:cookies-in)))
+
+You can override ``renderer`` for a :ref:`module <concept-modules>`
+when you mount it:
+
+.. code-block:: common-lisp
+
+  (restas:mount-module -json-api- (#:json-api-module)
+    (:renderer (lambda (obj) (json:encode-json-to-string (alexandria:plist-alist obj)))))
+
+When one :ref:`route <concept-routes>` demands a special ``renderer`` then you can use
+``:renderer`` declarations in :macro:`restas:define-route`.
+
+Common Renderers
+----------------
+
+RESTAS includes several :fun:`restas:render-object` methods. Default
+realization can accept the following types:
+
+* :hs:`string` or :hs:`array` octets - data is sent to client without
+  any additional processing.
+
+* :hs:`pathname` - file is read and sent to client
+
+* :hs:`integer` - is interpreted as HTTP status and client
+  receives corresponding special page.
+
+* Reports error in other cases.
+
+Also there are specializations for ``symbol`` and ``function`` passed
+as ``renderer``:
+
+* :hs:`pathname` or :hs:`integer` - default handler is called (data is
+  just sent to client without any processing)
+
+* In other cases supplied function is called with funcall for data
+  processing and the result is sent to client.
+
+Special Pages
+-------------
+
+If the route handler returns an integer, the return value is
+interpreted as an HTTP status code, and the corresponding response
+page (ex - 404 not found) is sent to the user. This behavior can be
+changed by defining a method on the :fun:`restas:render-object` generic
+function. For example:
+
+.. code-block:: common-lisp
+
+  (defmethod restas:render-object ((renderer my-app-renderer) (code (eql restas:+http-internal-server-error+)))
+    (setf (restas:content-type)
+          "text/plain")
+    "Oh, all very bad")
+
+It may happen if the handler of route returns
+:var:`restas:+http-not-found+` then the client will receive a
+customized "Not Found" message, but if RESTAS does not find a suitable
+route, then it sends the standard 404 page. To solve this problem you
+can define a "universal" route, which will be checked last after all
+other routes.
+
+.. code-block:: common-lisp
+                
+  (restas:define-route not-found ("*any")
+    restas:+http-not-found+)
+
+Avoiding Renderer
+-----------------
+
+Sometimes you need to send data to the client without any additional
+processing.  In this case can be useful
+:fun:`restas:abort-route-handler`. For example:
+
+.. code-block:: common-lisp
+
+  (restas:abort-route-handler "data invalid"
+                              :return-code restas:+http-internal-server-error+
+                              :content-type "text/plain")
+
+sends a response with HTTP status 500 and message "data invalid" to
+the client.

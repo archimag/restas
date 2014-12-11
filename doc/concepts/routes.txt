@@ -1,6 +1,6 @@
 .. -*- rst -*-
 
-.. _manual-routes:
+.. _concept-routes:
 
 ========
  Routes
@@ -104,6 +104,8 @@ this variable as ``*variable``.
   /static/*items
   /*path/feed.:(type)
 
+.. _route-rule-variables:  
+
 Rule Variables
 --------------
 
@@ -123,6 +125,7 @@ error, then the route has considered as not meeting the condition and
 skips. In the case of success, a route body has the access to already
 parsed parameter's value, as returned by specified function.
 
+.. _route-additional-variables:  
 
 Additional Variables
 --------------------

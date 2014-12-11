@@ -1,6 +1,6 @@
 .. -*- rst -*-
 
-.. _modules-routes:
+.. _concept-modules:
 
 =======
 Modules
