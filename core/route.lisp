@@ -38,7 +38,7 @@
 (defmethod routes:route-check-conditions ((route route) bindings)
   (with-slots (required-method arbitrary-requirement) route
     (and (if required-method
-             (eql (request-method) required-method)
+             (member (request-method) required-method)
              t)
          (if arbitrary-requirement
              (if (listp arbitrary-requirement)
@@ -166,7 +166,9 @@
                                      :template (route-template-from-symbol
                                                 symbol module)
                                      :symbol symbol
-                                     :required-method method
+                                     :required-method (if (listp method)
+                                                          method
+                                                          (list method))
                                      :arbitrary-requirement require
                                      :renderer renderer
                                      :module module
