@@ -258,7 +258,8 @@ MODULE should be the name used for mount-module."
            (setf defpackage-options pkgoptions
                  traits pkgtraits)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (defpackage ,name ,@defpackage-options)
+       ,@(unless (second (assoc :use-existing-package defpackage-options))
+           `((defpackage ,name ,@defpackage-options)))
        (register-pkgmodule-traits ',name ,@traits)
        (reconnect-all-routes))))
 
