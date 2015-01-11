@@ -84,8 +84,17 @@
     wookie:*state*))
     
 
-(defun start (module &key hostname (port 80) (separate-thread t))
-  (restas:add-toplevel-module module hostname port)
+(defun start (module
+              &key
+                hostname (port 80)
+                (separate-thread t)
+                (context (restas:make-context)) url renderer decorators)
+  #|--------------------------------------------------------------------------|#
+  (restas:add-toplevel-module module hostname port
+                              :context context
+                              :url url
+                              :renderer renderer
+                              :decorators decorators)
   #|--------------------------------------------------------------------------|#
   (flet ((event-loop ()
            (let ((wookie:*state* (init-wookie-state))

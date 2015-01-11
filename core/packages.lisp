@@ -9,6 +9,7 @@
 (defpackage #:restas
   (:use #:cl #:iter #:split-sequence)
   (:shadow #:defconstant)
+  (:import-from #:routes #:proxy-route)
   (:export #:*route*
            #:*module*
 
@@ -29,6 +30,8 @@
            #:route-module
 
            #:process-route
+
+           #:proxy-route
            
            ;; modules
            #:define-module

@@ -39,7 +39,9 @@
 
 (defmethod (setf restas:reply-external-format) (newvalue (reply hunchentoot:reply))
   (setf (hunchentoot:reply-external-format reply)
-        newvalue))
+        (if (keywordp newvalue)
+            (flex:make-external-format newvalue :eol-style :lf)
+            newvalue)))
 
 (defmethod hunchentoot::stringify-cookie ((cookie restas:cookie))
   (restas::stringify-cookie cookie))

@@ -11,7 +11,7 @@
 ;;;; no-cache-decorator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass no-cache-route (routes:proxy-route) ())
+(defclass no-cache-route (proxy-route) ())
 
 (defmethod process-route :before ((route no-cache-route) bindings)
   (setf (header-out :expires)
@@ -26,7 +26,7 @@
 ;;;; Nginx X-Accel-Redirect decorator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass nginx-accel-redirect-route (routes:proxy-route) ())
+(defclass nginx-accel-redirect-route (proxy-route) ())
 
 (defvar *nginx-internal-location* nil)
 (defvar *nginx-internal-alias* nil)
@@ -73,7 +73,7 @@
 ;;;; Apache X-Sendifle decorator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass apache-xsendfile-route (routes:proxy-route) ())
+(defclass apache-xsendfile-route (proxy-route) ())
 
 (defmethod process-route ((route apache-xsendfile-route) bindings)
   (let ((result (call-next-method)))

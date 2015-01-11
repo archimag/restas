@@ -60,12 +60,13 @@
   (puri:render-uri (request-uri request) nil))
 
 (defmethod restas:request-server-protocol ((request wookie:request))
-  (format nil
-          "~A/~A"
-          (if (typep *listener* 'wookie:ssl-listener)
-              "https"
-              "http")
-          (http-parse:http-version (wookie:request-http request))))
+  (make-keyword
+   (format nil
+           "~A/~A"
+           (if (typep *listener* 'wookie:ssl-listener)
+               "HTTPS"
+               "HTTP")
+           (http-parse:http-version (wookie:request-http request)))))
 
 (defmethod restas:request-headers-in ((request wookie:request))
   (alexandria:plist-alist (wookie:request-headers request)))

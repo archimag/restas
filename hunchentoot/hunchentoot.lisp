@@ -110,7 +110,7 @@
                                                    (hunchentoot:content-type hunchentoot:*reply*))))
               #|--------------------------------------------------------------|#
               ((stringp result)
-               (babel:string-to-octets result :encoding (external-format)))
+               (babel:string-to-octets result :encoding (flex:external-format-name (external-format))))
               #|--------------------------------------------------------------|#
               (t result))))))))
 
@@ -139,13 +139,16 @@
                 url
                 renderer
                 decorators)
+  #|--------------------------------------------------------------------------|#
   (unless (find-package module)
     (error "Package ~A not found" module) )
+  #|--------------------------------------------------------------------------|#
   (restas::add-toplevel-module module hostname port
-                       :context context
-                       :url url
-                       :renderer renderer
-                       :decorators decorators)
+                               :context context
+                               :url url
+                               :renderer renderer
+                               :decorators decorators)
+  #|--------------------------------------------------------------------------|#
   (unless (find port *acceptors* :key #'hunchentoot:acceptor-port)
     (push (hunchentoot:start
            (if ssl-certificate-file
@@ -159,6 +162,7 @@
                               :address address
                               :port port)))
           *acceptors*))
+  #|--------------------------------------------------------------------------|#
   (values))
 
 (defun stop-all (&key soft)
