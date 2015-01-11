@@ -45,6 +45,47 @@ an example."))
   (:documentation "Set the external format of reply which is used for character output."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; reply proxy
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass reply-proxy ()
+  ((origin :initarg :origin :reader origin-reply)))
+
+(defmethod restas:reply-headers-out ((reply reply-proxy))
+  (reply-headers-out (origin-reply reply)))
+
+(defmethod restas:reply-header-out (name (reply reply-proxy))
+  (reply-header-out name (origin-reply reply)))
+
+(defmethod (setf restas:reply-header-out) (new-value name (reply reply-proxy))
+  (setf (reply-header-out name (origin-reply reply))
+        new-value))
+
+(defmethod restas:reply-return-code ((reply reply-proxy))
+  (reply-return-code (origin-reply reply)))
+
+(defmethod (setf restas:reply-return-code) (new-value (reply reply-proxy))
+  (setf (reply-return-code (origin-reply reply))
+        new-value))
+
+(defmethod restas:reply-cookies-out ((reply reply-proxy))
+  (reply-cookies-out (origin-reply reply)))
+
+(defmethod (setf restas:reply-cookies-out) (new-value (reply reply-proxy))
+  (setf (reply-cookies-out (origin-reply reply))
+        new-value))
+
+(defmethod restas:abort-request-handler ((reply reply-proxy) result)
+  (abort-request-handler (origin-reply reply) result))
+
+(defmethod restas:reply-external-format ((reply reply-proxy))
+  (reply-external-format (origin-reply reply)))
+
+(defmethod (setf restas:reply-external-format) (new-value (reply reply-proxy))
+  (setf (reply-external-format (origin-reply reply))
+        new-value))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; reply interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -165,5 +206,3 @@ redirection code, it will be sent as status code."
   (when content-type
     (setf (content-type *reply*) content-type))
   (abort-request-handler *reply* obj))
-
-

@@ -51,6 +51,52 @@
   (:documentation "The listener which created this request object."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; request proxy
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defclass request-proxy ()
+  ((origin :initarg :origin :reader origin-request)))
+
+(defmethod request-get-parameters ((request request-proxy))
+  (request-get-parameters (origin-request request)))
+
+(defmethod request-post-parameters ((request request-proxy))
+  (request-post-parameters (origin-request request)))
+
+(defmethod request-cookies-in ((request request-proxy))
+  (request-cookies-in (origin-request request)))
+
+(defmethod request-query-string ((request request-proxy))
+  (request-query-string (origin-request request)))
+
+(defmethod request-request-method ((request request-proxy))
+  (request-request-method (origin-request request)))
+
+(defmethod request-request-uri ((request request-proxy))
+  (request-request-uri (origin-request request)))
+
+(defmethod request-server-protocol ((request request-proxy))
+  (request-server-protocol (origin-request request)))
+
+(defmethod request-headers-in ((request request-proxy))
+  (request-headers-in (origin-request request)))
+
+(defmethod request-remote-address ((request request-proxy))
+  (request-remote-address (origin-request request)))
+
+(defmethod request-remote-port ((request request-proxy))
+  (request-remote-port (origin-request request)))
+
+(defmethod request-script-name ((request request-proxy))
+  (request-script-name (origin-request request)))
+
+(defmethod request-raw-post-data ((request request-proxy))
+  (request-raw-post-data (origin-request request)))
+
+(defmethod request-listener ((request request-proxy))
+  (request-listener (origin-request request)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; request interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -179,4 +225,4 @@ was any (unless the content type was multipart/form-data in which case
 NIL is returned)."
   (babel:octets-to-string (request-raw-post-data request) :encoding encoding))
     
-  
+

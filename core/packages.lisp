@@ -90,7 +90,7 @@
            #:request-script-name
            #:request-raw-post-data
            #:request-listener
-
+           #:request-proxy
            #:*request*
 
            #:script-name
@@ -124,7 +124,7 @@
            #:reply-return-code
            #:abort-request-handler
            #:reply-external-format
-
+           #:reply-proxy
            #:*reply*
            
            #:headers-out
