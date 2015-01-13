@@ -197,7 +197,7 @@ redirection code, it will be sent as status code."
                        port target))))
     (setf (header-out :location) url
           (return-code) code)
-    (abort-route-handler nil)))
+    (abort-route-handler code)))
 
 
 (defun abort-route-handler (obj &key return-code content-type)

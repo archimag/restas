@@ -200,4 +200,5 @@
            ;; misc
            #:mime-type
            #:escape-for-html
+           #:url-decode
            ))
