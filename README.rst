@@ -51,7 +51,7 @@ are:
 .. _Screen: http://www.gnu.org/software/screen/
 .. _detachtty: http://www.cliki.net/detachtty
 .. _HTML-TEMPLATE: http://www.weitz.de/html-template/
-.. _cl-closure-template: http://code.google.com/p/cl-closure-template/
+.. _cl-closure-template: https://github.com/archimag/cl-closure-template
 .. _REST: http://en.wikipedia.org/wiki/Representational_State_Transfer
 .. _Lisp LGPL: http://opensource.franz.com/preamble.html
 
