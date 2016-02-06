@@ -7,7 +7,7 @@
 
 (defsystem #:restas
     :description "RESTAS is a Common Lisp web application framework, based
-on the Hunchentoot HTTP server It was developed to simplify development of
+on the Hunchentoot HTTP server. It was developed to simplify development of
 web applications following the REST architectural style."
     :author "Moskvitin Andrey"
     :license "LLGPL"
