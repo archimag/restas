@@ -28,7 +28,7 @@ API Reference
 
   * acceptor-class - символ, который определяет какой класс должен использоваться для создания
     acceptor. Данный класс должен наследовать от :class:`restas:restas-acceptor`
-    или :class:`restas:restas-ssl-acceptor`. 
+    или :class:`restas:restas-ssl-acceptor`.
 
   * ssl-certificate-file - путь к файлу-сертификату. Указывается для соединения по
     протоколу SSL (на Lispworks можно использовать один файл содержащий и сертификат
@@ -38,7 +38,7 @@ API Reference
 
   * ssl-privatekey-password - пароль (как строка) для использования файла-ключа (или
     NIL, что задано по умолчанию, если пароль не требуется).
-  
+
 
   Данная функция может быть вызвана несколько раз с различными параметрами. Если
   разные модули были запущены для одной и той же комбинации имени хости и номера
@@ -74,6 +74,10 @@ API Reference
 
   Обрабатываемый маршрут.
 
+.. defvar:: restas:*render-method*
+
+   Объект представления обрабатываемого маршрута.
+
 Маршруты
 ========
 
@@ -88,7 +92,7 @@ API Reference
   * template - шаблон URL, на основе которого проверяется соответствие маршрута
     запросу. Может содержать переменные, которые непосредственно доступны в
     теле маршрута.
-    
+
   * method - тип обрабатываемого HTTP-запроса, возможные значения: :GET, :POST,
     :PUT, :DELETE.
 
@@ -105,7 +109,7 @@ API Reference
     Используется объединение с :var:`*default-headers*`, причем в случае
     конфликта используются значения из опции маршрута.
 
-  * :render-method - объект, который будет использоваться в вызове :fun:`restas:render-object`
+  * :render-method - форма для создания объекта, который будет использоваться в вызове :fun:`restas:render-object`
     для обработки результата маршрута перед отдачей его клиенту.
 
   * :apply-render-method - аналогично :render-method, но для вызова
@@ -190,7 +194,7 @@ API Reference
   (добавляет в него некоторые служебные переменные)
 
 .. defun:: restas:initialize-module-instance
-  :args: (module context) 
+  :args: (module context)
 
   Generic-функция, вызывается при подключении модуля с помощью :macro:`restas:mount-module`.
   Может использваться, например, для дополнительной настройки контекста
@@ -253,7 +257,7 @@ API Reference
 Контекст
 ========
 
-В `RESTAS`_ для обеспечения модульности используется механизм, напоминающий 
+В `RESTAS`_ для обеспечения модульности используется механизм, напоминающий
 `Buffer-Local Variables`_ в `GNU Emacs`_.
 
 .. defmacro:: restas:make-context
@@ -279,7 +283,7 @@ API Reference
     вызова :hs:`symbol-value`.
 
 .. defun:: restas:context-remove-variable
-  :args: context symbol 
+  :args: context symbol
 
   Удаляет переменную из контекста
 

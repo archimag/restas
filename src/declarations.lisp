@@ -53,7 +53,7 @@
   (when (cdr declarations)
     (error "Multiple instances of ~A declaration" type))
   (setf (gethash type traits)
-        (first declarations)))
+        `(alexandria:named-lambda make-route-render-method () ,(first declarations))))
 
 (defmethod parse-declarations ((type (eql :apply-render-method))
                                declarations traits)

@@ -19,15 +19,15 @@
                     :reader route-required-method)
    (arbitrary-requirement :initarg :arbitrary-requirement :initform nil
                           :reader route-arbitrary-requirement)
-   (render-method :initarg :render-method :initform #'identity)
+   (render-method :initarg :render-method :initform (lambda () #'identity))
    (headers :initarg :headers :initform nil :reader route-headers)
    (variables :initarg :variables :initarg nil)
    (additional-variables :initarg :additional-variables :initform nil)))
 
 (defun route-render-method (route)
-  (or (slot-value route 'render-method)
-      (module-render-method (route-module route))
-      #'identity))
+  (funcall (or (slot-value route 'render-method)
+               (module-render-method (route-module route))
+               (lambda () #'identity))))
 
 (defmethod routes:route-check-conditions :around ((route routes:base-route)
                                                   bindings)
@@ -60,9 +60,10 @@
               (funcall value)
               value)))
   (let ((*route* route)
+        (*render-method* (route-render-method route))
         (rsymbol (route-symbol route)))
     (render-object
-     (route-render-method route)
+     *render-method*
      (catch 'route-done
        (apply rsymbol
               (append (iter (for item in (slot-value route 'variables))

@@ -13,6 +13,8 @@
 
 (defvar *route* nil)
 
+(defvar *render-method* nil)
+
 (defvar *module* nil)
 
 (defvar *catch-errors-p* t)
