@@ -10,6 +10,7 @@
   (:use :cl :iter :split-sequence)
   (:export #:*default-host-redirect*
            #:*route*
+           #:*render-method*
            #:*module*
 
            ;; acceptors

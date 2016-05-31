@@ -72,6 +72,10 @@ Special variables
 
   The current route being handled.
 
+.. defvar:: restas:*render-method*
+
+  The render method for the current route being handled.
+
 Routes
 ======
 
@@ -100,7 +104,7 @@ Routes
 
   * :headers - *plist* with HTTP headers names and values. A union with :var:`*default-headers*` is used, with route option taking precedence.
 
-  * :render-method - object, used by call to :fun:`restas:render-object` for processing of
+  * :render-method - form to create an object, used by call to :fun:`restas:render-object` for processing of
     the result of route handler before serving it to client.
 
   * :apply-render-method - analogous to :render-method, but is called using
@@ -181,7 +185,7 @@ Modules
   Initializes a new module, creates new :hs:`package`, adds certain service variables to it, and conducts its initialization.
 
 .. defun:: restas:initialize-module-instance
-  :args: (module context) 
+  :args: (module context)
 
   It is a generic function that calling  when the module is mounted with :macro:`restas:mount-module`
   and can be used, for example, for additional adjustment of submodule context.
@@ -234,7 +238,7 @@ View
   (specified in the body of :macro:`restas:define-route`). If you didn't specify
   :render-method parameter for :macro:`restas:define-route` macro then the value of
   :var:`*default-render-method*` from the module where the current route being handled was
-  defined (It is automatically created at module definition time by macro 
+  defined (It is automatically created at module definition time by macro
   :macro:`restas:define-module` and its value is :hs:`NIL`) is used.
 
   For more detailed description see the section :ref:`manual-view`.
