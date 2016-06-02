@@ -271,8 +271,8 @@ MODULE should be the name used for mount-module."
     (let ((bindings (iter (for (symbol value) in context)
                           (collect `(cons ',symbol ,value))))
           (traits (parse-all-declarations declarations
-                                          '(:decorators :url :render-method
-                                            :inherit-parent-context))))
+                                          name
+                                          *mount-module-declarations*)))
     `(progn
        (setf (gethash ',name (pkgmodule-traits-modules *package*))
              (list ',module

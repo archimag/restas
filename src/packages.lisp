@@ -65,6 +65,7 @@
            
            ;; misc
            #:request-full-uri
+           #:define-declaration
 
            ;; decorators
            #:@no-cache
