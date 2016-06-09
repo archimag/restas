@@ -99,11 +99,8 @@
             (gethash :variables route-traits) variables)
 
       (parse-all-declarations declarations-map
-                              '(:sift-variables :additional-variables
-                                :render-method :apply-render-method
-                                :content-type :http-method
-                                :requirement
-                                :decorators)
+                              *route-declarations*
+                              name
                               route-traits)
 
       (setf (gethash :variables route-traits) `',arglist)
