@@ -59,20 +59,19 @@
           (if (functionp value)
               (funcall value)
               value)))
-  (let ((*route* route)
-        (*render-method* (route-render-method route))
-        (rsymbol (route-symbol route)))
-    (render-object
-     *render-method*
-     (catch 'route-done
-       (apply rsymbol
-              (append (iter (for item in (slot-value route 'variables))
-                            (collect (cdr (assoc item bindings
-                                                 :test #'string=))))
-                      (iter (for (key fun) in
-                                 (slot-value route 'additional-variables))
-                            (collect key)
-                            (collect (funcall fun)))))))))
+  (let* ((*route* route)
+         (*render-method* (route-render-method route))
+         (rsymbol (route-symbol route))
+         (response (catch 'route-done
+                     (apply rsymbol
+                            (append (iter (for item in (slot-value route 'variables))
+                                          (collect (cdr (assoc item bindings
+                                                               :test #'string=))))
+                                    (iter (for (key fun) in
+                                               (slot-value route 'additional-variables))
+                                          (collect key)
+                                          (collect (funcall fun))))))))
+    (render-object *render-method* response)))
 
 (defun abort-route-handler (obj &key return-code content-type)
   (when return-code
