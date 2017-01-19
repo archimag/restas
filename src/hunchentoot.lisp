@@ -87,7 +87,7 @@
     (flet ((not-found-if-null (thing)
              (unless thing
                (setf (hunchentoot:return-code*)
-                     hunchentoot:+HTTP-NOT-FOUND+)
+                     hunchentoot:+http-not-found+)
                (hunchentoot:abort-request-handler))))
       (not-found-if-null vhost)
       (multiple-value-bind (route bindings)
