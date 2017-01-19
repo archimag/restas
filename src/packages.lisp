@@ -12,6 +12,7 @@
            #:*route*
            #:*render-method*
            #:*module*
+           #:*ignore-trailing-slashes*
 
            ;; acceptors
            #:restas-acceptor

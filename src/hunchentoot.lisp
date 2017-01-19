@@ -77,6 +77,11 @@
                 (parse-integer port)))
         (cons host (hunchentoot:acceptor-port acceptor)))))
 
+(defvar *ignore-trailing-slashes* nil)
+(defun get-sane-uri ()
+  (if *ignore-trailing-slashes*
+      (string-right-trim "/" (hunchentoot:request-uri*))
+      (hunchentoot:request-uri*)))
 
 (defun restas-dispatch-request (acceptor request)
   (let ((vhost (find-vhost (request-hostname-port acceptor request)))
@@ -92,7 +97,7 @@
       (not-found-if-null vhost)
       (multiple-value-bind (route bindings)
           (routes:match (slot-value vhost 'mapper)
-            (hunchentoot:request-uri*))
+            (get-sane-uri))
         (not-found-if-null route)
         (handler-bind ((error #'maybe-invoke-debugger))
           (let ((result (process-route route bindings)))
