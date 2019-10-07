@@ -103,32 +103,33 @@
                                    :lambda-list (cons name lambda-list)
                                    :documentation docstring)
 
-          (make-internal-function internal-name %obj-symbol interface-name
-                                  lambda-list docstring))))
+	  (make-internal-function internal-name %obj-symbol interface-name
+				  lambda-list docstring))))
+
+
+(defun %parse-define-policy-options (options &aux methods keys values)
+  (iter
+    (for (head . tail) on options)
+    (if (string= :define-method (car head))
+	(push (cdr head) methods)
+	(destructuring-bind (key val) head
+	  (let ((type (second
+		       (assoc key
+			      '((:interface-package quote)
+				(:interface-method-template t)
+				(:internal-package quote)
+				(:internal-function-template t))))))
+	    (assert type () "Unknown argument ~s." key)
+	    (assert (not (member key keys)) () "Duplicate argument ~s." key)
+	    (push key keys)
+	    (push (case type
+		    (quote (list 'quote val))
+		    (t val))
+		  values))))
+    (finally
+     (return (values methods (mapcan #'list keys values))))))
 
 (defmacro define-policy (name &body body)
-  (let (methods
-        internal-package  internal-function-template
-        interface-package interface-method-template)
-    (iter (for item in body)
-          (case (car item)
-            (:internal-package
-             (setf internal-package (second item)))
-            (:internal-function-template
-             (setf internal-function-template (second item)))
-            (:interface-package
-             (setf interface-package (second item)))
-            (:interface-method-template
-             (setf interface-method-template (second item)))
-            (otherwise
-             (cond
-               ((string= (car item) "DEFINE-METHOD")
-                (push (cdr item) methods))
-               (t
-                (error "Unknown DEFINE-POLICY option: ~A" item))))))
+  (multiple-value-bind (methods arguments) (%parse-define-policy-options body)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (%define-policy ',name ',methods
-                       :interface-package ',interface-package
-                       :interface-method-template ,interface-method-template
-                       :internal-package ',internal-package
-                       :internal-function-template ,internal-function-template))))
+       (%define-policy ',name ',methods ,@arguments))))
